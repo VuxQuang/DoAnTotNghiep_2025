@@ -19,9 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Email không tồn tại: " + email));
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username không tồn tại: " + username));
 
         // ❗ Nếu là tài khoản Google → chặn login bằng form
         if ("GOOGLE".equalsIgnoreCase(user.getProvider())) {
@@ -40,7 +40,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // ✅ Trả về user Spring Security
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),                     // username
+                user.getUsername(),                     // username
                 user.getPassword(),                  // encoded password
                 "ACTIVE".equalsIgnoreCase(user.getStatus()), // enabled
                 true,     // accountNonExpired

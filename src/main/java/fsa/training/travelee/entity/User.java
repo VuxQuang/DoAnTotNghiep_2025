@@ -21,6 +21,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
+    private String username;
     private String email;
     private String phoneNumber;
 
@@ -36,6 +37,8 @@ public class User {
     private String provider;      // GOOGLE, FORM
     private String providerId;    // ID Google
 
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
     private Boolean emailVerified;
     private Boolean phoneVerified;
 

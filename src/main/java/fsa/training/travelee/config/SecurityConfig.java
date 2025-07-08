@@ -1,6 +1,7 @@
 package fsa.training.travelee.config;
 
 import fsa.training.travelee.service.CustomUserDetailsService;
+import fsa.training.travelee.config.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
@@ -38,7 +39,7 @@ public class SecurityConfig {
                                 "/admin/css/**", "/admin/js/**", "/admin/imgs/**",
                                 "/page/css/**", "/page/js/**", "/page/imgs/**"
                         ).permitAll()
-                        .requestMatchers("/admin/login", "/login").permitAll()
+                        .requestMatchers("/admin/login", "/login","/forgot-password","/register","/reset-password").permitAll()
                         .requestMatchers("/page/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/page/**").hasRole("USER")

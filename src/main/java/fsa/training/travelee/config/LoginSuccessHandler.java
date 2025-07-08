@@ -3,6 +3,7 @@ package fsa.training.travelee.config;
 import fsa.training.travelee.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.*;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -14,10 +15,11 @@ import java.io.IOException;
 @Component
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final UserService userService; // service bạn phải inject vào để xử lý lưu user
+    @Lazy  // Trì hoãn việc khởi tạo UserService để tránh vòng lặp phụ thuộc
+    private final UserService userService;
     private final HttpSession session;
 
-    public LoginSuccessHandler(UserService userService, HttpSession session) {
+    public LoginSuccessHandler(@Lazy UserService userService, HttpSession session) {
         this.userService = userService;
         this.session = session;
     }
@@ -30,36 +32,39 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2User oauthUser = oauthToken.getPrincipal();
             String email = oauthUser.getAttribute("email");
+            String fullName = oauthUser.getAttribute("name");  // Lấy tên người dùng từ Google
 
-            // Nếu email không có thì lỗi
+            // Nếu email không có, redirect về trang login với thông báo lỗi
             if (email == null) {
-                response.sendRedirect("/login?error");
+                response.sendRedirect("/login?error=true");
                 return;
             }
 
-            // Gọi service để tạo user nếu chưa có
-            userService.processOAuthPostLogin(email);
+            // Gọi service để tạo user nếu chưa có và cập nhật thông tin nếu cần
+            userService.processOAuthPostLogin(email, fullName);
 
-            // Có thể lưu vào session nếu muốn
-            session.setAttribute("username", email);
+            // Lưu thông tin vào session
+            session.setAttribute("email", email);
+            session.setAttribute("fullName", fullName);
 
-            // Redirect cho user
+            // Redirect cho user sau khi đăng nhập thành công
             redirectURL += "/page/home";
         } else {
             // Login bằng form
             var authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 String role = authority.getAuthority();
-                if (role.equals("ROLE_ADMIN")) {
+                if ("ROLE_ADMIN".equals(role)) {
                     redirectURL += "/admin/dashboard";
                     break;
-                } else if (role.equals("ROLE_USER")) {
+                } else if ("ROLE_USER".equals(role)) {
                     redirectURL += "/page/home";
                     break;
                 }
             }
         }
 
+        // Chuyển hướng sau khi xử lý đăng nhập thành công
         response.sendRedirect(redirectURL);
     }
 }
