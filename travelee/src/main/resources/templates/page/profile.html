@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang cá nhân - TravelGo</title>
+    <link rel="stylesheet" th:href="@{/page/css/profile.css}">
+    <link rel="stylesheet" th:href="@{/page/css/homepage.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<style>
+    .alert-danger {
+        color: red;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .alert-success {
+        color: green;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+</style>
+<body>
+
+<!-- Header với thông tin liên hệ -->
+<div th:replace="~{/page/fragments/header :: header}"></div>
+
+<!-- Sidebar -->
+<div th:replace="~{/page/fragments/navbar :: navbar}"></div>
+
+<main class="main profile-main">
+    <div class="container">
+        <div class="profile-wrapper">
+            <aside class="profile-sidebar">
+                <div class="profile-avatar">
+                    <img th:src="@{/page/imgs/4.jpg}" alt="Avatar" class="logo-img" id="userAvatar">
+                    <button type="button" id="changeAvatarBtn" class="btn btn-avatar">Đổi ảnh đại diện</button>
+                    <h3 class="profile-name" th:text="${loggedInUser.fullName}">Họ tên</h3>
+                    <p class="profile-email" th:text="${loggedInUser.email}">Email</p>
+                </div>
+                <ul class="profile-menu">
+                    <li class="profile-menu-item active" data-tab="info"><i class="fas fa-user"></i> Thông tin cá nhân</li>
+                    <li class="profile-menu-item" data-tab="tours"><i class="fas fa-suitcase-rolling"></i> Tour đã đặt</li>
+                    <li class="profile-menu-item" data-tab="password"><i class="fas fa-key"></i> Đổi mật khẩu</li>
+                    <li class="profile-menu-item" data-tab="support"><i class="fas fa-headset"></i> Phản hồi hỗ trợ</li>
+                </ul>
+            </aside>
+            <section class="profile-content">
+                <div class="profile-tab profile-info active">
+                    <h2>Thông tin cá nhân</h2>
+                    <form th:action="@{/profile/update}" method="post" th:object="${updateUserDto}">
+                        <div class="form-group">
+                            <label>Họ và tên</label>
+                            <input type="text" th:field="*{fullName}" placeholder="Không thay đổi nếu để trống" />
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" th:field="*{email}" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="text" th:field="*{phoneNumber}" placeholder="Không thay đổi nếu để trống" />
+                        </div>
+                        <div class="form-group">
+                            <label>Địa chỉ</label>
+                            <input type="text" th:field="*{address}" placeholder="Không thay đổi nếu để trống" />
+                        </div>
+                        <button type="submit" class="btn btn-register">Cập nhật</button>
+                    </form>
+                </div>
+                <div class="profile-tab profile-tours">
+                    <h2>Tour đã đặt</h2>
+                    <div class="tours-table-wrapper">
+                        <table class="tours-table">
+                            <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên tour</th>
+                                <th>Thông tin</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <div class="tour-title">Du lịch Cần Thơ - Cà Mau</div>
+                                    <div><b>Loại tour:</b> Gia đình</div>
+                                    <div><b>Điểm xuất phát:</b> Tp. Hồ Chí Minh</div>
+                                    <div><b>Điểm đến:</b> Cà Mau</div>
+                                    <div><b>Điểm đón:</b> a</div>
+                                    <div><b>Ngày khởi hành:</b> 2023-10-31</div>
+                                    <div><b>Ngày trở về:</b> 2023-11-02</div>
+                                </td>
+                                <td>
+                                    <div><b>Mã booking:</b> 72</div>
+                                    <div><b>Số người lớn:</b> 1 - <b>Thành tiền:</b> 380.000 vnd</div>
+                                    <div><b>Số trẻ em (6-12 tuổi):</b> 0 - <b>Thành tiền:</b> 0 vnd</div>
+                                    <div><b>Số trẻ em (2-6 tuổi):</b> 0 - <b>Thành tiền:</b> 0 vnd</div>
+                                    <div><b>Số trẻ em (dưới 2 tuổi):</b> 0 - <b>Thành tiền:</b> 0 vnd</div>
+                                    <div><b>Tổng tiền:</b> 380.000 vnd</div>
+                                    <div><b>Ghi chú:</b> 1</div>
+                                </td>
+                                <td>
+                                    <button class="btn-cancel">Hủy</button>
+                                    <!-- Hoặc: <span class="status paid">Đã thanh toán</span> -->
+                                </td>
+                            </tr>
+                            <!-- Thêm các tour khác nếu muốn -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="profile-tab profile-password">
+                    <h2>Đổi mật khẩu</h2>
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    <form id="changePasswordForm" method="post" th:action="@{/profile/change-password}">
+                        <div class="form-group password-group">
+                            <label for="oldPassword">Mật khẩu hiện tại</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="oldPassword" name="oldPassword" required>
+                                <span class="toggle-password" data-target="oldPassword">
+                                     <i class="fas fa-eye"></i>
+                                 </span>
+                            </div>
+                        </div>
+                        <div class="form-group password-group">
+                            <label for="newPassword">Mật khẩu mới</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="newPassword" name="newPassword" required>
+                                <span class="toggle-password" data-target="newPassword">
+                                     <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group password-group">
+                            <label for="confirmPassword">Xác nhận mật khẩu mới</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                                <span class="toggle-password" data-target="confirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                 </span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-register">Đổi mật khẩu</button>
+                    </form>
+                </div>
+                <div class="profile-tab profile-support">
+                    <h2>Phản hồi & Hỗ trợ</h2>
+                    <form class="profile-form">
+                        <div class="form-group">
+                            <label>Nội dung phản hồi</label>
+                            <textarea rows="4" placeholder="Nhập nội dung bạn cần hỗ trợ..."></textarea>
+                        </div>
+                        <button class="btn btn-register" type="submit">Gửi phản hồi</button>
+                    </form>
+                    <div class="support-history">
+                        <h3 style="margin-top:32px;">Xem phản hồi đã gửi</h3>
+                        <ul class="support-list">
+                            <li class="support-item">
+                                <div class="support-question">Tôi muốn đổi ngày khởi hành tour Đà Nẵng?</div>
+                                <div class="support-answer"><b>Phản hồi:</b> Chúng tôi đã tiếp nhận yêu cầu và sẽ liên hệ bạn trong 24h.</div>
+                                <div class="support-date">Gửi lúc: 10/06/2024 14:32</div>
+                            </li>
+                            <li class="support-item">
+                                <div class="support-question">Tôi chưa nhận được email xác nhận đặt tour.</div>
+                                <div class="support-answer"><b>Phản hồi:</b> Vui lòng kiểm tra hộp thư rác hoặc liên hệ tổng đài 1900 1234.</div>
+                                <div class="support-date">Gửi lúc: 08/06/2024 09:15</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{/page/fragments/footer :: footer}"></div>
+
+<div th:replace="~{/page/fragments/chatbot :: chatbot}"></div>
+
+<script th:src="@{/page/js/profile.js}"></script>
+
+</body>
+</html>

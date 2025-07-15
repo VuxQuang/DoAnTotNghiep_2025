@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/page/css/login-style.css}">
+</head>
+<body>
+<div class="container">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h2>Admin Panel</h2>
+            </div>
+            <p>Đăng nhập để truy cập hệ thống</p>
+        </div>
+
+        <form class="login-form" th:action="@{/login}" method="post">
+            <div class="form-group">
+                <div class="input-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="username" placeholder="Tên đăng nhập" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Mật khẩu" required>
+                    <i class="fas fa-eye toggle-password"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <span>Đăng nhập</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            <div class="or-divider"><span>hoặc</span></div>
+            <a th:href="@{/oauth2/authorization/google}" class="google-btn">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="google-icon">
+                Đăng nhập với Google
+            </a>
+        </form>
+        <div class="login-links">
+            <a th:href="@{/register}" class="register-link">Đăng ký tài khoản mới</a>
+            <span class="divider">|</span>
+            <a th:href="@{/forgot-password}" class="forgot-link">Quên mật khẩu?</a>
+        </div>
+    </div>
+
+    <div class="background-animation">
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+        </div>
+    </div>
+</div>
+
+<script src="login-script.js"></script>
+</body>
+</html>

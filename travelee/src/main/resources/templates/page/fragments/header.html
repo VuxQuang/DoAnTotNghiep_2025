@@ -1,0 +1,60 @@
+<header th:fragment="header" class="header">
+    <div class="header-top">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img th:src="@{/page/imgs/favicon.png}" class="logo-img" />
+                    <span>TravelGo</span>
+                </div>
+                <div class="contact-info">
+                    <div class="phone">
+                        <i class="fas fa-phone"></i>
+                        <span>1900 1234</span>
+                    </div>
+                    <div class="email">
+                        <i class="fas fa-envelope"></i>
+                        <span>info@travelgo.vn</span>
+                    </div>
+                </div>
+                <div class="social-icons">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-zalo"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li class="nav-item active"><a th:href="@{/page/home}">Trang chủ</a></li>
+                    <li class="nav-item"><a th:href="@{/page/about}">Giới thiệu</a></li>
+                    <li class="nav-item"><a href="#tours">Tours</a></li>
+                    <li class="nav-item"><a href="#news">Tin tức</a></li>
+                    <li class="nav-item"><a th:href="@{/page/contact}">Liên hệ</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <div th:if="${loggedInUser != null}" class="dropdown">
+                        <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Xin chào, <span th:text="${loggedInUser.fullName}">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/profile}">Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" th:href="@{/logout}">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
