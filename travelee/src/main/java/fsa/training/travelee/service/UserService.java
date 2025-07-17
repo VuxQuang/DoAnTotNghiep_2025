@@ -10,6 +10,9 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.Authentication;
@@ -171,30 +174,43 @@ public class UserService {
         User user = userRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
 
-        if (!user.getEmail().equals(dto.getEmail())
-                && userRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email đã tồn tại");
+        // Kiểm tra và cập nhật email nếu có thay đổi
+        if (!user.getEmail().equals(dto.getEmail())) {
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new IllegalArgumentException("Email đã tồn tại");
+            }
+            user.setEmail(dto.getEmail());
         }
 
-        /* --- Cập nhật các trường --- */
-        user.setFullName(dto.getFullName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setAddress(dto.getAddress());
-        user.setStatus(dto.getStatus());
+        // Cập nhật các trường khác chỉ khi có thay đổi
+        if (!user.getFullName().equals(dto.getFullName())) {
+            user.setFullName(dto.getFullName());
+        }
+        if (!user.getPhoneNumber().equals(dto.getPhoneNumber())) {
+            user.setPhoneNumber(dto.getPhoneNumber());
+        }
+        if (!user.getAddress().equals(dto.getAddress())) {
+            user.setAddress(dto.getAddress());
+        }
+        if (!user.getStatus().equals(dto.getStatus())) {
+            user.setStatus(dto.getStatus());
+        }
 
-        /* --- Cập nhật mật khẩu (nếu nhập mới) --- */
+        // Cập nhật mật khẩu (nếu nhập mới)
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
-        /* --- Cập nhật role --- */
-        Role role = roleRepository.findByRoleName(dto.getRoleName())
-                .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ"));
-        user.setRoles(new HashSet<>(Set.of(role)));
+        // Cập nhật role
+        if (!user.getRoles().contains(dto.getRoleName())) {
+            Role role = roleRepository.findByRoleName(dto.getRoleName())
+                    .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ"));
+            user.setRoles(new HashSet<>(Set.of(role)));
+        }
 
         userRepository.save(user);
     }
+
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -216,6 +232,14 @@ public class UserService {
 
         return userRepository.findByUsername(username).orElse(null);
     }
-
+    public Page<User> getUsersPage(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // tạo Pageable
+        if (keyword != null && !keyword.isEmpty()) {
+            return userRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrUsernameContainingIgnoreCase(
+                    keyword, keyword, keyword, pageable);
+        } else {
+            return userRepository.findAll(pageable);
+        }
+    }
 }
 

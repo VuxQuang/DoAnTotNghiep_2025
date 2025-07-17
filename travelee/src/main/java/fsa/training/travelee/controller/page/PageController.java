@@ -1,4 +1,4 @@
-package fsa.training.travelee.controller;
+package fsa.training.travelee.controller.page;
 
 import fsa.training.travelee.dto.ChangePasswordDto;
 import fsa.training.travelee.dto.UpdateUserDto;
@@ -35,6 +35,7 @@ public class PageController {
 
         if (currentUser != null) {
             model.addAttribute("fullName", currentUser.getFullName());
+            model.addAttribute("loggedInUser", currentUser);
         }
 
         return "page/home";
@@ -107,11 +108,6 @@ public class PageController {
     @GetMapping("/page/about")
     public String showPageAbout() {
         return "page/about";
-    }
-
-    @GetMapping("/page/contact")
-    public String showPageContact() {
-        return "page/contact";
     }
 
 }

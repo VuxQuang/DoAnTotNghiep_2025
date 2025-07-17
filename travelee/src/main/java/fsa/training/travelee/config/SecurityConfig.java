@@ -39,9 +39,9 @@ public class SecurityConfig {
                                 "/admin/css/**", "/admin/js/**", "/admin/imgs/**",
                                 "/page/css/**", "/page/js/**", "/page/imgs/**"
                         ).permitAll()
-                        .requestMatchers( "/","page/home","/home","/login","/forgot-password","/register","/reset-password").permitAll()
-                        .requestMatchers("/page/**").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password").permitAll()
+                        .requestMatchers("/admin/user/**").hasRole("ADMIN")  // Chỉ ADMIN mới quản lý user
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")  // ADMIN và STAFF đều vào được admin
                         .requestMatchers("/page/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )

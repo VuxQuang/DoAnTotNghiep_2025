@@ -69,6 +69,45 @@
                     </tr>
                     </tbody>
                 </table>
+                <div class="user-table-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                    <!-- Góc trái: Tổng số người dùng -->
+                    <div class="user-total-count" style="font-weight: 500; color: #667eea;">
+                        <span th:text="'Tổng cộng ' + ${totalUsers} + ' người dùng'"></span>
+                    </div>
+                    <!-- Góc phải: Phân trang -->
+                    <div class="admin-pagination">
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{/admin/user/users(page=${currentPage - 1}, size=${size}, keyword=${keyword})}"
+                           class="admin-page-btn prev"
+                           title="Trang trước">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        <span class="admin-page-numbers">
+                            <a th:each="i : ${#numbers.sequence(0, totalPages-1)}"
+                               th:href="@{/admin/user/users(page=${i}, size=${size}, keyword=${keyword})}"
+                               th:text="${i+1}"
+                               th:classappend="${i == currentPage} ? 'admin-page-btn active' : 'admin-page-btn'">
+                            </a>
+                        </span>
+                        <a th:if="${currentPage < totalPages - 1}"
+                           th:href="@{/admin/user/users(page=${currentPage + 1}, size=${size}, keyword=${keyword})}"
+                           class="admin-page-btn next"
+                           title="Trang tiếp">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <form method="get" action="/admin/user/users" style="margin-left: 16px; display: flex; align-items: center;">
+                            <select name="size" th:value="${size}" class="admin-page-btn" style="min-width: 60px; margin-right: 6px;">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                            </select>
+                            <input type="hidden" name="page" th:value="${currentPage}" />
+                            <input type="hidden" name="keyword" th:value="${keyword}" />
+                            <button type="submit" class="admin-page-btn" style="padding: 8px 12px;">Chọn</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </main>
 

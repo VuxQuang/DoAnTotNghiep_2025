@@ -43,10 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 alert('Vui lòng điền đầy đủ và đúng thông tin!');
                 return false;
-            } else {
-                e.preventDefault();
-                alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.');
-                form.reset();
             }
         });
     }

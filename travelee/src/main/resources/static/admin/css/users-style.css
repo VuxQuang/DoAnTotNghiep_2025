@@ -503,3 +503,131 @@
     }
 }
 
+/* =============================
+   Pagination Styles - Đồng bộ homepage
+   ============================= */
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.admin-pagination form {
+    margin-left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.admin-page-numbers {
+    display: flex;
+    gap: 8px;
+}
+.admin-page-btn {
+    background: #fff;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 10px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.admin-page-btn:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+.admin-page-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+.admin-page-btn.prev, .admin-page-btn.next {
+    background: #f8f9fa;
+    color: #667eea;
+    border: 2px solid #667eea;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 10px 14px;
+    border-radius: 50%;
+    min-width: 44px;
+    height: 44px;
+}
+.admin-page-btn.prev:hover, .admin-page-btn.next:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px) scale(1.1);
+}
+.admin-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #eee;
+    color: #aaa;
+    border-color: #eee;
+    transform: none;
+    box-shadow: none;
+}
+.admin-page-btn:disabled:hover {
+    background: #eee;
+    color: #aaa;
+    border-color: #eee;
+    transform: none;
+    box-shadow: none;
+}
+@media (max-width: 768px) {
+    .admin-pagination {
+        gap: 8px;
+        margin: 30px 0 0 0;
+    }
+    .admin-page-numbers {
+        gap: 6px;
+    }
+    .admin-page-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 40px;
+    }
+    .admin-page-btn.prev, .admin-page-btn.next {
+        padding: 8px;
+        min-width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    .user-table-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .admin-pagination form {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+}
+
+/* Footer phân trang cho admin user table */
+.user-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.user-total-count {
+    font-weight: 500;
+    color: #667eea;
+    font-size: 1.05rem;
+}
+

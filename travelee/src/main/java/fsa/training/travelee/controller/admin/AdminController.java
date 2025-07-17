@@ -1,4 +1,4 @@
-package fsa.training.travelee.controller;
+package fsa.training.travelee.controller.admin;
 
 import fsa.training.travelee.dto.RegisterUserAdminDto;
 import fsa.training.travelee.entity.User;
@@ -6,15 +6,15 @@ import fsa.training.travelee.entity.Role;
 import fsa.training.travelee.repository.UserRepository;
 import fsa.training.travelee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model; // <- cần import
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 
-
-import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -26,36 +26,40 @@ public class AdminController {
     private UserService userService;
 
     @GetMapping("/admin/dashboard")
-    public String showAdminDashboard() {
+    public String showAdminDashboard(Model model) {
+        long totalUsers = userRepository.count();
+        model.addAttribute("totalUsers", totalUsers);
         return "admin/dashboard";
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/user/users")
     public String showAllUsers(@RequestParam(value = "keyword", required = false) String keyword,
+                               @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(value = "size", defaultValue = "5") int size,
                                Model model) {
-        List<User> users;
 
-        if (keyword != null && !keyword.isEmpty()) {
-            users = userRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrUsernameContainingIgnoreCase(
-                    keyword, keyword, keyword
-            );
-        } else {
-            users = userRepository.findAll();
-        }
+        Page<User> usersPage = userService.getUsersPage(keyword, page, size);
 
-        model.addAttribute("users", users);
-        model.addAttribute("keyword", keyword); // để giữ lại keyword trên ô input nếu cần
+        model.addAttribute("users", usersPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", usersPage.getTotalPages());
+        model.addAttribute("totalUsers", usersPage.getTotalElements());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("size", size);
+        System.out.println("Total Users: " + usersPage.getTotalElements());
+
         return "admin/user/users";
     }
 
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/user/save")
     public String showCreateUserForm(Model model) {
         model.addAttribute("registerUserAdmin", new RegisterUserAdminDto());
         return "admin/user/create-user";
     }
 
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/admin/user/save")
     public String saveUser(@ModelAttribute("registerUserAdmin") @Valid RegisterUserAdminDto dto,
                            BindingResult result, Model model) {
@@ -67,9 +71,9 @@ public class AdminController {
 
         try {
             if (dto.getId() == null) {
-                userService.createUserAdmin(dto);   // tạo mới
+                userService.createUserAdmin(dto);
             } else {
-                userService.updateUserAdmin(dto);   // cập nhật
+                userService.updateUserAdmin(dto);
             }
         } catch (IllegalArgumentException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
@@ -79,6 +83,8 @@ public class AdminController {
 
         return "redirect:/admin/user/users";
     }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/user/edit/{id}")
     public String editUser(@PathVariable Long id, Model model) {
         // Tìm user, nếu không thấy thì ném lỗi
@@ -108,4 +114,8 @@ public class AdminController {
         return "admin/user/create-user"; // load form
     }
 
+    @GetMapping("/admin/logout")
+    public String logout() {
+        return "redirect:/page/home";
+    }
 }

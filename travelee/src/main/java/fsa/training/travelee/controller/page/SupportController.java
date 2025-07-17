@@ -1,0 +1,45 @@
+package fsa.training.travelee.controller.page;
+
+import fsa.training.travelee.entity.SupportRequest;
+import fsa.training.travelee.entity.SupportStatus;
+import fsa.training.travelee.entity.User;
+import fsa.training.travelee.service.SupportRequestService;
+import fsa.training.travelee.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+
+public class SupportController {
+
+    @Autowired
+    private SupportRequestService supportRequestService;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/page/contact")
+    public String showContactPage(Model model) {
+        model.addAttribute("supportRequest", new SupportRequest());
+        return "page/contact";
+    }
+
+
+    @PostMapping("/page/contact/support")
+    public String submitSupportRequest(
+            @ModelAttribute("supportRequest") SupportRequest request,
+            RedirectAttributes ra
+    ) {
+        System.out.println("==> Nhận được supportRequest: " + request);
+        supportRequestService.saveSupportRequest(request);
+        ra.addFlashAttribute("success", "Cảm ơn bạn đã gửi liên hệ! Chúng tôi sẽ phản hồi sớm nhất.");
+        return "redirect:/page/contact";
+    }
+
+}

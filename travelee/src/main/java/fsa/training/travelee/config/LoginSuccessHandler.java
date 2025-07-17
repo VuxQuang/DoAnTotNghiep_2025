@@ -54,7 +54,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             var authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 String role = authority.getAuthority();
-                if ("ROLE_ADMIN".equals(role)) {
+                if ("ROLE_ADMIN".equals(role) || "ROLE_STAFF".equals(role)) {
                     redirectURL += "/admin/dashboard";
                     break;
                 } else if ("ROLE_USER".equals(role)) {

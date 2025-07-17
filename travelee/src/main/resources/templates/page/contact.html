@@ -43,22 +43,26 @@
             </div>
             <div class="contact-form-block">
                 <h2>Gửi liên hệ</h2>
-                <form class="contact-form">
+                <form th:action="@{/page/contact/support}" method="post" th:object="${supportRequest}" class="contact-form">
                     <div class="form-group">
                         <label for="name">Họ và tên</label>
-                        <input type="text" id="name" name="name" required>
+                        <input type="text" id="name" th:field="*{senderName}" required>
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" th:field="*{senderEmail}" required>
                     </div>
                     <div class="form-group">
                         <label for="phone">Số điện thoại</label>
-                        <input type="tel" id="phone" name="phone" pattern="[0-9]{10,11}" required>
+                        <input type="tel" id="phone" th:field="*{senderPhone}" pattern="[0-9]{10,11}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Tiêu đề</label>
+                        <input type="text" id="title" th:field="*{title}" required>
                     </div>
                     <div class="form-group">
                         <label for="message">Nội dung</label>
-                        <textarea id="message" name="message" rows="4" required></textarea>
+                        <textarea id="message" th:field="*{content}" rows="4" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Gửi liên hệ</button>
                 </form>

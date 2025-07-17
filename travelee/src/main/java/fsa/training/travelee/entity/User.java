@@ -24,27 +24,21 @@ public class User {
     private String username;
     private String email;
     private String phoneNumber;
-
     private String password;
     private String fullName;
     private String avatar;
     private LocalDate dateOfBirth;
     private String address;
-
     @Column(nullable = false)
     private String status;
-
     private String provider;      // GOOGLE, FORM
     private String providerId;    // ID Google
-
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
     private Boolean emailVerified;
     private Boolean phoneVerified;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -65,4 +59,8 @@ public class User {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SupportRequest> supportRequests = new HashSet<>();
+
 }
