@@ -3,6 +3,8 @@ package fsa.training.travelee.repository;
 import fsa.training.travelee.entity.SupportRequest;
 import fsa.training.travelee.entity.SupportStatus;
 import fsa.training.travelee.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,5 +16,6 @@ public interface SupportRequestRepository extends JpaRepository<SupportRequest, 
 
     Optional<SupportRequest> findById(Long id);
 
-    List<SupportRequest> findAllByTitleContainingIgnoreCase(String keyword);
+    Page<SupportRequest> findAllByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+            String title, String content, Pageable pageable);
 }

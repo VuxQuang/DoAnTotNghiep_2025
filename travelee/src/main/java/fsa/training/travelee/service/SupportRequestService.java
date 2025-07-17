@@ -5,6 +5,9 @@
     import fsa.training.travelee.repository.SupportRequestRepository;
     import fsa.training.travelee.repository.UserRepository;
     import lombok.RequiredArgsConstructor;
+    import org.springframework.data.domain.Page;
+    import org.springframework.data.domain.PageRequest;
+    import org.springframework.data.domain.Pageable;
     import org.springframework.stereotype.Service;
 
     import java.time.LocalDateTime;
@@ -21,22 +24,31 @@
             return supportRequestRepository.findAll();
         }
 
-        public List<SupportRequest> searchByKeyword(String keyword) {
-            return supportRequestRepository.findAllByTitleContainingIgnoreCase(keyword);
+        public Page<SupportRequest> getSupportRequestsPage(String keyword, int page, int size) {
+            Pageable pageable = PageRequest.of(page - 1, size);  // page bắt đầu từ 0
+            if (keyword != null && !keyword.isEmpty()) {
+                return supportRequestRepository.findAllByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                        keyword, keyword, pageable);
+            } else {
+                return supportRequestRepository.findAll(pageable);
+            }
         }
+
+
 
         public SupportRequest getById(Long id) {
             return supportRequestRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu hỗ trợ"));
         }
 
-        public void replyToSupportRequest(Long requestId, String replyContent) {
+        public void replyToSupportRequest(Long requestId, String replyContent,String replyBy) {
             SupportRequest supportRequest = supportRequestRepository.findById(requestId)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu hỗ trợ"));
 
             supportRequest.setReply(replyContent);
             supportRequest.setRepliedAt(LocalDateTime.now());
             supportRequest.setStatus(SupportStatus.RESOLVED);
+            supportRequest.setReplyBy(replyBy);
 
             supportRequestRepository.save(supportRequest);
         }
@@ -56,6 +68,9 @@
 
             // Gán trạng thái ban đầu là PENDING
             request.setStatus(SupportStatus.PENDING);
+            System.out.println("==> [Service] Trước khi set: reply = " + request.getReply());
+            request.setReply(null);
+            System.out.println("==> [Service] Sau khi set: reply = " + request.getReply());
 
             // Gán thời gian tạo yêu cầu (ngày gửi)
             request.setCreatedAt(LocalDateTime.now());
@@ -63,5 +78,6 @@
             // Lưu yêu cầu vào cơ sở dữ liệu
             return supportRequestRepository.save(request);
         }
+
 
     }

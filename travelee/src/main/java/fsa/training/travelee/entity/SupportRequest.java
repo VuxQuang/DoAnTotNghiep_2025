@@ -1,55 +1,59 @@
-package fsa.training.travelee.entity;
+    package fsa.training.travelee.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
+    import jakarta.persistence.*;
+    import lombok.*;
+    import org.springframework.format.annotation.DateTimeFormat;
 
-@Entity
-@Table(name = "support_requests")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class SupportRequest {
+    import java.time.LocalDateTime;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Entity
+    @Table(name = "support_requests")
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public class SupportRequest {
 
-    private String title;               // Tiêu đề yêu cầu
-    private String content;             // Nội dung yêu cầu
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @Column(length = 1000)
-    private String reply;               // Nội dung trả lời (nếu có)
+        private String title;               // Tiêu đề yêu cầu
+        private String content;             // Nội dung yêu cầu
 
-    @Enumerated(EnumType.STRING)
-    private SupportStatus status;       // PENDING, RESOLVED...
+        @Column(length = 1000)
+        private String reply;               // Nội dung trả lời (nếu có)
 
-    private LocalDateTime createdAt;    // Ngày gửi
-    private LocalDateTime repliedAt;    // Ngày trả lời
+        @Enumerated(EnumType.STRING)
+        private SupportStatus status;       // PENDING, RESOLVED...
 
-    // --- Nếu là người dùng hệ thống ---
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
-    private User user;
+        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime createdAt;
+        private LocalDateTime repliedAt;
 
-    // --- Nếu là người lạ gửi (khách không đăng nhập) ---
-    private String senderName;
-    private String senderEmail;
-    private String senderPhone;
+        private String replyBy;
+        // --- Nếu là người dùng hệ thống ---
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "user_id", nullable = true)
+        private User user;
 
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-        if (status == null) status = SupportStatus.PENDING;
-    }
+        // --- Nếu là người lạ gửi (khách không đăng nhập) ---
+        private String senderName;
+        private String senderEmail;
+        private String senderPhone;
 
-    @PreUpdate
-    public void preUpdate() {
-        if (reply != null && !reply.trim().isEmpty()) {
-            repliedAt = LocalDateTime.now();
-            status = SupportStatus.RESOLVED;
+        @PrePersist
+        public void prePersist() {
+            createdAt = LocalDateTime.now();
+            if (status == null) status = SupportStatus.PENDING;
+        }
+
+        @PreUpdate
+        public void preUpdate() {
+            if (reply != null && !reply.trim().isEmpty()) {
+                repliedAt = LocalDateTime.now();
+                status = SupportStatus.RESOLVED;
+            }
         }
     }
-}
