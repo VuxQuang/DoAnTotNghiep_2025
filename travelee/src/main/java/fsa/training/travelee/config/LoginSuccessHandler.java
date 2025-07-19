@@ -1,6 +1,7 @@
 package fsa.training.travelee.config;
 
 import fsa.training.travelee.service.UserService;
+import fsa.training.travelee.service.UserServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.springframework.context.annotation.Lazy;
@@ -19,7 +20,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserService userService;
     private final HttpSession session;
 
-    public LoginSuccessHandler(@Lazy UserService userService, HttpSession session) {
+    public LoginSuccessHandler(@Lazy  UserService userService, HttpSession session) {
         this.userService = userService;
         this.session = session;
     }

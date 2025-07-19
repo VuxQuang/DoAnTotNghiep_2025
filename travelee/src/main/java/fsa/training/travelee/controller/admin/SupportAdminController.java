@@ -1,8 +1,9 @@
 package fsa.training.travelee.controller.admin;
 
 import fsa.training.travelee.entity.SupportRequest;
-import fsa.training.travelee.entity.SupportStatus;
 import fsa.training.travelee.service.SupportRequestService;
+import fsa.training.travelee.service.SupportRequestServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -13,20 +14,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class SupportAdminController {
 
-    @Autowired
-    private SupportRequestService supportRequestService;
+    private final SupportRequestService supportRequestService;
 
     @GetMapping("/admin/support")
     public String showSupport(Model model,
-                              @RequestParam(defaultValue = "1") int page,
-                              @RequestParam(defaultValue = "10") int size,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "5") int size,
                               @RequestParam(required = false) String keyword) {
+        if (page < 0) {
+            page = 0;
+        }
+
         Page<SupportRequest> supportRequests = supportRequestService.getSupportRequestsPage(keyword, page, size);
 
         model.addAttribute("supportRequests", supportRequests.getContent());

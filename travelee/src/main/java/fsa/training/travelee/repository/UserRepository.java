@@ -13,7 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByPhoneNumber(String phoneNumber);
     Optional<User> findByResetPasswordToken(String token);
 
     Page<User> findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrUsernameContainingIgnoreCase(
@@ -26,4 +25,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
+    void deleteById(Long id);
 }

@@ -18,4 +18,5 @@ public interface SupportRequestRepository extends JpaRepository<SupportRequest, 
 
     Page<SupportRequest> findAllByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
             String title, String content, Pageable pageable);
+    List<SupportRequest> findAllByUser_Id(Long userId);
 }

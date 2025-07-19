@@ -5,9 +5,10 @@ import fsa.training.travelee.entity.User;
 import fsa.training.travelee.entity.Role;
 import fsa.training.travelee.repository.UserRepository;
 import fsa.training.travelee.service.UserService;
+import fsa.training.travelee.service.UserServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,15 +16,13 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 @Controller
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserService userService;
+    private final UserRepository userRepository;
+
+    private final UserService userService;
 
     @GetMapping("/admin/dashboard")
     public String showAdminDashboard(Model model) {
@@ -91,7 +90,6 @@ public class AdminController {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với id: " + id));
 
-        // Tạo DTO từ entity
         RegisterUserAdminDto dto = new RegisterUserAdminDto();
         dto.setId(user.getId());
         dto.setFullName(user.getFullName());
@@ -101,7 +99,6 @@ public class AdminController {
         dto.setAddress(user.getAddress());
         dto.setStatus(user.getStatus());
 
-        // Lấy role đầu tiên (nếu có)
         dto.setRoleName(user.getRoles()
                 .stream()
                 .findFirst()
@@ -116,6 +113,14 @@ public class AdminController {
 
     @GetMapping("/admin/logout")
     public String logout() {
-        return "redirect:/page/home";
+        return "redirect:/login";
+    }
+
+    @GetMapping("/admin/user/delete/{id}")
+    public String deleteUser(@PathVariable Long id) {
+
+        userService.deleteUserById(id);
+
+        return "redirect:/admin/user/users";
     }
 }

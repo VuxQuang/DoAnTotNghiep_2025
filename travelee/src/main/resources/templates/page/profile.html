@@ -151,25 +151,57 @@
                 </div>
                 <div class="profile-tab profile-support">
                     <h2>Phản hồi & Hỗ trợ</h2>
-                    <form class="profile-form">
+
+                    <!-- Form gửi yêu cầu -->
+                    <form class="profile-form" th:action="@{/profile/support}" method="post" th:object="${supportRequest}">
+                        <div class="form-group">
+                            <label>Tiêu đề phản hồi</label>
+                            <textarea th:field="*{title}" rows="2" placeholder="Nhập tiêu đề bạn cần hỗ trợ..." required></textarea>
+                        </div>
                         <div class="form-group">
                             <label>Nội dung phản hồi</label>
-                            <textarea rows="4" placeholder="Nhập nội dung bạn cần hỗ trợ..."></textarea>
+                            <textarea th:field="*{content}" rows="4" placeholder="Nhập nội dung bạn cần hỗ trợ..." required></textarea>
                         </div>
                         <button class="btn btn-register" type="submit">Gửi phản hồi</button>
                     </form>
-                    <div class="support-history">
+
+                    <!-- Thông báo gửi thành công -->
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+                    <!-- Danh sách phản hồi -->
+                    <div class="support-history" th:if="${supportList != null}">
                         <h3 style="margin-top:32px;">Xem phản hồi đã gửi</h3>
                         <ul class="support-list">
-                            <li class="support-item">
-                                <div class="support-question">Tôi muốn đổi ngày khởi hành tour Đà Nẵng?</div>
-                                <div class="support-answer"><b>Phản hồi:</b> Chúng tôi đã tiếp nhận yêu cầu và sẽ liên hệ bạn trong 24h.</div>
-                                <div class="support-date">Gửi lúc: 10/06/2024 14:32</div>
-                            </li>
-                            <li class="support-item">
-                                <div class="support-question">Tôi chưa nhận được email xác nhận đặt tour.</div>
-                                <div class="support-answer"><b>Phản hồi:</b> Vui lòng kiểm tra hộp thư rác hoặc liên hệ tổng đài 1900 1234.</div>
-                                <div class="support-date">Gửi lúc: 08/06/2024 09:15</div>
+                            <li class="support-item" th:each="item, iterStat : ${supportList}">
+                                <!-- Tiêu đề có thể click -->
+                                <div class="support-question"
+                                     th:onclick="'toggleReply(' + ${iterStat.index} + ')'"
+                                     style="cursor: pointer; color: #0a58ca;">
+                                    <i class="fas fa-comments"></i>
+                                    <span th:text="${item.title}"></span>
+                                </div>
+
+                                <!-- Nội dung chi tiết (ẩn/hiện khi click) -->
+                                <div class="support-detail" th:id="'reply-' + ${iterStat.index}" style="display:none; margin-left: 15px;">
+                                    <p><strong>Nội dung yêu cầu:</strong></p>
+                                    <p th:text="${item.content}"></p>
+
+                                    <p><strong>Gửi lúc:</strong>
+                                        <span th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </p>
+
+                                    <div th:if="${item.status.name() == 'PENDING'}">
+                                        <p><strong>Phản hồi:</strong> Chúng tôi đã tiếp nhận yêu cầu và sẽ liên hệ bạn trong 24h.</p>
+                                    </div>
+
+                                    <div th:if="${item.status.name() == 'RESOLVED'}">
+                                        <p><strong>Phản hồi của Admin:</strong></p>
+                                        <p th:text="${item.reply}"></p>
+                                        <p><strong>Ngày trả lời:</strong>
+                                            <span th:text="${#temporals.format(item.repliedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </p>
+                                    </div>
+                                </div>
                             </li>
                         </ul>
                     </div>

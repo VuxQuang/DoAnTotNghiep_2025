@@ -167,28 +167,3 @@ function validateAddress() {
     }
     return true;
 }
-
-function changeUserStatus(selectElement, userId) {
-    const selectedStatus = selectElement.value;
-
-    fetch('/admin/user/change-status', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            id: userId,
-            status: selectedStatus
-        })
-    })
-        .then(response => {
-            if (!response.ok) throw new Error("Lỗi khi cập nhật");
-            return response.text();
-        })
-        .then(data => {
-            console.log("Đã cập nhật trạng thái:", data);
-        })
-        .catch(err => {
-            alert("Cập nhật thất bại!");
-        });
-}

@@ -1,28 +1,28 @@
 package fsa.training.travelee.controller.page;
 
 import fsa.training.travelee.entity.SupportRequest;
-import fsa.training.travelee.entity.SupportStatus;
 import fsa.training.travelee.entity.User;
 import fsa.training.travelee.service.SupportRequestService;
 import fsa.training.travelee.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import fsa.training.travelee.service.UserServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@Controller
+import java.security.Principal;
+import java.util.List;
 
+@Controller
+@RequiredArgsConstructor
 public class SupportController {
 
-    @Autowired
-    private SupportRequestService supportRequestService;
+    private final SupportRequestService supportRequestService;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/page/contact")
     public String showContactPage(Model model) {
@@ -31,15 +31,22 @@ public class SupportController {
     }
 
 
+
     @PostMapping("/page/contact/support")
     public String submitSupportRequest(
             @ModelAttribute("supportRequest") SupportRequest request,
             RedirectAttributes ra
     ) {
-        System.out.println("==> Nhận được supportRequest: " + request);
+        User currentUser = userService.getCurrentUser();
+        if (currentUser != null) {
+            request.setUser(currentUser);
+        }
         supportRequestService.saveSupportRequest(request);
         ra.addFlashAttribute("success", "Cảm ơn bạn đã gửi liên hệ! Chúng tôi sẽ phản hồi sớm nhất.");
         return "redirect:/page/contact";
     }
+
+
+
 
 }

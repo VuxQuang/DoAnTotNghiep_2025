@@ -35,7 +35,9 @@
                         </div>
                         <div class="form-group">
                             <label>Email:</label>
-                            <input type="text" th:value="${supportRequest.senderEmail}" readonly>
+                            <input type="text"
+                                   th:value="${supportRequest.user != null ? supportRequest.user.email : supportRequest.senderEmail}"
+                                   readonly>
                         </div>
                     </div>
                     <div class="form-row">
@@ -57,7 +59,7 @@
                     <div class="form-row">
                         <div class="form-group full-width">
                             <label>Nội dung yêu cầu:</label>
-                            <textarea th:value="${supportRequest.content}" rows="3" readonly></textarea>
+                            <textarea rows="3" readonly th:text="${supportRequest.content}"></textarea>
                         </div>
                     </div>
 
@@ -148,15 +150,36 @@
                     <span id="total-support-count" class="total-records">Tổng cộng <b th:text="${totalItems}"></b> yêu cầu</span>
                 </div>
                 <div class="toolbar-right pagination-bar">
-                    <button class="pagination-btn" th:if="${currentPage > 1}" th:href="@{/admin/support?page=${currentPage - 1}}"><i class="fas fa-angle-left"></i></button>
-                    <span id="pagination-pages" th:text="${paginationPages}"></span>
-                    <button class="pagination-btn" th:if="${currentPage < totalPages}" th:href="@{/admin/support?page=${currentPage + 1}}"><i class="fas fa-angle-right"></i></button>
-                    <select id="page-size-select" th:value="${pageSize}">
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                    </select>
-                    <button class="pagination-btn" id="btn-page-apply">Chọn</button>
+                    <a class="page-btn prev"
+                       th:if="${currentPage > 0}"
+                       th:href="@{/admin/support(page=${currentPage - 1}, size=${size}, keyword=${keyword})}" title="Trang trước">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                    <span id="pagination-pages">
+                    <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:href="@{/admin/support(page=${i}, size=${size}, keyword=${keyword})}"
+                        th:text="${i+1}"
+                        th:classappend="${i == currentPage} ? 'pagination-btn active' : 'pagination-btn'">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    </span>
+                    <a th:if="${currentPage < totalPages -1}"
+                       th:href="@{/admin/support(page=${currentPage + 1}, size=${size}, keyword=${keyword})}"
+                       class="page-btn next"
+                       title="Trang sau">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <form method="get" action="/admin/support" style="margin-left: 16px; display: flex; align-items: center;">
+                        <select name="size" th:value="${size}" class="pagination-btn" style="min-width: 60px; margin-right: 6px;">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                        </select>
+                        <input type="hidden" name="page" th:value="${currentPage}" />
+                        <input type="hidden" name="keyword" th:value="${keyword}" />
+                        <button type="submit" class="pagination-btn" style="padding: 8px 12px;">Chọn</button>
+                    </form>
                 </div>
             </div>
         </div>
