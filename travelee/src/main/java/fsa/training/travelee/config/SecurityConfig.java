@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/admin/css/**", "/admin/js/**", "/admin/imgs/**",
-                                "/page/css/**", "/page/js/**", "/page/imgs/**"
+                                "/page/css/**", "/page/js/**", "/page/imgs/**","/uploads/**","/ckeditor/**"
                         ).permitAll()
                         .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password").permitAll()
                         .requestMatchers("/admin/user/**").hasRole("ADMIN")  // Chỉ ADMIN mới quản lý user

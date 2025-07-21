@@ -1,6 +1,7 @@
 package fsa.training.travelee.service;
 
 import fsa.training.travelee.entity.Category;
+import fsa.training.travelee.entity.CategoryType;
 import fsa.training.travelee.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,5 +39,15 @@ public class CategoryServiceImpl implements CategoryService{
     @Override
     public void deleteById(Long id) {
         categoryRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Category> findAll() {
+        return categoryRepository.findAll();
+    }
+
+    @Override
+    public List<Category> findByType(CategoryType type) {
+        return categoryRepository.findByType(type);
     }
 }

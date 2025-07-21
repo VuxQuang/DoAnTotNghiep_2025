@@ -1,6 +1,7 @@
 package fsa.training.travelee.service;
 
 import fsa.training.travelee.entity.Category;
+import fsa.training.travelee.entity.CategoryType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -16,4 +17,8 @@ public interface CategoryService {
     Category save(Category category);
 
     void deleteById(Long id);
+
+    List<Category> findAll();
+
+    List<Category> findByType(CategoryType type);
 }
