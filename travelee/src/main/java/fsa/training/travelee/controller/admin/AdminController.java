@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class AdminController {
@@ -31,25 +33,25 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/admin/user/users")
-    public String showAllUsers(@RequestParam(value = "keyword", required = false) String keyword,
-                               @RequestParam(value = "page", defaultValue = "0") int page,
-                               @RequestParam(value = "size", defaultValue = "5") int size,
-                               Model model) {
-
-        Page<User> usersPage = userService.getUsersPage(keyword, page, size);
-
-        model.addAttribute("users", usersPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", usersPage.getTotalPages());
-        model.addAttribute("totalUsers", usersPage.getTotalElements());
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("size", size);
-        System.out.println("Total Users: " + usersPage.getTotalElements());
-
-        return "admin/user/users";
-    }
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @GetMapping("/admin/user/users")
+//    public String showAllUsers(@RequestParam(value = "keyword", required = false) String keyword,
+//                               @RequestParam(value = "page", defaultValue = "0") int page,
+//                               @RequestParam(value = "size", defaultValue = "5") int size,
+//                               Model model) {
+//
+//        Page<User> usersPage = userService.getUsersPage(keyword, page, size);
+//
+//        model.addAttribute("users", usersPage.getContent());
+//        model.addAttribute("currentPage", page);
+//        model.addAttribute("totalPages", usersPage.getTotalPages());
+//        model.addAttribute("totalUsers", usersPage.getTotalElements());
+//        model.addAttribute("keyword", keyword);
+//        model.addAttribute("size", size);
+//        System.out.println("Total Users: " + usersPage.getTotalElements());
+//
+//        return "admin/user/users";
+//    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/user/save")
@@ -122,5 +124,14 @@ public class AdminController {
         userService.deleteUserById(id);
 
         return "redirect:/admin/user/users";
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin/user/users/list")
+    public String searchUser(@RequestParam("keyword") String keyword, Model model){
+        List<User> users = userService.searchUsers(keyword);
+        model.addAttribute("users", users);
+
+        return "admin/user/users";
     }
 }

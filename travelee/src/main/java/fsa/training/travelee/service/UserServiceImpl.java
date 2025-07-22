@@ -23,10 +23,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -65,9 +62,9 @@ public class UserServiceImpl implements UserService {
             User newUser = new User();
             newUser.setUsername(email);  // Dùng email làm username
             newUser.setEmail(email);
-            newUser.setFullName(fullName);  // Lưu tên người dùng từ Google
-            newUser.setProvider("GOOGLE");  // Đặt provider là "GOOGLE"
-            newUser.setStatus("ACTIVE");   // Đặt trạng thái người dùng là ACTIVE
+            newUser.setFullName(fullName);
+            newUser.setProvider("GOOGLE");
+            newUser.setStatus("ACTIVE");
             newUser.getRoles().add(userRole);
 
             userRepository.save(newUser);
@@ -230,5 +227,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<User> searchUsers(String keyword) {
+        return userRepository.searchAllFields(keyword);
     }
 }

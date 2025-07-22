@@ -1,0 +1,370 @@
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    background: #f8f9fa;
+    color: #222;
+}
+.news-section {
+    padding: 80px 0;
+    background: #f8f9fa;
+}
+.section-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.section-header h2 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 10px;
+}
+.section-header p {
+    color: #555;
+    font-size: 1.1rem;
+}
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px 18px;
+    justify-content: center;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+@media (max-width: 900px) {
+    .news-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .news-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.news-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    max-width: 340px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 80%;
+}
+.news-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+.news-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+.news-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+}
+.news-card:hover .news-image img {
+    transform: scale(1.1);
+}
+.news-category {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.news-content {
+    padding: 18px 18px 16px 18px;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.news-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+    font-size: 12px;
+    color: #666;
+}
+.news-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.news-content h3 {
+    font-size: 1.13em;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #222;
+}
+.news-content p {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 0;
+}
+.read-more {
+    margin-top: 10px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+.read-more:hover {
+    color: #764ba2;
+    gap: 12px;
+}
+.news-pagination {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+.page-btn {
+    background: #fff;
+    border: 1.5px solid #e1e5e9;
+    color: #667eea;
+    font-size: 1.08rem;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+}
+.page-btn.active, .page-btn:hover {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.news-search-bar {
+    display: flex !important;
+    justify-content: center !important;
+    margin-bottom: 32px !important;
+}
+.news-search-form {
+    display: flex !important;
+    gap: 12px !important;
+    background: #fff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 12px rgba(102,126,234,0.08) !important;
+    padding: 12px 18px !important;
+    align-items: center !important;
+}
+.news-search-form .news-search-input {
+    border: none !important;
+    outline: none !important;
+    font-size: 1.05rem !important;
+    padding: 14px 18px !important;
+    border-radius: 8px !important;
+    background: #f8f9fa !important;
+    min-width: 400px !important;
+    height: 48px !important;
+}
+.news-search-form .news-search-select {
+    border: none !important;
+    outline: none !important;
+    font-size: 1.05rem !important;
+    padding: 14px 18px !important;
+    border-radius: 8px !important;
+    background: #f8f9fa !important;
+    min-width: 400px !important;
+    height: 48px !important;
+}
+.news-search-form .news-search-btn {
+    background: #667eea !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 22px !important;
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.18s !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+.news-search-form .news-search-btn:hover {
+    background: #764ba2 !important;
+}
+@media (max-width: 900px) {
+    .news-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    .news-section {
+        padding: 32px 0 40px 0;
+    }
+}
+@media (max-width: 600px) {
+    .news-content {
+        padding: 16px 10px 12px 10px;
+    }
+    .news-section {
+        padding: 18px 0 24px 0;
+    }
+    .section-header h2 {
+        font-size: 1.5rem;
+    }
+    .news-search-bar {
+        margin-bottom: 18px;
+    }
+    #news-search-form {
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 6px;
+    }
+    .news-search-input, .news-search-select {
+        min-width: 0;
+        width: 100%;
+    }
+    .news-search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Footer phân trang cho admin user table */
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.admin-pagination form {
+    margin-left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.admin-page-numbers {
+    display: flex;
+    gap: 8px;
+}
+.admin-page-btn {
+    background: #fff;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 10px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.admin-page-btn:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+.admin-page-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+.admin-page-btn.prev, .admin-page-btn.next {
+    background: #f8f9fa;
+    color: #667eea;
+    border: 2px solid #667eea;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 10px 14px;
+    border-radius: 50%;
+    min-width: 44px;
+    height: 44px;
+}
+.admin-page-btn.prev:hover, .admin-page-btn.next:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px) scale(1.1);
+}
+.admin-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #eee;
+    color: #aaa;
+    border-color: #eee;
+    transform: none;
+    box-shadow: none;
+}
+.admin-page-btn:disabled:hover {
+    background: #eee;
+    color: #aaa;
+    border-color: #eee;
+    transform: none;
+    box-shadow: none;
+}
+@media (max-width: 768px) {
+    .admin-pagination {
+        gap: 8px;
+        margin: 30px 0 0 0;
+    }
+    .admin-page-numbers {
+        gap: 6px;
+    }
+    .admin-page-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 40px;
+    }
+    .admin-page-btn.prev, .admin-page-btn.next {
+        padding: 8px;
+        min-width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    .article-table-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .admin-pagination form {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+}
+
+/* Footer phân trang cho admin user table */
+.article-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}

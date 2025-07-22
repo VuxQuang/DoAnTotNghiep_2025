@@ -54,7 +54,10 @@
                             <span th:if="${article.thumbnail == null or article.thumbnail == ''}" 
                                   style="color: #999; font-style: italic;">Không có ảnh</span>
                         </td>
-                        <td th:text="${article.title != null ? article.title : 'Không có tiêu đề'}">Tiêu đề</td>
+                        <td>
+                            <span th:if="${article.title != null}" th:text="${article.title}"></span>
+                            <span th:unless="${article.title != null}">Không có tiêu đề</span>
+                        </td>
                         <td>
                             <span th:if="${article.categories != null and !article.categories.isEmpty()}" 
                                   th:each="cat : ${article.categories}" 
@@ -63,12 +66,17 @@
                             <span th:if="${article.categories == null or article.categories.isEmpty()}" 
                                   style="color: #999; font-style: italic;">Chưa phân loại</span>
                         </td>
-                        <td th:text="${article.createdAt != null ? #temporals.format(article.createdAt, 'dd/MM/yyyy') : 'N/A'}"></td>
-                        <td th:text="${article.user != null and article.user.fullName != null} ? ${article.user.fullName} : 'N/A'"></td>
                         <td>
-                            <span th:class="${'article-status ' + (article.status == 'ACTIVE' ? 'status-active' : 'status-inactive')}"
-                                  th:text="${article.status == 'ACTIVE' ? 'Kích hoạt' : 'Tạm ngưng'}">
-                            </span>
+                            <span th:if="${article.createdAt != null}" th:text="${#temporals.format(article.createdAt, 'dd/MM/yyyy')}"></span>
+                            <span th:unless="${article.createdAt != null}">N/A</span>
+                        </td>
+                        <td>
+                            <span th:if="${article.user != null and article.user.fullName != null}" th:text="${article.user.fullName}"></span>
+                            <span th:unless="${article.user != null and article.user.fullName != null}">N/A</span>
+                        </td>
+                        <td>
+                            <span th:if="${article.status != null and article.status.name() == 'ACTIVE'}" class="status-active" th:text="'Hoạt động'"></span>
+                            <span th:if="${article.status != null and article.status.name() != 'ACTIVE'}" class="status-inactive" th:text="'Tạm ngưng'"></span>
                         </td>
                         <td class="article-actions">
                             <a th:href="@{'/admin/article/view/' + ${article.id}}" class="action-btn view">

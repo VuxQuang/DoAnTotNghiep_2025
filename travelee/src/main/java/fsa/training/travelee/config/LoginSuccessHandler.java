@@ -16,7 +16,7 @@ import java.io.IOException;
 @Component
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Lazy  // Trì hoãn việc khởi tạo UserService để tránh vòng lặp phụ thuộc
+    @Lazy
     private final UserService userService;
     private final HttpSession session;
 

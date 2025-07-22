@@ -19,13 +19,17 @@ public class Article {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String title;
 
+    @Column(columnDefinition = "NVARCHAR(1000)")
     private String description;
 
+    @Column(columnDefinition = "NVARCHAR(500)")
     private String thumbnail;
 
     @Lob
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Enumerated(EnumType.STRING)

@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import jakarta.mail.MessagingException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
+import java.util.List;
+
 public interface UserService {
 
     void sendResetPasswordEmail(String email, String token) throws MessagingException;
@@ -33,4 +35,6 @@ public interface UserService {
     Page<User> getUsersPage(String keyword, int page, int size);
 
     void deleteUserById(Long id);
+
+    List<User> searchUsers(String keyword);
 }

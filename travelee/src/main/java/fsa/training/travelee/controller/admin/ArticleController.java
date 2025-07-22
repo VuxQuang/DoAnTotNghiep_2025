@@ -87,7 +87,6 @@ public class ArticleController {
                               BindingResult bindingResult,
                               Model model) {
         try {
-            // Validation cơ bản
             if (article.getTitle() == null || article.getTitle().trim().isEmpty()) {
                 bindingResult.rejectValue("title", "error.title", "Tiêu đề không được để trống");
             }
@@ -125,8 +124,7 @@ public class ArticleController {
             if (article.getId() == null) {
                 article.setStatus(ArticleStatus.ACTIVE);
             }
-            
-            // Xử lý upload thumbnail
+
             if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
                 String uploadDir = "uploads/";
                 Path uploadPath = Paths.get(uploadDir);

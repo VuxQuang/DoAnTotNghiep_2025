@@ -40,8 +40,8 @@ public class SecurityConfig {
                                 "/page/css/**", "/page/js/**", "/page/imgs/**","/uploads/**","/ckeditor/**"
                         ).permitAll()
                         .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password").permitAll()
-                        .requestMatchers("/admin/user/**").hasRole("ADMIN")  // Chỉ ADMIN mới quản lý user
-                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")  // ADMIN và STAFF đều vào được admin
+                        .requestMatchers("/admin/user/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/page/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )

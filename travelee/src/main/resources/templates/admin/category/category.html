@@ -38,7 +38,8 @@
                         </tr>
                     </thead>
                 <tbody>
-                    <tr th:each="category : ${categories}">
+                    <tr th:each="category,iterStat : ${categories}">
+                        <td th:text="${(currentPage * size) + iterStat.index + 1}">1</td>
                         <td th:text="${category.name}"></td>
                         <td th:text="${category.description}"></td>
                         <td th:text="${category.type}"></td>

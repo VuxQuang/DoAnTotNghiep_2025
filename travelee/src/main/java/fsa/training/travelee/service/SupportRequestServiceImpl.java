@@ -63,9 +63,8 @@
 
         @Override
         public SupportRequest saveSupportRequest(SupportRequest request) {
-            // Kiểm tra nếu người dùng đã đăng nhập (có thông tin người dùng hệ thống)
+
             if (request.getUser() != null) {
-                // Nếu người dùng đã đăng nhập, xoá thông tin người lạ (senderName, senderEmail, senderPhone)
                 request.setSenderName(null);
                 request.setSenderEmail(null);
                 request.setSenderPhone(null);
@@ -75,18 +74,15 @@
                 request.setSenderPhone(request.getSenderPhone());
             }
 
-            // Gán trạng thái ban đầu là PENDING
             request.setStatus(SupportStatus.PENDING);
             System.out.println("==> [Service] Trước khi set: reply = " + request.getReply());
             request.setReply(null);
             System.out.println("==> [Service] Sau khi set: reply = " + request.getReply());
 
-            // Gán thời gian tạo yêu cầu (ngày gửi)
             request.setCreatedAt(LocalDateTime.now());
             request.setContent(request.getContent());
             request.setTitle(request.getTitle());
 
-            // Lưu yêu cầu vào cơ sở dữ liệu
             return supportRequestRepository.save(request);
         }
 
