@@ -38,9 +38,11 @@ public class ArticleController {
     public String listArticles(@RequestParam(defaultValue = "") String keyword,
                                @RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "5") int size,
+                               @RequestParam(defaultValue = "0") Long categoryId,
+                               @RequestParam(defaultValue = "ARTICLE") CategoryType categoryType,
                                Model model) {
 
-        Page<Article> articlePage = articleService.findAll(keyword, CategoryType.ARTICLE, PageRequest.of(page, size));
+        Page<Article> articlePage = articleService.findAll(keyword, categoryId, categoryType, PageRequest.of(page, size));
         model.addAttribute("articles", articlePage.getContent());
         model.addAttribute("totalItems", articlePage.getTotalElements());
         model.addAttribute("currentPage", page);

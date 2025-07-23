@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/admin/css/dashboard-style.css}">
     <link rel="stylesheet" th:href="@{/admin/css/article-style.css}">
+
 </head>
 <body>
     <div class="dashboard-container">
@@ -68,7 +69,7 @@
                         </td>
                         <td>
                             <span th:if="${article.createdAt != null}" th:text="${#temporals.format(article.createdAt, 'dd/MM/yyyy')}"></span>
-                            <span th:unless="${article.createdAt != null}">N/A</span>
+                            <span th:unless="${article.updatedAt != null}" th:text="${#temporals.format(article.updatedAt, 'dd/MM/yyyy')}"></span>
                         </td>
                         <td>
                             <span th:if="${article.user != null and article.user.fullName != null}" th:text="${article.user.fullName}"></span>

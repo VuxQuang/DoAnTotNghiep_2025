@@ -36,5 +36,5 @@ public interface UserService {
 
     void deleteUserById(Long id);
 
-    List<User> searchUsers(String keyword);
+//    List<User> searchUsers(String keyword);
 }

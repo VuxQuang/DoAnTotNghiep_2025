@@ -229,8 +229,8 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    @Override
-    public List<User> searchUsers(String keyword) {
-        return userRepository.searchAllFields(keyword);
-    }
+//    @Override
+//    public List<User> searchUsers(String keyword) {
+//        return userRepository.searchAllFields(keyword);
+//    }
 }

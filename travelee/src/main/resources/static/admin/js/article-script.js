@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => {
             console.error("CKEditor load error:", error);
         });
-    
+
     // Initialize create article form
     initCreateArticleForm();
 });

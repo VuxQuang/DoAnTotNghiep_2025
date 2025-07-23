@@ -12,7 +12,7 @@
 <div class="dashboard-container">
     <div th:replace="~{/admin/fragments/header :: header}"></div>
     <div th:replace="~{/admin/fragments/sidebar :: aside}"></div>
-    <main class="main-content">
+    <main class="main-content" >
         <div class="create-article-header">
             <h1>
                 <i class="fas"
@@ -50,7 +50,7 @@
                     <!-- Nội dung rộng -->
                     <div class="form-section content-section">
                         <h2><i class="fa-solid fa-file-lines"></i> Nội dung bài viết <span class="required">*</span></h2>
-                        <textarea id="content" name="content" th:text="*{content}"></textarea>
+                        <textarea id="content" name="content" th:field="*{content}"></textarea>
                     </div>
                 </div>
                 <!-- Cột phải: Ảnh, danh mục, trạng thái -->

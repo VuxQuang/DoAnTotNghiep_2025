@@ -368,3 +368,103 @@ body {
     flex-wrap: wrap;
     gap: 16px;
 }
+
+/* Layout căn giữa cho trang chi tiết bài viết */
+.article-layout-wrapper {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  background: #f5f6fa;
+  margin-top: 150px;
+}
+.article-layout-inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 24px;
+  box-sizing: border-box;
+  gap: 24px;
+}
+.main-content {
+  max-width: 820px;
+  width: 100%;
+  margin: 32px 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 32px 36px;
+}
+.news-sidebar {
+  width: 400px;
+  min-width: 300px;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 24px 20px;
+  height: fit-content;
+  align-self: flex-start;
+}
+.ad-left, .ad-right {
+  width: 180px;
+  min-width: 120px;
+  max-width: 220px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.article-comments {
+  max-width: 1100px;
+  margin: 32px auto 32px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 32px 36px;
+}
+@media (max-width: 1200px) {
+  .article-layout-inner {
+    max-width: 1000px;
+    gap: 16px;
+  }
+  .news-sidebar {
+    max-width: 260px;
+    min-width: 180px;
+    width: 220px;
+  }
+  .ad-left, .ad-right {
+    max-width: 120px;
+    min-width: 80px;
+    width: 100px;
+  }
+}
+@media (max-width: 900px) {
+  .article-layout-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 0 8px;
+  }
+  .ad-left, .ad-right {
+    display: none;
+  }
+  .news-sidebar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 18px 10px;
+  }
+  .main-content {
+    max-width: 100%;
+    padding: 18px 10px;
+    margin: 18px 0;
+  }
+  .article-comments {
+    max-width: 100%;
+    padding: 18px 10px;
+    margin: 18px 0 0 0;
+  }
+}

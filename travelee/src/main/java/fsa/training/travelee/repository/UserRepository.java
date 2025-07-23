@@ -21,11 +21,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             String fullName, String email, String username, Pageable pageable
     );
 
-    @Query("SELECT u FROM User u WHERE " +
-            "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<User> searchAllFields(@Param("keyword") String keyword);
+//    @Query("SELECT u FROM User u WHERE " +
+//            "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+//            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+//            "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+//    List<User> searchAllFields(@Param("keyword") String keyword);
 
 
     boolean existsByResetPasswordToken(String token);

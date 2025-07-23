@@ -39,7 +39,7 @@ public class SecurityConfig {
                                 "/admin/css/**", "/admin/js/**", "/admin/imgs/**",
                                 "/page/css/**", "/page/js/**", "/page/imgs/**","/uploads/**","/ckeditor/**"
                         ).permitAll()
-                        .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password").permitAll()
+                        .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password","/page/**").permitAll()
                         .requestMatchers("/admin/user/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/page/**").hasRole("USER")

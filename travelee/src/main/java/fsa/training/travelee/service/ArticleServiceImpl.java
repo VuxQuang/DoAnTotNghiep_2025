@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -17,8 +19,8 @@ public class ArticleServiceImpl implements ArticleService{
     private final ArticleRepository articleRepository;
 
     @Override
-    public Page<Article> findAll(String keyword, CategoryType type, Pageable pageable) {
-        return articleRepository.searchByCategoryType(keyword, type, pageable);
+    public Page<Article> findAll(String keyword, Long id, CategoryType type, Pageable pageable) {
+        return articleRepository.searchByCategoryAndType(keyword, id, type, pageable);
     }
 
     @Override
@@ -28,6 +30,12 @@ public class ArticleServiceImpl implements ArticleService{
 
     @Override
     public Article save(Article article) {
+        if (article.getId() != null) {
+            article.setUpdatedAt(LocalDateTime.now());
+        } else {
+            article.setCreatedAt(LocalDateTime.now());
+        }
+
         return articleRepository.save(article);
     }
 
@@ -35,4 +43,10 @@ public class ArticleServiceImpl implements ArticleService{
     public void deleteById(Long id) {
         articleRepository.deleteById(id);
     }
+
+    @Override
+    public List<Article> findTop3LatestArticles() {
+        return articleRepository.findTop3LatestArticles();
+    }
+
 }
