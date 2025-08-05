@@ -7,18 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     ClassicEditor
         .create(contentTextarea, {
-            extraPlugins: [ MyCustomUploadAdapterPlugin ],
-            toolbar: [
-                'heading', '|',
-                'bold', 'italic', '|',
-                'link', '|',
-                'bulletedList', 'numberedList', '|',
-                'blockQuote', '|',
-                'insertTable', '|',
-                'imageUpload', '|',
-                'imageInsert', '|',
-                'undo', 'redo'
-            ],
             placeholder: 'Nhập nội dung bài viết tại đây...'
         })
         .then(editor => {

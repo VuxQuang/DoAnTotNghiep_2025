@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo tour mới - Travelee Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/admin/css/dashboard-style.css}">
+    <link rel="stylesheet" th:href="@{/admin/css/users-style.css}">
+    <link rel="stylesheet" th:href="@{/admin/css/create-tour.css}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div th:replace="~{/admin/fragments/header :: header}"></div>
+
+        <div th:replace="~{/admin/fragments/sidebar :: aside}"></div>
+
+        <main class="main-content">
+            <div class="create-tour-container">
+                <div class="create-tour-header">
+                    <h1><i class="fas fa-plus-circle"></i> Tạo tour mới</h1>
+                    <p>Điền thông tin để tạo tour du lịch mới</p>
+                </div>
+
+                <form class="create-tour-form" id="createTourForm" th:action="@{/admin/tour/create}" method="post" th:object="${tourCreateRequest}">
+                    <!-- Thông tin cơ bản -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-info-circle"></i> Thông tin cơ bản</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="title">Tên tour <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    <input type="text" id="title" name="title" placeholder="Nhập tên tour" required th:field="*{title}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Danh mục <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-tags"></i>
+                                    <select id="category" name="categoryId" required th:field="*{categoryId}">
+                                        <option value="">Chọn danh mục</option>
+                                        <th:block th:each="category : ${categories}">
+                                            <option th:value="${category.id}" th:text="${category.name}"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="departure">Điểm khởi hành <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-plane-departure"></i>
+                                    <input type="text" id="departure" name="departure" placeholder="Ví dụ: Hà Nội" required th:field="*{departure}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Điểm đến <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <input type="text" id="destination" name="destination" placeholder="Ví dụ: Sapa" required th:field="*{destination}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="duration">Thời gian (ngày) <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-clock"></i>
+                                    <input type="number" id="duration" name="duration" placeholder="Ví dụ: 3" required min="1" th:field="*{duration}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxParticipants">Số lượng tối đa <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" id="maxParticipants" name="maxParticipants" placeholder="Ví dụ: 20" required min="1" th:field="*{maxParticipants}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="description">Mô tả tour <span class="required">*</span></label>
+                            <div class="input-icon">
+                                <i class="fas fa-align-left"></i>
+                                <textarea id="description" name="description" placeholder="Mô tả chi tiết về tour" rows="4" required th:field="*{description}"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="highlights">Điểm nổi bật</label>
+                            <div class="input-icon">
+                                <i class="fas fa-star"></i>
+                                <textarea id="highlights" name="highlights" placeholder="Các điểm nổi bật của tour" rows="3" th:field="*{highlights}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Giá cả -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-dollar-sign"></i> Thông tin giá</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="adultPrice">Giá người lớn (VNĐ) <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-user"></i>
+                                    <input type="number" id="adultPrice" name="adultPrice" placeholder="Ví dụ: 2000000" required min="0" th:field="*{adultPrice}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="childPrice">Giá trẻ em (VNĐ) <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-child"></i>
+                                    <input type="number" id="childPrice" name="childPrice" placeholder="Ví dụ: 1500000" required min="0" th:field="*{childPrice}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái và đặc biệt -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-cog"></i> Trạng thái và đặc biệt</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="status">Trạng thái <span class="required">*</span></label>
+                                <div class="input-icon">
+                                    <i class="fas fa-toggle-on"></i>
+                                    <select id="status" name="status" required th:field="*{status}">
+                                        <option value="">Chọn trạng thái</option>
+                                        <option value="active">Hoạt động</option>
+                                        <option value="inactive">Tạm ngưng</option>
+                                        <option value="full">Đã đầy</option>
+                                        <option value="canceled">Đã hủy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Đặc biệt</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="featured" name="featured" th:field="*{featured}">
+                                        <span class="checkmark"></span>
+                                        Tour nổi bật
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="isHot" name="isHot" th:field="*{isHot}">
+                                        <span class="checkmark"></span>
+                                        Tour hot
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="hasPromotion" name="hasPromotion" th:field="*{hasPromotion}">
+                                        <span class="checkmark"></span>
+                                        Có khuyến mãi
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hình ảnh -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-images"></i> Hình ảnh tour</h3>
+                        <div class="image-upload-area">
+                            <div class="upload-zone" id="uploadZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Kéo thả hình ảnh vào đây hoặc <span class="upload-link">chọn file</span></p>
+                                <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+                            </div>
+                            <div class="image-preview" id="imagePreview"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lịch trình -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-route"></i> Lịch trình tour</h3>
+                        <div id="itineraryContainer">
+                            <!-- Lịch trình sẽ được thêm động -->
+                        </div>
+                        <button type="button" class="btn-add-itinerary" onclick="addItinerary()">
+                            <i class="fas fa-plus"></i> Thêm ngày
+                        </button>
+                    </div>
+
+                    <!-- Lịch khởi hành -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-calendar-alt"></i> Lịch khởi hành</h3>
+                        <div id="scheduleContainer">
+                            <!-- Lịch khởi hành sẽ được thêm động -->
+                        </div>
+                        <button type="button" class="btn-add-schedule" onclick="addSchedule()">
+                            <i class="fas fa-plus"></i> Thêm lịch khởi hành
+                        </button>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="window.history.back()">
+                            <i class="fas fa-times"></i> Hủy
+                        </button>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-save"></i> Tạo tour
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </main>
+    </div>
+    <script th:src="@{/admin/js/create-tour.js}"></script>
+</body>
+</html>

@@ -33,7 +33,7 @@
                 <ul class="nav-menu">
                     <li class="nav-item active"><a th:href="@{/page/home}">Trang chủ</a></li>
                     <li class="nav-item"><a th:href="@{/page/about}">Giới thiệu</a></li>
-                    <li class="nav-item"><a href="#tours">Tours</a></li>
+                    <li class="nav-item"><a th:href="@{/page/tours/newest}">Tours</a></li>
                     <li class="nav-item"><a th:href="@{/page/article}">Tin tức</a></li>
                     <li class="nav-item"><a th:href="@{/page/contact}">Liên hệ</a></li>
                 </ul>
@@ -43,7 +43,7 @@
                         <a class="btn btn-primary" th:href="@{/register}">Đăng ký</a>
                     </div>
                     <div th:if="${loggedInUser != null}" class="dropdown">
-                        <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="btn dropdown-toggle" th:href="@{/profile}" role="button" data-bs-toggle="dropdown">
                             Xin chào, <span th:text="${loggedInUser.fullName}">User</span>
                         </a>
                         <ul class="dropdown-menu">
