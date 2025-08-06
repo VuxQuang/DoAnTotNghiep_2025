@@ -41,4 +41,12 @@ public class TourClientServiceImpl implements TourClientService{
         });
     }
 
+    @Override
+    public Tour getTourById(Long id) {
+        try {
+            return tourRepository.findByIdAndStatus(id, "ACTIVE").orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

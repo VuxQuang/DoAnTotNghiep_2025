@@ -155,6 +155,68 @@
     background: #4b3ecf;
 }
 
+/* Includes and Excludes Section */
+.includes-excludes-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.includes-section, .excludes-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e1e5e9;
+}
+
+.includes-section h4, .excludes-section h4 {
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.includes-section h4 i {
+    color: #27ae60;
+    font-size: 1rem;
+}
+
+.excludes-section h4 i {
+    color: #e74c3c;
+    font-size: 1rem;
+}
+
+.includes-section textarea, .excludes-section textarea {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.3s;
+}
+
+.includes-section textarea:focus, .excludes-section textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.includes-section .input-icon i, .excludes-section .input-icon i {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    color: #667eea;
+    font-size: 0.9rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-section {
@@ -170,4 +232,63 @@
     .itinerary-item, .schedule-item {
         padding: 1rem;
     }
+    
+    .includes-excludes-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .includes-section, .excludes-section {
+        padding: 1rem;
+    }
+}
+
+/* Dynamic inputs styling */
+.dynamic-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group .input-icon {
+    flex: 1;
+}
+
+.btn-remove {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-remove:hover {
+    background: #c0392b;
+}
+
+.btn-add {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.btn-add:hover {
+    background: #229954;
 }

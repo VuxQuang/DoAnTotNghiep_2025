@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="mt-4 flex justify-between">
-                        <a th:href="@{/tours/detail/{id}(id=${tour.id})}" class="text-blue-600 hover:underline">
+                        <a th:href="@{/page/tours/{id}(id=${tour.id})}" class="text-blue-600 hover:underline">
                             <i class="fas fa-eye"></i> Xem chi tiết
                         </a>
                         <a th:href="@{/booking-detail(tourId=${tour.id})}" class="text-green-600 hover:underline">
@@ -67,25 +67,27 @@
         </div>
 
         <!-- Phân trang -->
-        <div class="pagination-bar mt-6 flex justify-center">
-            <ul class="flex space-x-2">
-                <li th:if="${currentPage > 0}">
-                    <a th:href="@{/client/tours/newest(page=${currentPage - 1}, size=6)}"
-                       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"><</a>
-                </li>
+        <div class="admin-pagination">
+            <a th:if="${currentPage > 0 and totalPages > 0}"
+               th:href="@{/client/tours/newest(page=${currentPage - 1}, size=${size})}"
+               class="admin-page-btn prev"
+               title="Trang trước">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <span class="admin-page-numbers" th:if="${totalPages > 0}">
+                            <a th:each="i : ${#numbers.sequence(0, (totalPages - 1))}"
+                               th:href="@{/client/tours/newest(page=${i}, size=${size})}"
+                               th:text="${i+1}"
+                               th:classappend="${i == currentPage} ? 'admin-page-btn active' : 'admin-page-btn'">
+                            </a>
+                        </span>
+            <a th:if="${currentPage < (totalPages - 1) and totalPages > 0}"
+               th:href="@{/client/tours/newest(page=${currentPage + 1}, size=${size})}"
+               class="admin-page-btn next"
+               title="Trang tiếp">
+                <i class="fas fa-chevron-right"></i>
+            </a>
 
-                <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
-                    th:classappend="${pageNum == currentPage} ? 'font-bold underline'">
-                    <a th:href="@{/client/tours/newest(page=${pageNum}, size=6)}"
-                       class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-300"
-                       th:text="${pageNum + 1}">1</a>
-                </li>
-
-                <li th:if="${currentPage < totalPages - 1}">
-                    <a th:href="@{/client/tours/newest(page=${currentPage + 1}, size=6)}"
-                       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">></a>
-                </li>
-            </ul>
         </div>
     </section>
 

@@ -98,6 +98,48 @@
                         </div>
                     </div>
 
+                    <!-- Bao gồm và không bao gồm -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-list-check"></i> Dịch vụ bao gồm</h3>
+                        <div class="includes-excludes-container">
+                            <div class="includes-section">
+                                <h4><i class="fas fa-check-circle"></i> Bao gồm</h4>
+                                <div class="dynamic-inputs" id="includesContainer">
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-plus"></i>
+                                            <input type="text" name="includes" placeholder="Nhập dịch vụ bao gồm" class="dynamic-input">
+                                        </div>
+                                        <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-add" onclick="addInput('includesContainer', 'includes')">
+                                    <i class="fas fa-plus"></i> Thêm dịch vụ
+                                </button>
+                            </div>
+                            
+                            <div class="excludes-section">
+                                <h4><i class="fas fa-times-circle"></i> Không bao gồm</h4>
+                                <div class="dynamic-inputs" id="excludesContainer">
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-minus"></i>
+                                            <input type="text" name="excludes" placeholder="Nhập dịch vụ không bao gồm" class="dynamic-input">
+                                        </div>
+                                        <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-add" onclick="addInput('excludesContainer', 'excludes')">
+                                    <i class="fas fa-plus"></i> Thêm dịch vụ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Giá cả -->
                     <div class="form-section">
                         <h3><i class="fas fa-dollar-sign"></i> Thông tin giá</h3>

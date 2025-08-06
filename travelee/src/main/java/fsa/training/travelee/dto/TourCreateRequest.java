@@ -22,8 +22,8 @@ public class TourCreateRequest {
     private Boolean featured;
     private Boolean isHot;
     private Boolean hasPromotion;
-    private String includes;
-    private String excludes;
+    private List<String> includes;
+    private List<String> excludes;
     private String terms;
     private List<String> imageUrls;
     private List<TourItineraryDto> itineraries;

@@ -2,6 +2,8 @@
 let uploadedImages = [];
 let itineraryCounter = 0;
 let scheduleCounter = 0;
+let includesCounter = 0;
+let excludesCounter = 0;
 
 const CLOUD_NAME = 'dodna125k';
 const UPLOAD_PRESET = 'unsigned_preset';
@@ -133,6 +135,7 @@ function addItinerary() {
             Ngày ${index + 1}
             <button type="button" class="remove-item" onclick="removeItinerary(this)">×</button>
         </h4>
+        <input type="hidden" name="itineraries[${index}].dayNumber" value="${index + 1}">
         <div class="form-row">
             <div class="form-group">
                 <label>Tiêu đề ngày</label>
@@ -151,17 +154,37 @@ function addItinerary() {
         </div>
         <div class="form-group full-width">
             <label>Mô tả hoạt động</label>
-            <div class="input-icon">
-                <i class="fas fa-align-left"></i>
-                <textarea name="itineraries[${index}].description" placeholder="Mô tả chi tiết hoạt động ngày ${index + 1}" rows="3"></textarea>
+            <div class="dynamic-inputs" id="descriptionContainer${index}">
+                <div class="input-group">
+                    <div class="input-icon">
+                        <i class="fas fa-align-left"></i>
+                        <input type="text" name="itineraries[${index}].description" placeholder="Nhập mô tả hoạt động" class="dynamic-input">
+                    </div>
+                    <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
+            <button type="button" class="btn-add" onclick="addInput('descriptionContainer${index}', 'itineraries[${index}].description')">
+                <i class="fas fa-plus"></i> Thêm mô tả
+            </button>
         </div>
         <div class="form-group full-width">
             <label>Hoạt động cụ thể</label>
-            <div class="input-icon">
-                <i class="fas fa-list"></i>
-                <textarea name="itineraries[${index}].activities" placeholder="Danh sách hoạt động" rows="2"></textarea>
+            <div class="dynamic-inputs" id="activitiesContainer${index}">
+                <div class="input-group">
+                    <div class="input-icon">
+                        <i class="fas fa-list"></i>
+                        <input type="text" name="itineraries[${index}].activities" placeholder="Nhập hoạt động cụ thể" class="dynamic-input">
+                    </div>
+                    <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
+            <button type="button" class="btn-add" onclick="addInput('activitiesContainer${index}', 'itineraries[${index}].activities')">
+                <i class="fas fa-plus"></i> Thêm hoạt động
+            </button>
         </div>
         <div class="form-group full-width">
             <label>Nơi lưu trú</label>
@@ -239,4 +262,49 @@ function addSchedule() {
 
 function removeSchedule(button) {
     button.closest('.schedule-item').remove();
+}
+
+// === Functions cho includes/excludes ===
+function addInput(containerId, fieldName) {
+    const container = document.getElementById(containerId);
+    const counter = fieldName === 'includes' ? ++includesCounter : ++excludesCounter;
+    
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group';
+    inputGroup.innerHTML = `
+        <div class="input-icon">
+            <i class="fas fa-${fieldName === 'includes' ? 'plus' : 'minus'}"></i>
+            <input type="text" name="${fieldName}" placeholder="Nhập dịch vụ ${fieldName === 'includes' ? 'bao gồm' : 'không bao gồm'}" class="dynamic-input">
+        </div>
+        <button type="button" class="btn-remove" onclick="removeInput(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    container.appendChild(inputGroup);
+    
+    // Hiển thị nút remove cho tất cả input groups
+    const allInputGroups = container.querySelectorAll('.input-group');
+    allInputGroups.forEach(group => {
+        const removeBtn = group.querySelector('.btn-remove');
+        if (allInputGroups.length > 1) {
+            removeBtn.style.display = 'block';
+        } else {
+            removeBtn.style.display = 'none';
+        }
+    });
+}
+
+function removeInput(button) {
+    const inputGroup = button.closest('.input-group');
+    const container = inputGroup.parentElement;
+    
+    inputGroup.remove();
+    
+    // Ẩn nút remove nếu chỉ còn 1 input
+    const remainingInputs = container.querySelectorAll('.input-group');
+    if (remainingInputs.length === 1) {
+        const removeBtn = remainingInputs[0].querySelector('.btn-remove');
+        removeBtn.style.display = 'none';
+    }
 }

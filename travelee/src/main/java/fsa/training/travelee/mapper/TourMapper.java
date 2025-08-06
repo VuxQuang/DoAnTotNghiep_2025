@@ -19,6 +19,7 @@ public class TourMapper {
                 .description(request.getDescription())
                 .destination(request.getDestination())
                 .duration(request.getDuration())
+                .highlights(request.getHighlights())
                 .adultPrice(request.getAdultPrice())
                 .childPrice(request.getChildPrice())
                 .maxParticipants(request.getMaxParticipants())
@@ -26,8 +27,8 @@ public class TourMapper {
                 .featured(request.getFeatured())
                 .isHot(request.getIsHot())
                 .hasPromotion(request.getHasPromotion())
-                .includes(request.getIncludes())
-                .excludes(request.getExcludes())
+                .includes(convertListToString(request.getIncludes()))
+                .excludes(convertListToString(request.getExcludes()))
                 .terms(request.getTerms())
                 .build();
     }
@@ -52,8 +53,8 @@ public class TourMapper {
                 TourItinerary itinerary = TourItinerary.builder()
                         .dayNumber(itineraryDto.getDayNumber())
                         .title(itineraryDto.getTitle())
-                        .description(itineraryDto.getDescription())
-                        .activities(itineraryDto.getActivities())
+                        .description(convertListToString(itineraryDto.getDescription()))
+                        .activities(convertListToString(itineraryDto.getActivities()))
                         .meals(itineraryDto.getMeals())
                         .accommodation(itineraryDto.getAccommodation())
                         .tour(tour)
@@ -77,5 +78,18 @@ public class TourMapper {
                 tour.getSchedules().add(schedule);
             });
         }
+    }
+
+    private String convertListToString(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String item : list) {
+            if (item != null && !item.trim().isEmpty()) {
+                sb.append("<p>").append(item.trim()).append("</p>");
+            }
+        }
+        return sb.toString();
     }
 }
