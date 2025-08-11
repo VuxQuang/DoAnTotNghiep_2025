@@ -130,6 +130,12 @@ function selectSchedule(scheduleId) {
     if (selectedButton) {
         selectedButton.classList.add('selected');
         selectedButton.style.background = '#27ae60';
+        
+        // Cập nhật giá hiển thị theo giá khuyến mãi của schedule
+        const promotionalPrice = selectedButton.getAttribute('data-promotional-price');
+        if (promotionalPrice) {
+            updateDisplayedPrice(promotionalPrice);
+        }
     }
     
     // Hiển thị thông báo đã chọn
@@ -139,6 +145,23 @@ function selectSchedule(scheduleId) {
     const priceCard = document.querySelector('.price-card');
     if (priceCard) {
         priceCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// === Cập nhật giá hiển thị ===
+function updateDisplayedPrice(promotionalPrice) {
+    const priceValue = document.querySelector('.price-adult .price-value');
+    if (priceValue) {
+        const formattedPrice = new Intl.NumberFormat('vi-VN').format(promotionalPrice);
+        priceValue.textContent = formattedPrice + '₫';
+        
+        // Thêm hiệu ứng highlight
+        priceValue.style.color = '#27ae60';
+        priceValue.style.fontWeight = 'bold';
+        setTimeout(() => {
+            priceValue.style.color = '';
+            priceValue.style.fontWeight = '';
+        }, 2000);
     }
 }
 
@@ -204,19 +227,16 @@ function formatDate(dateString) {
 }
 
 // === Xử lý đặt tour với Controller ===
-function bookTourWithController() {
+function bookTourWithSchedule() {
     if (!selectedScheduleId) {
         showNotification('Vui lòng chọn lịch khởi hành trước khi đặt tour!', 'error');
         return;
     }
     
-    // Lấy link cơ bản từ Thymeleaf và thêm scheduleId
-    const bookNowLink = document.getElementById('bookNowLink');
-    if (bookNowLink) {
-        const baseUrl = bookNowLink.getAttribute('href');
-        const fullUrl = baseUrl + '?scheduleId=' + selectedScheduleId;
-        window.location.href = fullUrl;
-    }
+    // Chuyển hướng đến form booking với scheduleId
+    const tourId = getTourIdFromUrl();
+    const bookingUrl = `/page/booking/${tourId}?scheduleId=${selectedScheduleId}`;
+    window.location.href = bookingUrl;
 }
 
 // === Xử lý đặt tour (giữ lại để tương thích) ===

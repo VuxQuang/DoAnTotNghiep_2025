@@ -1,367 +1,293 @@
-// === Biến global ===
-let tourId = null;
-let adultPrice = 0;
-let childPrice = 0;
-
-// === Khi trang load ===
-document.addEventListener('DOMContentLoaded', function () {
+// Booking Form JavaScript
+document.addEventListener('DOMContentLoaded', function() {
     initializeBookingForm();
-    calculateTotal();
 });
 
-// === Khởi tạo form ===
+let participantCounter = 0;
+
 function initializeBookingForm() {
-    // Lấy tour ID từ hidden field
-    const tourIdField = document.querySelector('input[name="tourId"]');
-    if (tourIdField) {
-        tourId = tourIdField.value;
-    }
-
-    // Lấy giá từ tour info
-    const priceElement = document.querySelector('.price-value');
-    if (priceElement) {
-        const priceText = priceElement.textContent.replace(/[^\d]/g, '');
-        adultPrice = parseInt(priceText);
-        childPrice = adultPrice * 0.8; // Giả sử trẻ em = 80% giá người lớn
-    }
-
-    // Thêm event listeners
-    addEventListeners();
-}
-
-// === Thêm event listeners ===
-function addEventListeners() {
-    // Event cho số lượng khách
-    const countInputs = ['adultCount', 'childCount', 'infantCount'];
-    countInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('change', calculateTotal);
-            input.addEventListener('input', calculateTotal);
-        }
-    });
-
-    // Event cho schedule selection
-    const scheduleInputs = document.querySelectorAll('input[name="scheduleId"]');
-    scheduleInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            updateScheduleInfo();
-            calculateTotal();
-        });
-    });
-
-    // Event cho form submission
-    const form = document.querySelector('.booking-form');
-    if (form) {
-        form.addEventListener('submit', validateForm);
-    }
-}
-
-// === Thay đổi số lượng ===
-function changeCount(fieldId, change) {
-    const input = document.getElementById(fieldId);
-    if (!input) return;
-
-    const currentValue = parseInt(input.value) || 0;
-    const min = parseInt(input.min) || 0;
-    const max = parseInt(input.max) || 999;
-
-    let newValue = currentValue + change;
+    // Lấy các elements
+    const adultCountInput = document.getElementById('adultCount');
+    const childCountInput = document.getElementById('childCount');
+    const participantsContainer = document.getElementById('participants-container');
+    const addParticipantBtn = document.getElementById('addParticipantBtn');
     
-    // Đảm bảo giá trị trong khoảng min-max
-    if (newValue < min) newValue = min;
-    if (newValue > max) newValue = max;
-
-    input.value = newValue;
-    calculateTotal();
-}
-
-// === Tính tổng tiền ===
-function calculateTotal() {
-    const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
-    const childCount = parseInt(document.getElementById('childCount').value) || 0;
-    const infantCount = parseInt(document.getElementById('infantCount').value) || 0;
-
-    // Tính tiền từng loại
-    const adultTotal = adultCount * adultPrice;
-    const childTotal = childCount * childPrice;
-    const infantTotal = 0; // Trẻ sơ sinh miễn phí
-
-    const totalAmount = adultTotal + childTotal + infantTotal;
-    const depositAmount = Math.round(totalAmount * 0.5); // Đặt cọc 50%
-    const remainingAmount = totalAmount - depositAmount;
-
-    // Cập nhật hiển thị
-    updatePriceDisplay(adultTotal, childTotal, infantTotal, totalAmount, depositAmount, remainingAmount);
-
-    // Gọi API để tính toán chính xác (nếu cần)
-    if (tourId) {
-        callCalculateTotalAPI(adultCount, childCount, infantCount);
-    }
-}
-
-// === Cập nhật hiển thị giá ===
-function updatePriceDisplay(adultTotal, childTotal, infantTotal, totalAmount, depositAmount, remainingAmount) {
-    // Format số tiền
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
-    };
-
-    // Cập nhật từng phần
+    // Lấy giá từ server
     const adultPriceElement = document.getElementById('adultPrice');
     const childPriceElement = document.getElementById('childPrice');
-    const infantPriceElement = document.getElementById('infantPrice');
-    const totalAmountElement = document.getElementById('totalAmount');
-    const depositAmountElement = document.getElementById('depositAmount');
-    const remainingAmountElement = document.getElementById('remainingAmount');
-
-    if (adultPriceElement) adultPriceElement.textContent = formatCurrency(adultTotal);
-    if (childPriceElement) childPriceElement.textContent = formatCurrency(childTotal);
-    if (infantPriceElement) infantPriceElement.textContent = 'Miễn phí';
-    if (totalAmountElement) totalAmountElement.textContent = formatCurrency(totalAmount);
-    if (depositAmountElement) depositAmountElement.textContent = formatCurrency(depositAmount);
-    if (remainingAmountElement) remainingAmountElement.textContent = formatCurrency(remainingAmount);
+    const totalPriceElement = document.getElementById('totalPrice');
+    
+    const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, ''));
+    const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, ''));
+    
+    // Thêm participant đầu tiên (người đặt)
+    addParticipant('Người đặt', true);
+    
+    // Event listeners
+    if (adultCountInput) {
+        adultCountInput.addEventListener('change', updateParticipants);
+    }
+    
+    if (childCountInput) {
+        childCountInput.addEventListener('change', updateParticipants);
+    }
+    
+    if (addParticipantBtn) {
+        addParticipantBtn.addEventListener('click', () => addParticipant('Người tham gia', false));
+    }
+    
+    // Tính tổng tiền ban đầu
+    updateTotalPrice();
 }
 
-// === Gọi API tính tổng tiền ===
-function callCalculateTotalAPI(adultCount, childCount, infantCount) {
-    const formData = new FormData();
-    formData.append('tourId', tourId);
-    formData.append('adultCount', adultCount);
-    formData.append('childCount', childCount);
-    formData.append('infantCount', infantCount);
-
-    fetch('/page/booking/calculate-total', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Lỗi tính toán:', data.error);
-        } else {
-            // Cập nhật với dữ liệu từ server
-            updatePriceDisplayFromAPI(data);
-        }
-    })
-    .catch(error => {
-        console.error('Lỗi API:', error);
-    });
-}
-
-// === Cập nhật giá từ API ===
-function updatePriceDisplayFromAPI(data) {
-    const totalAmountElement = document.getElementById('totalAmount');
-    const depositAmountElement = document.getElementById('depositAmount');
-    const remainingAmountElement = document.getElementById('remainingAmount');
-
-    if (totalAmountElement) totalAmountElement.textContent = data.totalAmount + '₫';
-    if (depositAmountElement) depositAmountElement.textContent = data.depositAmount + '₫';
-    if (remainingAmountElement) remainingAmountElement.textContent = data.remainingAmount + '₫';
-}
-
-// === Cập nhật thông tin schedule ===
-function updateScheduleInfo() {
-    const selectedSchedule = document.querySelector('input[name="scheduleId"]:checked');
-    if (!selectedSchedule) return;
-
-    const scheduleId = selectedSchedule.value;
-    const totalGuests = getTotalGuests();
-
-    // Kiểm tra số chỗ còn lại
-    checkAvailability(scheduleId, totalGuests);
-}
-
-// === Lấy tổng số khách ===
-function getTotalGuests() {
+function updateParticipants() {
     const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
     const childCount = parseInt(document.getElementById('childCount').value) || 0;
-    const infantCount = parseInt(document.getElementById('infantCount').value) || 0;
+    const participantsContainer = document.getElementById('participants-container');
     
-    return adultCount + childCount + infantCount;
-}
-
-// === Kiểm tra số chỗ còn lại ===
-function checkAvailability(scheduleId, totalGuests) {
-    const formData = new FormData();
-    formData.append('scheduleId', scheduleId);
-    formData.append('totalGuests', totalGuests);
-
-    fetch('/page/booking/check-availability', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            showError('Lỗi kiểm tra số chỗ: ' + data.error);
-        } else {
-            if (!data.available) {
-                showError('Không đủ chỗ cho số lượng khách hàng này. Vui lòng chọn lịch khác hoặc giảm số lượng.');
-            }
+    // Xóa tất cả participants hiện tại (trừ người đặt)
+    const existingParticipants = participantsContainer.querySelectorAll('.participant-card');
+    existingParticipants.forEach((participant, index) => {
+        if (index > 0) { // Giữ lại người đặt (index 0)
+            participant.remove();
         }
-    })
-    .catch(error => {
-        console.error('Lỗi API:', error);
     });
+    
+    // Thêm participants cho người lớn
+    for (let i = 1; i < adultCount; i++) {
+        addParticipant(`Người lớn ${i + 1}`, false, 'ADULT');
+    }
+    
+    // Thêm participants cho trẻ em
+    for (let i = 0; i < childCount; i++) {
+        addParticipant(`Trẻ em ${i + 1}`, false, 'CHILD');
+    }
+    
+    // Cập nhật tổng tiền
+    updateTotalPrice();
 }
 
-// === Validate form ===
-function validateForm(event) {
-    const errors = [];
+function addParticipant(title, isMainCustomer = false, type = 'ADULT') {
+    const participantsContainer = document.getElementById('participants-container');
+    participantCounter++;
+    
+    const participantCard = document.createElement('div');
+    participantCard.className = 'participant-card';
+    participantCard.innerHTML = `
+        <div class="participant-header">
+            <div class="participant-title">${title}</div>
+            ${!isMainCustomer ? '<button type="button" class="btn-remove-participant" onclick="removeParticipant(this)"><i class="fas fa-times"></i></button>' : ''}
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Họ tên *</label>
+                <input type="text" name="participants[${participantCounter - 1}].fullName" required>
+            </div>
+            <div class="form-group">
+                <label>Ngày sinh *</label>
+                <input type="date" name="participants[${participantCounter - 1}].dateOfBirth" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Giới tính *</label>
+                <select name="participants[${participantCounter - 1}].gender" required>
+                    <option value="">Chọn giới tính</option>
+                    <option value="MALE">Nam</option>
+                    <option value="FEMALE">Nữ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>CMND/CCCD *</label>
+                <input type="text" name="participants[${participantCounter - 1}].idCard" 
+                       pattern="[0-9]{9,12}" title="CMND/CCCD phải có 9-12 số" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Số điện thoại</label>
+            <input type="tel" name="participants[${participantCounter - 1}].phoneNumber" 
+                   pattern="[0-9]{10,11}" title="Số điện thoại phải có 10-11 số">
+        </div>
+        <input type="hidden" name="participants[${participantCounter - 1}].type" value="${type}">
+    `;
+    
+    participantsContainer.appendChild(participantCard);
+    
+    // Animation
+    participantCard.style.opacity = '0';
+    participantCard.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+        participantCard.style.transition = 'all 0.3s ease';
+        participantCard.style.opacity = '1';
+        participantCard.style.transform = 'translateY(0)';
+    }, 10);
+}
 
-    // Kiểm tra schedule
-    const selectedSchedule = document.querySelector('input[name="scheduleId"]:checked');
-    if (!selectedSchedule) {
-        errors.push('Vui lòng chọn lịch khởi hành');
-    }
+function removeParticipant(button) {
+    const participantCard = button.closest('.participant-card');
+    participantCard.style.transition = 'all 0.3s ease';
+    participantCard.style.opacity = '0';
+    participantCard.style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+        participantCard.remove();
+        updateTotalPrice();
+    }, 300);
+}
 
-    // Kiểm tra số lượng khách
+function updateTotalPrice() {
     const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
-    if (adultCount < 1) {
-        errors.push('Phải có ít nhất 1 người lớn');
-    }
+    const childCount = parseInt(document.getElementById('childCount').value) || 0;
+    
+    // Lấy giá từ elements
+    const adultPriceElement = document.getElementById('adultPrice');
+    const childPriceElement = document.getElementById('childPrice');
+    const totalPriceElement = document.getElementById('totalPrice');
+    
+    const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, ''));
+    const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, ''));
+    
+    // Tính tổng tiền
+    const totalAmount = (adultCount * adultPrice) + (childCount * childPrice);
+    
+    // Format và hiển thị
+    const formattedTotal = new Intl.NumberFormat('vi-VN').format(totalAmount);
+    totalPriceElement.textContent = formattedTotal + '₫';
+    
+    // Highlight tổng tiền
+    totalPriceElement.style.color = '#27ae60';
+    totalPriceElement.style.fontWeight = 'bold';
+    setTimeout(() => {
+        totalPriceElement.style.color = '';
+        totalPriceElement.style.fontWeight = '';
+    }, 1000);
+}
 
-    // Kiểm tra thông tin liên hệ
-    const customerName = document.getElementById('customerName').value.trim();
-    const customerEmail = document.getElementById('customerEmail').value.trim();
-    const customerPhone = document.getElementById('customerPhone').value.trim();
-
-    if (!customerName) {
-        errors.push('Vui lòng nhập họ và tên');
-    }
-
-    if (!customerEmail) {
-        errors.push('Vui lòng nhập email');
-    } else if (!isValidEmail(customerEmail)) {
-        errors.push('Email không hợp lệ');
-    }
-
-    if (!customerPhone) {
-        errors.push('Vui lòng nhập số điện thoại');
-    } else if (!isValidPhone(customerPhone)) {
-        errors.push('Số điện thoại không hợp lệ');
-    }
-
-    // Kiểm tra phương thức thanh toán
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-    if (!paymentMethod) {
-        errors.push('Vui lòng chọn phương thức thanh toán');
-    }
-
-    // Hiển thị lỗi nếu có
-    if (errors.length > 0) {
-        event.preventDefault();
-        showErrors(errors);
+// Form validation
+function validateForm() {
+    const form = document.querySelector('.booking-form');
+    const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
+    const childCount = parseInt(document.getElementById('childCount').value) || 0;
+    const participantsContainer = document.getElementById('participants-container');
+    
+    // Kiểm tra số lượng participants
+    const participantCards = participantsContainer.querySelectorAll('.participant-card');
+    const totalParticipants = participantCards.length;
+    const requiredParticipants = adultCount + childCount;
+    
+    if (totalParticipants !== requiredParticipants) {
+        alert(`Số lượng người tham gia không khớp. Cần ${requiredParticipants} người nhưng chỉ có ${totalParticipants} người.`);
         return false;
     }
-
-    // Hiển thị loading
-    showLoading();
+    
+    // Kiểm tra form validation
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return false;
+    }
+    
     return true;
 }
 
-// === Validate email ===
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-// === Validate phone ===
-function isValidPhone(phone) {
-    const phoneRegex = /^[0-9]{10,11}$/;
-    return phoneRegex.test(phone);
-}
-
-// === Hiển thị lỗi ===
-function showErrors(errors) {
-    // Xóa alert cũ
-    const oldAlert = document.querySelector('.alert');
-    if (oldAlert) {
-        oldAlert.remove();
+// Submit form
+document.querySelector('.booking-form').addEventListener('submit', function(e) {
+    if (!validateForm()) {
+        e.preventDefault();
+        return false;
     }
+    
+    // Hiển thị loading
+    const submitBtn = document.querySelector('.btn-submit');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    submitBtn.disabled = true;
+    
+    // Form sẽ được submit bình thường
+});
 
-    // Tạo alert mới
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-error';
-    alertDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle"></i>
-        <div>
-            ${errors.map(error => `<div>${error}</div>`).join('')}
-        </div>
+// Real-time validation
+document.addEventListener('input', function(e) {
+    if (e.target.matches('input[pattern]')) {
+        const pattern = e.target.pattern;
+        const value = e.target.value;
+        const regex = new RegExp(pattern);
+        
+        if (value && !regex.test(value)) {
+            e.target.setCustomValidity('Giá trị không hợp lệ');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    }
+});
+
+// Auto-fill customer info if user is logged in
+function autoFillCustomerInfo() {
+    const customerNameInput = document.getElementById('customerName');
+    const customerEmailInput = document.getElementById('customerEmail');
+    const customerPhoneInput = document.getElementById('customerPhone');
+    
+    // Lấy thông tin từ user session (nếu có)
+    // Có thể implement bằng cách lấy từ server hoặc localStorage
+    
+    if (customerNameInput && customerEmailInput && customerPhoneInput) {
+        // Auto-fill first participant with customer info
+        const firstParticipantName = document.querySelector('input[name="participants[0].fullName"]');
+        if (firstParticipantName) {
+            firstParticipantName.value = customerNameInput.value;
+        }
+    }
+}
+
+// Initialize auto-fill
+setTimeout(autoFillCustomerInfo, 500);
+
+// Show success/error messages
+function showMessage(message, type = 'success') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message message-${type}`;
+    messageDiv.textContent = message;
+    
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        z-index: 1000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        background: ${type === 'success' ? '#27ae60' : '#e74c3c'};
     `;
-
-    // Thêm vào đầu form
-    const form = document.querySelector('.booking-form');
-    form.insertBefore(alertDiv, form.firstChild);
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// === Hiển thị lỗi đơn lẻ ===
-function showError(message) {
-    showErrors([message]);
-}
-
-// === Hiển thị loading ===
-function showLoading() {
-    const submitBtn = document.querySelector('.btn-primary');
-    if (submitBtn) {
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-        submitBtn.disabled = true;
-    }
-}
-
-// === Reset loading ===
-function resetLoading() {
-    const submitBtn = document.querySelector('.btn-primary');
-    if (submitBtn) {
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Xác nhận đặt tour';
-        submitBtn.disabled = false;
-    }
-}
-
-// === Format số tiền ===
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-    }).format(amount);
-}
-
-// === Smooth scroll to element ===
-function scrollToElement(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-        });
-    }
-}
-
-// === Show notification ===
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-    `;
-
-    document.body.appendChild(notification);
-
-    // Hiển thị
+    
+    document.body.appendChild(messageDiv);
+    
     setTimeout(() => {
-        notification.classList.add('show');
+        messageDiv.style.transform = 'translateX(0)';
     }, 100);
-
-    // Ẩn sau 3 giây
+    
     setTimeout(() => {
-        notification.classList.remove('show');
+        messageDiv.style.transform = 'translateX(100%)';
         setTimeout(() => {
-            notification.remove();
+            if (document.body.contains(messageDiv)) {
+                document.body.removeChild(messageDiv);
+            }
         }, 300);
     }, 3000);
-} 
+}
+
+// Check for flash messages
+window.addEventListener('load', function() {
+    // Kiểm tra URL parameters cho messages
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+    
+    if (success) {
+        showMessage(decodeURIComponent(success), 'success');
+    }
+    
+    if (error) {
+        showMessage(decodeURIComponent(error), 'error');
+    }
+}); 

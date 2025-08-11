@@ -1,5 +1,6 @@
 package fsa.training.travelee.entity;
 
+import fsa.training.travelee.entity.promotion.Promotion;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -68,14 +69,14 @@ public class Tour {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "promotion_tours",
-//            joinColumns = @JoinColumn(name = "tour_id"),
-//            inverseJoinColumns = @JoinColumn(name = "promotion_id")
-//    )
-//    @Builder.Default
-//    private Set<Promotion> promotions = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "promotion_tours",
+            joinColumns = @JoinColumn(name = "tour_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    @Builder.Default
+    private Set<Promotion> promotions = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)

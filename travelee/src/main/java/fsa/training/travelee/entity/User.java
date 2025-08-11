@@ -22,12 +22,11 @@ public class User {
     private Long id;
     @Column(nullable = false, unique = true)
     private String username;
+    @Column(nullable = false, unique = true)
     private String email;
     private String phoneNumber;
     private String password;
     private String fullName;
-    private String avatar;
-    private LocalDate dateOfBirth;
     private String address;
     @Column(nullable = false)
     private String status;
@@ -53,6 +52,10 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.emailVerified = false;
         this.phoneVerified = false;
+
+        if (this.provider == null || this.provider.isBlank()) {
+            this.provider = "FORM";
+        }
     }
 
     @PreUpdate

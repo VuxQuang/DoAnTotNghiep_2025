@@ -187,7 +187,7 @@
                         <i class="fas fa-gift"></i>
                         <span th:text="'Tiết kiệm ' + ${#numbers.formatDecimal(tour.adultPrice * 0.1, 0, 'COMMA', 0, 'POINT') + '₫/người'}">Savings</span>
                     </div>
-                    <button class="btn-book-now" th:onclick="'window.location.href=\'/page/booking/' + ${tour.id} + '\''">
+                    <button class="btn-book-now" onclick="bookTourWithSchedule()" id="bookNowBtn">
                         <i class="fas fa-calendar-check"></i>
                         Đặt tour ngay
                     </button>
@@ -217,6 +217,8 @@
                             </div>
                             <button class="btn-select-date" 
                                     th:onclick="'selectSchedule(' + ${schedule.id} + ')'"
+                                    th:data-schedule-id="${schedule.id}"
+                                    th:data-promotional-price="${schedule.specialPrice != null ? schedule.specialPrice : tour.adultPrice}"
                                     th:disabled="${schedule.status == 'full' or schedule.status == 'closed'}">
                                 <span th:text="${schedule.status == 'available' ? 'Chọn ngày này' : 
                                                schedule.status == 'limited' ? 'Sắp hết chỗ' : 

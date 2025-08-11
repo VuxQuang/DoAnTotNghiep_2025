@@ -52,6 +52,27 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             redirectURL += "/page/home";
         } else {
             // Login bằng form
+            String email = authentication.getName(); // Email là username
+            String fullName = null;
+            
+            // Lấy thông tin user từ database
+            try {
+                var userOpt = userService.findByEmail(email);
+                if (userOpt.isPresent()) {
+                    var user = userOpt.get();
+                    fullName = user.getFullName();
+                    // Lưu thông tin vào session cho form login
+                    session.setAttribute("email", email);
+                    session.setAttribute("fullName", fullName);
+                    if (user.getPhoneNumber() != null) {
+                        session.setAttribute("phoneNumber", user.getPhoneNumber());
+                    }
+                }
+            } catch (Exception e) {
+                // Log error nhưng không dừng quá trình đăng nhập
+                System.err.println("Error getting user info: " + e.getMessage());
+            }
+            
             var authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 String role = authority.getAuthority();

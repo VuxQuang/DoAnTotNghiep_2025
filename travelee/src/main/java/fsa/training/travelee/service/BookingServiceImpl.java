@@ -1,111 +1,143 @@
 package fsa.training.travelee.service;
 
-import fsa.training.travelee.dto.BookingRequest;
-import fsa.training.travelee.entity.*;
+import fsa.training.travelee.dto.booking.BookingRequestDto;
+import fsa.training.travelee.entity.booking.Booking;
+import fsa.training.travelee.entity.booking.BookingParticipant;
+import fsa.training.travelee.entity.booking.BookingStatus;
+import fsa.training.travelee.entity.booking.ParticipantType;
+import fsa.training.travelee.entity.Tour;
+import fsa.training.travelee.entity.TourSchedule;
+import fsa.training.travelee.entity.User;
 import fsa.training.travelee.repository.BookingRepository;
 import fsa.training.travelee.repository.TourRepository;
 import fsa.training.travelee.repository.TourScheduleRepository;
-import fsa.training.travelee.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final TourRepository tourRepository;
-    private final TourScheduleRepository scheduleRepository;
-    private final UserRepository userRepository;
+    private final TourScheduleRepository tourScheduleRepository;
 
     @Override
-    public Booking createBooking(BookingRequest request, Long userId) {
-        // Lấy thông tin tour
-        Tour tour = tourRepository.findById(request.getTourId())
-                .orElseThrow(() -> new RuntimeException("Tour không tồn tại"));
-
-        // Lấy thông tin schedule
-        TourSchedule schedule = scheduleRepository.findById(request.getScheduleId())
-                .orElseThrow(() -> new RuntimeException("Lịch trình không tồn tại"));
-
-        // Lấy thông tin user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-
-        // Kiểm tra số chỗ còn lại
-        int totalGuests = request.getAdultCount() + request.getChildCount() + request.getInfantCount();
-        if (!checkAvailability(request.getScheduleId(), totalGuests)) {
-            throw new RuntimeException("Không đủ chỗ cho số lượng khách hàng này");
+    public Booking createBooking(BookingRequestDto bookingRequest, User user) {
+        // Kiểm tra tour và schedule
+        Tour tour = tourRepository.findById(bookingRequest.getTourId())
+                .orElseThrow(() -> new IllegalArgumentException("Tour không tồn tại"));
+        
+        TourSchedule schedule = tourScheduleRepository.findById(bookingRequest.getScheduleId())
+                .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
+        
+        // Kiểm tra availability
+        if (!isScheduleAvailable(bookingRequest.getScheduleId(), 
+                                bookingRequest.getAdultCount(), 
+                                bookingRequest.getChildCount())) {
+            throw new IllegalArgumentException("Lịch trình không đủ chỗ");
         }
-
-        // Tính toán tiền
-        BigDecimal totalAmount = calculateTotalAmount(request.getTourId(), 
-                request.getAdultCount(), request.getChildCount(), request.getInfantCount());
-        BigDecimal depositAmount = calculateDepositAmount(totalAmount);
-        BigDecimal remainingAmount = totalAmount.subtract(depositAmount);
-
+        
+        // Tính tổng tiền
+        BigDecimal totalAmount = calculateTotalAmount(
+                bookingRequest.getTourId(),
+                bookingRequest.getScheduleId(),
+                bookingRequest.getAdultCount(),
+                bookingRequest.getChildCount()
+        );
+        
         // Tạo booking
         Booking booking = Booking.builder()
-                .tour(tour)
-                .user(user)
-                .schedule(schedule)
-                .departureDate(request.getDepartureDate())
-                .returnDate(request.getReturnDate())
-                .adultCount(request.getAdultCount())
-                .childCount(request.getChildCount())
-                .infantCount(request.getInfantCount())
+                .bookingCode(generateBookingCode())
+                .adultCount(bookingRequest.getAdultCount())
+                .childCount(bookingRequest.getChildCount())
                 .totalAmount(totalAmount)
-                .depositAmount(depositAmount)
-                .remainingAmount(remainingAmount)
+                .specialRequests(bookingRequest.getSpecialRequests())
                 .status(BookingStatus.PENDING)
-                .customerName(request.getCustomerName())
-                .customerEmail(request.getCustomerEmail())
-                .customerPhone(request.getCustomerPhone())
-                .customerAddress(request.getCustomerAddress())
-                .specialRequests(request.getSpecialRequests())
-                .paymentMethod(request.getPaymentMethod())
+                .user(user)
+                .tour(tour)
+                .schedule(schedule)
                 .build();
-
-        // Cập nhật số chỗ còn lại
-        schedule.setAvailableSlots(schedule.getAvailableSlots() - totalGuests);
-        scheduleRepository.save(schedule);
-
-        // Lưu booking
-        Booking savedBooking = bookingRepository.save(booking);
-
+        
+        // Lưu booking trước
+        final Booking savedBooking = bookingRepository.save(booking);
+        
+        // Tạo participants với savedBooking (final)
+        List<BookingParticipant> participants = bookingRequest.getParticipants().stream()
+                .map(participantRequest -> {
+                    BookingParticipant participant = BookingParticipant.builder()
+                            .fullName(participantRequest.getFullName())
+                            .dateOfBirth(LocalDate.parse(participantRequest.getDateOfBirth()))
+                            .gender(participantRequest.getGender())
+                            .idCard(participantRequest.getIdCard())
+                            .phoneNumber(participantRequest.getPhoneNumber())
+                            .type(ParticipantType.valueOf(participantRequest.getType()))
+                            .booking(savedBooking)
+                            .build();
+                    return participant;
+                })
+                .toList();
+        
+        savedBooking.setParticipants(participants);
+        
         // Gửi email xác nhận
-        sendBookingConfirmationEmail(savedBooking);
-
+        try {
+            sendBookingConfirmationEmail(savedBooking);
+        } catch (Exception e) {
+            log.error("Lỗi gửi email xác nhận booking: {}", e.getMessage());
+        }
+        
         return savedBooking;
     }
 
     @Override
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
     }
 
     @Override
-    public Page<Booking> getBookingsByUser(Long userId, Pageable pageable) {
-        return bookingRepository.findByUserId(userId, pageable);
+    public Booking getBookingByCode(String bookingCode) {
+        return bookingRepository.findByBookingCode(bookingCode)
+                .orElseThrow(() -> new IllegalArgumentException("Booking code không tồn tại"));
     }
 
     @Override
-    public Page<Booking> getBookingsByTour(Long tourId, Pageable pageable) {
-        return bookingRepository.findByTourId(tourId, pageable);
+    public List<Booking> getBookingsByUser(User user) {
+        return bookingRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
     @Override
-    public Page<Booking> getBookingsByStatus(BookingStatus status, Pageable pageable) {
-        return bookingRepository.findByStatus(status, pageable);
+    public Page<Booking> getBookingsByUser(User user, Pageable pageable) {
+        return bookingRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+    }
+
+    @Override
+    public List<Booking> getBookingsByStatus(BookingStatus status) {
+        return bookingRepository.findByStatusOrderByCreatedAtDesc(status);
+    }
+
+    @Override
+    public List<Booking> getBookingsByTour(Long tourId) {
+        return bookingRepository.findByTourIdOrderByCreatedAtDesc(tourId);
+    }
+
+    @Override
+    public List<Booking> getBookingsBySchedule(Long scheduleId) {
+        return bookingRepository.findByScheduleIdOrderByCreatedAtDesc(scheduleId);
     }
 
     @Override
@@ -118,71 +150,64 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking cancelBooking(Long bookingId, String reason) {
         Booking booking = getBookingById(bookingId);
-        
-        // Kiểm tra xem có thể hủy không
-        if (booking.getStatus() == BookingStatus.COMPLETED) {
-            throw new RuntimeException("Không thể hủy booking đã hoàn thành");
-        }
-
-        // Cập nhật trạng thái
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setSpecialRequests(booking.getSpecialRequests() + "\nLý do hủy: " + reason);
-
-        // Hoàn trả số chỗ
-        TourSchedule schedule = booking.getSchedule();
-        int totalGuests = booking.getAdultCount() + booking.getChildCount() + booking.getInfantCount();
-        schedule.setAvailableSlots(schedule.getAvailableSlots() + totalGuests);
-        scheduleRepository.save(schedule);
-
-        Booking savedBooking = bookingRepository.save(booking);
-
+        
         // Gửi email hủy
-        sendBookingCancellationEmail(savedBooking, reason);
-
-        return savedBooking;
+        try {
+            sendBookingCancellationEmail(booking);
+        } catch (Exception e) {
+            log.error("Lỗi gửi email hủy booking: {}", e.getMessage());
+        }
+        
+        return bookingRepository.save(booking);
     }
 
     @Override
-    public BigDecimal calculateTotalAmount(Long tourId, Integer adultCount, Integer childCount, Integer infantCount) {
+    public BigDecimal calculateTotalAmount(Long tourId, Long scheduleId, int adultCount, int childCount) {
         Tour tour = tourRepository.findById(tourId)
-                .orElseThrow(() -> new RuntimeException("Tour không tồn tại"));
-
-        BigDecimal adultTotal = tour.getAdultPrice().multiply(BigDecimal.valueOf(adultCount));
-        BigDecimal childTotal = tour.getChildPrice().multiply(BigDecimal.valueOf(childCount));
-        BigDecimal infantTotal = BigDecimal.ZERO; // Trẻ sơ sinh miễn phí
-
-        return adultTotal.add(childTotal).add(infantTotal);
+                .orElseThrow(() -> new IllegalArgumentException("Tour không tồn tại"));
+        
+        TourSchedule schedule = tourScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
+        
+        // Sử dụng giá khuyến mãi nếu có, không thì dùng giá gốc
+        BigDecimal adultPrice = schedule.getSpecialPrice() != null ? 
+                schedule.getSpecialPrice() : tour.getAdultPrice();
+        BigDecimal childPrice = tour.getChildPrice();
+        
+        BigDecimal adultTotal = adultPrice.multiply(BigDecimal.valueOf(adultCount));
+        BigDecimal childTotal = childPrice.multiply(BigDecimal.valueOf(childCount));
+        
+        return adultTotal.add(childTotal);
     }
 
     @Override
-    public BigDecimal calculateDepositAmount(BigDecimal totalAmount) {
-        // Đặt cọc 50%
-        return totalAmount.multiply(BigDecimal.valueOf(0.5)).setScale(0, RoundingMode.HALF_UP);
+    public boolean isScheduleAvailable(Long scheduleId, int adultCount, int childCount) {
+        TourSchedule schedule = tourScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
+        
+        int totalRequested = adultCount + childCount;
+        return schedule.getAvailableSlots() >= totalRequested;
     }
 
     @Override
-    public boolean checkAvailability(Long scheduleId, Integer totalGuests) {
-        TourSchedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Lịch trình không tồn tại"));
-
-        return schedule.getAvailableSlots() >= totalGuests;
-    }
-
-    @Override
-    public List<Object[]> getBookingStatistics() {
-        // Có thể implement thống kê booking theo thời gian, status, etc.
-        return null;
+    public String generateBookingCode() {
+        Random random = new Random();
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String randomPart = String.format("%04d", random.nextInt(10000));
+        return "BK" + timestamp + randomPart;
     }
 
     @Override
     public void sendBookingConfirmationEmail(Booking booking) {
-        // TODO: Implement gửi email xác nhận
-        System.out.println("Gửi email xác nhận booking cho: " + booking.getCustomerEmail());
+        // TODO: Implement email service
+        log.info("Gửi email xác nhận booking: {}", booking.getBookingCode());
     }
 
     @Override
-    public void sendBookingCancellationEmail(Booking booking, String reason) {
-        // TODO: Implement gửi email hủy
-        System.out.println("Gửi email hủy booking cho: " + booking.getCustomerEmail() + " - Lý do: " + reason);
+    public void sendBookingCancellationEmail(Booking booking) {
+        // TODO: Implement email service
+        log.info("Gửi email hủy booking: {}", booking.getBookingCode());
     }
 } 

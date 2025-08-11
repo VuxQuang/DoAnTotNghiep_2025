@@ -156,14 +156,14 @@
                         <i class="fas fa-angle-left"></i>
                     </a>
                     <span id="pagination-pages">
-                    <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    <a th:each="i : ${#numbers.sequence(0, totalPages != null ? totalPages - 1 : 0)}"
                         th:href="@{/admin/support(page=${i}, size=${size}, keyword=${keyword})}"
                         th:text="${i+1}"
                         th:classappend="${i == currentPage} ? 'pagination-btn active' : 'pagination-btn'">
                         <i class="fas fa-angle-right"></i>
                     </a>
                     </span>
-                    <a th:if="${currentPage < totalPages -1}"
+                    <a th:if="${totalPages != null and currentPage < totalPages -1}"
                        th:href="@{/admin/support(page=${currentPage + 1}, size=${size}, keyword=${keyword})}"
                        class="page-btn next"
                        title="Trang sau">

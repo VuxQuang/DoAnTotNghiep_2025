@@ -9,6 +9,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
 
@@ -35,6 +36,8 @@ public interface UserService {
     Page<User> getUsersPage(String keyword, int page, int size);
 
     void deleteUserById(Long id);
+
+    Optional<User> findByEmail(String email);
 
 //    List<User> searchUsers(String keyword);
 }

@@ -74,9 +74,10 @@ public class TourPageController {
             }
             
             // Kiểm tra xem scheduleId có hợp lệ không
-            if (scheduleId != null) {
+            final Long finalScheduleId = scheduleId;
+            if (finalScheduleId != null) {
                 boolean validSchedule = tour.getSchedules().stream()
-                    .anyMatch(schedule -> schedule.getId().equals(scheduleId));
+                    .anyMatch(schedule -> schedule.getId().equals(finalScheduleId));
                 
                 if (!validSchedule) {
                     scheduleId = null; // Reset nếu không hợp lệ

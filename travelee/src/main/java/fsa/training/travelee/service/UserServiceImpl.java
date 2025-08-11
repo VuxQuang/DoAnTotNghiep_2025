@@ -92,6 +92,8 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setStatus("ACTIVE");
+        // Đăng ký qua form → gán provider là FORM
+        user.setProvider("FORM");
 
         Role userRole = roleRepository.findByRoleName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
@@ -227,6 +229,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
 //    @Override
