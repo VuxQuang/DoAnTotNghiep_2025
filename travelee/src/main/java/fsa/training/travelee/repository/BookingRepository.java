@@ -52,4 +52,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.totalAmount BETWEEN :minAmount AND :maxAmount ORDER BY b.totalAmount DESC")
     List<Booking> findByTotalAmountBetween(@Param("minAmount") java.math.BigDecimal minAmount, 
                                           @Param("maxAmount") java.math.BigDecimal maxAmount);
+    
+    // Tìm booking theo ID với đầy đủ relationship
+    @Query("SELECT b FROM Booking b WHERE b.id = :id")
+    Optional<Booking> findByIdWithRelationships(@Param("id") Long id);
+
+    // Tìm booking theo ID với participants và payment
+    @Query("SELECT b FROM Booking b WHERE b.id = :id")
+    Optional<Booking> findByIdWithParticipantsAndPayment(@Param("id") Long id);
 } 

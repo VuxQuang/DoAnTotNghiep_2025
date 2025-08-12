@@ -5,6 +5,9 @@ import fsa.training.travelee.entity.booking.Booking;
 import fsa.training.travelee.entity.booking.BookingParticipant;
 import fsa.training.travelee.entity.booking.BookingStatus;
 import fsa.training.travelee.entity.booking.ParticipantType;
+import fsa.training.travelee.entity.payment.Payment;
+import fsa.training.travelee.entity.payment.PaymentMethod;
+import fsa.training.travelee.entity.payment.PaymentStatus;
 import fsa.training.travelee.entity.Tour;
 import fsa.training.travelee.entity.TourSchedule;
 import fsa.training.travelee.entity.User;
@@ -22,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -76,37 +80,60 @@ public class BookingServiceImpl implements BookingService {
         final Booking savedBooking = bookingRepository.save(booking);
         
         // Tạo participants với savedBooking (final)
-        List<BookingParticipant> participants = bookingRequest.getParticipants().stream()
-                .map(participantRequest -> {
-                    BookingParticipant participant = BookingParticipant.builder()
-                            .fullName(participantRequest.getFullName())
-                            .dateOfBirth(LocalDate.parse(participantRequest.getDateOfBirth()))
-                            .gender(participantRequest.getGender())
-                            .idCard(participantRequest.getIdCard())
-                            .phoneNumber(participantRequest.getPhoneNumber())
-                            .type(ParticipantType.valueOf(participantRequest.getType()))
-                            .booking(savedBooking)
-                            .build();
-                    return participant;
-                })
-                .toList();
+        List<BookingParticipant> participants = new ArrayList<>();
+        bookingRequest.getParticipants().forEach(participantRequest -> {
+            BookingParticipant participant = BookingParticipant.builder()
+                    .fullName(participantRequest.getFullName())
+                    .dateOfBirth(LocalDate.parse(participantRequest.getDateOfBirth()))
+                    .gender(participantRequest.getGender())
+                    .idCard(participantRequest.getIdCard())
+                    .phoneNumber(participantRequest.getPhoneNumber())
+                    .type(ParticipantType.valueOf(participantRequest.getType()))
+                    .booking(savedBooking)
+                    .build();
+            participants.add(participant);
+        });
         
+        Payment payment = Payment.builder()
+                .paymentCode(generatePaymentCode())
+                .amount(totalAmount)
+                .status(PaymentStatus.PENDING)
+                .booking(savedBooking)
+                .build();
+        
+        savedBooking.setPayment(payment);
         savedBooking.setParticipants(participants);
+
+        // Lưu booking (sẽ cascade persist cả participants và payment)
+        Booking finalBooking = bookingRepository.save(savedBooking);
         
         // Gửi email xác nhận
         try {
-            sendBookingConfirmationEmail(savedBooking);
+            sendBookingConfirmationEmail(finalBooking);
         } catch (Exception e) {
             log.error("Lỗi gửi email xác nhận booking: {}", e.getMessage());
         }
         
-        return savedBooking;
+        return finalBooking;
     }
 
     @Override
     public Booking getBookingById(Long id) {
-        return bookingRepository.findById(id)
+        // Lấy booking với relationships cơ bản
+        Booking booking = bookingRepository.findByIdWithRelationships(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        
+        // Lấy thêm participants và payment
+        Booking bookingWithDetails = bookingRepository.findByIdWithParticipantsAndPayment(id)
+                .orElse(booking);
+        
+        // Merge thông tin
+        if (bookingWithDetails != null) {
+            booking.setParticipants(bookingWithDetails.getParticipants());
+            booking.setPayment(bookingWithDetails.getPayment());
+        }
+        
+        return booking;
     }
 
     @Override
@@ -172,9 +199,9 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
         
         // Sử dụng giá khuyến mãi nếu có, không thì dùng giá gốc
-        BigDecimal adultPrice = schedule.getSpecialPrice() != null ? 
-                schedule.getSpecialPrice() : tour.getAdultPrice();
-        BigDecimal childPrice = tour.getChildPrice();
+        BigDecimal adultPrice = schedule.getSpecialPrice() != null ?
+                schedule.getSpecialPrice() : (tour.getAdultPrice() != null ? tour.getAdultPrice() : BigDecimal.ZERO);
+        BigDecimal childPrice = tour.getChildPrice() != null ? tour.getChildPrice() : BigDecimal.ZERO;
         
         BigDecimal adultTotal = adultPrice.multiply(BigDecimal.valueOf(adultCount));
         BigDecimal childTotal = childPrice.multiply(BigDecimal.valueOf(childCount));
@@ -188,7 +215,12 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
         
         int totalRequested = adultCount + childCount;
-        return schedule.getAvailableSlots() >= totalRequested;
+        Integer availableSlots = schedule.getAvailableSlots();
+        if (availableSlots == null) {
+            // Nếu không thiết lập số chỗ, coi như không giới hạn
+            return true;
+        }
+        return availableSlots >= totalRequested;
     }
 
     @Override
@@ -197,6 +229,13 @@ public class BookingServiceImpl implements BookingService {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String randomPart = String.format("%04d", random.nextInt(10000));
         return "BK" + timestamp + randomPart;
+    }
+
+    private String generatePaymentCode() {
+        Random random = new Random();
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String randomPart = String.format("%04d", random.nextInt(10000));
+        return "PM" + timestamp + randomPart;
     }
 
     @Override

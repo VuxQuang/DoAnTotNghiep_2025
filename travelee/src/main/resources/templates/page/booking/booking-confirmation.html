@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác nhận đặt tour - Travelee</title>
+    <link rel="stylesheet" th:href="@{/page/css/homepage.css}">
+    <link rel="stylesheet" th:href="@{/page/css/booking-confirmation.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <main class="confirmation-container">
+        <div class="container">
+            <!-- Success Message -->
+            <div class="success-message">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1>Đặt tour thành công!</h1>
+                <p>Cảm ơn bạn đã đặt tour. Dưới đây là thông tin chi tiết về booking của bạn.</p>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="booking-details">
+                <div class="section-title">
+                    <h2><i class="fas fa-receipt"></i> Thông tin đặt tour</h2>
+                </div>
+                
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Mã booking:</label>
+                        <span class="booking-code" th:text="${booking.bookingCode}">BK001</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Ngày đặt:</label>
+                        <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Trạng thái:</label>
+                        <span class="status-badge" th:classappend="${booking.status == 'PENDING' ? 'pending' : 
+                                                                   booking.status == 'CONFIRMED' ? 'confirmed' : 
+                                                                   booking.status == 'CANCELLED' ? 'cancelled' : 'completed'}">
+                            <span th:text="${booking.status == 'PENDING' ? 'Chờ xác nhận' : 
+                                          booking.status == 'CONFIRMED' ? 'Đã xác nhận' : 
+                                          booking.status == 'CANCELLED' ? 'Đã hủy' : 'Hoàn thành'}">Chờ xác nhận</span>
+                        </span>
+                    </div>
+                     <div class="detail-item">
+                         <label>Thanh toán:</label>
+                         <span class="status-badge" th:classappend="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'confirmed' : 'pending'}">
+                             <span th:text="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
+                         </span>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Tour Information -->
+            <div class="tour-information">
+                <div class="section-title">
+                    <h2><i class="fas fa-map-marked-alt"></i> Thông tin tour</h2>
+                </div>
+                
+                <div class="tour-card">
+                    <div class="tour-image">
+                        <img th:src="${booking.tour.images != null and !#lists.isEmpty(booking.tour.images) ? 
+                                     booking.tour.images[0].imageUrl : '/page/imgs/default-tour.jpg'}" 
+                             th:alt="${booking.tour.title}"
+                             onerror="this.src='/page/imgs/default-tour.jpg'">
+                    </div>
+                    <div class="tour-info">
+                        <h3 th:text="${booking.tour.title}">Tên tour</h3>
+                        <div class="tour-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span th:text="${booking.tour.duration + ' ngày'}">3 ngày</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span th:text="${booking.tour.departure + ' → ' + booking.tour.destination}">Hà Nội → Hạ Long</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-calendar"></i>
+                                <span th:text="${#temporals.format(booking.schedule.departureDate, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </div>
+                        </div>
+                         <div class="tour-actions">
+                             <a th:href="@{/page/tours/{id}(id=${booking.tour.id})}" class="btn btn-outline-primary">
+                                 <i class="fas fa-eye"></i> Xem chi tiết tour
+                             </a>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="customer-information">
+                <div class="section-title">
+                    <h2><i class="fas fa-user"></i> Thông tin khách hàng</h2>
+                </div>
+                
+                <div class="customer-details">
+                    <div class="detail-item">
+                        <label>Họ tên:</label>
+                        <span th:text="${booking.user.fullName}">Nguyễn Văn A</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email:</label>
+                        <span th:text="${booking.user.email}">example@email.com</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Số điện thoại:</label>
+                        <span th:text="${booking.user.phoneNumber}">0123456789</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Information -->
+            <div class="participants-information">
+                <div class="section-title">
+                    <h2><i class="fas fa-users"></i> Thông tin người tham gia</h2>
+                </div>
+                
+                <div class="participants-summary">
+                    <div class="participant-count">
+                        <div class="count-item">
+                            <i class="fas fa-user"></i>
+                            <span th:text="${booking.adultCount + ' người lớn'}">2 người lớn</span>
+                        </div>
+                        <div class="count-item" th:if="${booking.childCount > 0}">
+                            <i class="fas fa-child"></i>
+                            <span th:text="${booking.childCount + ' trẻ em'}">1 trẻ em</span>
+                        </div>
+                    </div>
+                    
+                    <div class="total-amount">
+                        <label>Tổng tiền:</label>
+                        <span class="amount" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">2,500,000 VNĐ</span>
+                    </div>
+                </div>
+
+                <div class="participants-table-wrapper">
+                    <table class="participants-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Họ và tên</th>
+                                <th>Ngày sinh</th>
+                                <th>Giới tính</th>
+                                <th>CMND/CCCD</th>
+                                <th>Số điện thoại</th>
+                                <th>Loại</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p, idx : ${booking.participants}">
+                                <td th:text="${idx.index + 1}">1</td>
+                                <td th:text="${p.fullName}">Nguyễn Văn A</td>
+                                <td th:text="${#temporals.format(p.dateOfBirth, 'dd/MM/yyyy')}">01/01/1990</td>
+                                <td th:text="${p.gender == 'MALE' ? 'Nam' : 'Nữ'}">Nam</td>
+                                <td th:text="${p.idCard}">012345678901</td>
+                                <td th:text="${p.phoneNumber}">0123456789</td>
+                                <td th:text="${p.type == 'ADULT' ? 'Người lớn' : 'Trẻ em'}">Người lớn</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="next-steps">
+                <div class="section-title">
+                    <h2><i class="fas fa-arrow-right"></i> Các bước tiếp theo</h2>
+                </div>
+                
+                <div class="steps-list">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Chờ xác nhận</h4>
+                            <p>Nhân viên của chúng tôi sẽ liên hệ xác nhận booking trong vòng 24 giờ</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Thanh toán</h4>
+                            <p>Thực hiện thanh toán theo hướng dẫn được gửi qua email</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Nhận voucher</h4>
+                            <p>Voucher du lịch sẽ được gửi sau khi hoàn tất thanh toán</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                
+                <!-- Nút thanh toán - chỉ hiển thị khi chưa thanh toán -->
+                <a th:if="${booking.payment != null and (booking.payment.status == 'PENDING' or booking.payment.method == null)}"
+                   th:href="@{/page/payment/{id}(id=${booking.id})}" 
+                   class="btn btn-primary btn-payment">
+                    <i class="fas fa-credit-card"></i> Thanh toán ngay
+                </a>
+                
+                <!-- Hiển thị trạng thái đã thanh toán -->
+                <span th:if="${booking.payment != null and booking.payment.status == 'COMPLETED'}"
+                      class="btn btn-success" style="cursor: default;">
+                    <i class="fas fa-check"></i> Đã thanh toán
+                </span>
+                
+                <a th:href="@{/page/booking/history}" class="btn btn-outline-primary">
+                    <i class="fas fa-history"></i> Xem lịch sử đặt tour
+                </a>
+                <a th:href="@{/page/tours/newest}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm tour khác
+                </a>
+                <button class="btn btn-success" onclick="window.print()">
+                    <i class="fas fa-print"></i> In xác nhận
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{page/fragments/footer :: footer}"></div>
+
+    <script>
+        // Auto-scroll to top when page loads
+        window.onload = function() {
+            window.scrollTo(0, 0);
+        };
+    </script>
+</body>
+</html>

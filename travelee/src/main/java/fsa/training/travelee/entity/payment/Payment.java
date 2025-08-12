@@ -41,7 +41,7 @@ public class Payment {
     private LocalDateTime paidAt;
     private LocalDateTime refundedAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "booking_id", nullable = false, unique = true)
     private Booking booking;
 }

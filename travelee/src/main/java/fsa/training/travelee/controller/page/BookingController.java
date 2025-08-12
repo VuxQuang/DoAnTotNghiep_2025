@@ -168,7 +168,7 @@ public class BookingController {
             return "redirect:/page/booking/confirmation/" + booking.getId();
             
         } catch (Exception e) {
-            log.error("Lỗi tạo booking: {}", e.getMessage());
+            log.error("Lỗi tạo booking", e);
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
             return "redirect:/page/booking/" + bookingRequest.getTourId() + 
                    "?scheduleId=" + bookingRequest.getScheduleId();
@@ -183,6 +183,9 @@ public class BookingController {
         
         try {
             Booking booking = bookingService.getBookingById(bookingId);
+            if (booking == null) {
+                return "redirect:/page/tours/newest";
+            }
             
             // Kiểm tra quyền xem booking
             User user = userService.getCurrentUser();
@@ -190,10 +193,18 @@ public class BookingController {
                 return "redirect:/login";
             }
             
+            // Đảm bảo các relationship được load
+            if (booking.getTour() == null || booking.getSchedule() == null || booking.getUser() == null) {
+                log.error("Booking {} thiếu thông tin relationship", bookingId);
+                return "redirect:/page/tours/newest";
+            }
+            
             model.addAttribute("booking", booking);
+            model.addAttribute("user", user);
             return "page/booking/booking-confirmation";
             
         } catch (Exception e) {
+            log.error("Lỗi hiển thị trang xác nhận booking: {}", e.getMessage());
             return "redirect:/page/tours/newest";
         }
     }

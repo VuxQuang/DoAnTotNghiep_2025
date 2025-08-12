@@ -53,6 +53,9 @@ function updateParticipants() {
         }
     });
     
+    // Reset bộ đếm để đảm bảo index liên tục: [0] là người đặt, các mục tiếp theo bắt đầu từ 1
+    participantCounter = 1;
+    
     // Thêm participants cho người lớn
     for (let i = 1; i < adultCount; i++) {
         addParticipant(`Người lớn ${i + 1}`, false, 'ADULT');
