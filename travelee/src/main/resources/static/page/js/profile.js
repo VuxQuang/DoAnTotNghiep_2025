@@ -1,4 +1,4 @@
-// Validate đổi mật khẩu (giả sử form có id là 'changePasswordForm' và input mật khẩu mới có id 'newPassword')
+// Validate đổi mật khẩu
 document.addEventListener('DOMContentLoaded', function() {
     var changePasswordForm = document.getElementById('changePasswordForm');
     if (changePasswordForm) {
@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Xử lý chuyển đổi giữa các tab
 document.addEventListener("DOMContentLoaded", function () {
     const menuItems = document.querySelectorAll(".profile-menu-item");
     const tabs = document.querySelectorAll(".profile-tab");
@@ -44,6 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+// Xử lý URL parameter để mở tab cụ thể
 document.addEventListener("DOMContentLoaded", function () {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get("tab");
@@ -53,37 +57,44 @@ document.addEventListener("DOMContentLoaded", function () {
         if (activeTabBtn) activeTabBtn.click();
     }
 });
-document.querySelectorAll('.toggle-password').forEach(function(eye) {
-    eye.addEventListener('click', function() {
-        const targetId = this.getAttribute('data-target');
-        const input = document.getElementById(targetId);
-        if (input) {
-            if (input.type === 'password') {
-                input.type = 'text';
-                this.querySelector('i').classList.remove('fa-eye');
-                this.querySelector('i').classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                this.querySelector('i').classList.remove('fa-eye-slash');
-                this.querySelector('i').classList.add('fa-eye');
+
+// Xử lý hiển thị/ẩn mật khẩu
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.toggle-password').forEach(function(eye) {
+        eye.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (input) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.querySelector('i').classList.remove('fa-eye');
+                    this.querySelector('i').classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    this.querySelector('i').classList.remove('fa-eye-slash');
+                    this.querySelector('i').classList.add('fa-eye');
+                }
             }
-        }
+        });
     });
 });
 
-    
+// Xử lý dropdown
 window.addEventListener('click', function(e) {
     document.querySelectorAll('.dropdown').forEach(drop => {
         if (!drop.contains(e.target)) drop.classList.remove('show');
     });
 });
 
+// Hàm toggle reply cho support
 function toggleReply(index) {
     const elem = document.getElementById("reply-" + index);
     if (elem.style.display === "none" || elem.style.display === "") {
-    elem.style.display = "block";
-} else {
-    elem.style.display = "none";
+        elem.style.display = "block";
+    } else {
+        elem.style.display = "none";
+    }
 }
-}
+
+
 

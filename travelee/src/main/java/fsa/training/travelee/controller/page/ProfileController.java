@@ -4,7 +4,9 @@ import fsa.training.travelee.dto.ChangePasswordDto;
 import fsa.training.travelee.dto.UpdateUserDto;
 import fsa.training.travelee.entity.SupportRequest;
 import fsa.training.travelee.entity.User;
+import fsa.training.travelee.entity.booking.Booking;
 import fsa.training.travelee.repository.UserRepository;
+import fsa.training.travelee.service.BookingService;
 import fsa.training.travelee.service.SupportRequestService;
 import fsa.training.travelee.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +16,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class ProfileController {
 
     private final SupportRequestService supportRequestService;
-
+    private final BookingService bookingService;
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/profile")
@@ -40,12 +44,14 @@ public class ProfileController {
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setAddress(user.getAddress());
 
+        // Lấy danh sách booking của user
+        List<Booking> userBookings = bookingService.getBookingsByUser(user);
 
         model.addAttribute("updateUserDto", dto);
         model.addAttribute("supportRequest", new SupportRequest());
-
         model.addAttribute("supportList", supportRequestService.findAllByUserId(user.getId()));
         model.addAttribute("loggedInUser", user);
+        model.addAttribute("userBookings", userBookings);
 
         return "/page/profile";
     }
@@ -107,5 +113,24 @@ public class ProfileController {
 
         ra.addFlashAttribute("success", "Phản hồi của bạn đã được ghi nhận!");
         return "redirect:/profile";
+    }
+
+    @PostMapping("/profile/cancel-booking/{bookingId}")
+    public String cancelBooking(@PathVariable Long bookingId, 
+                               Authentication authentication,
+                               RedirectAttributes ra) {
+        String username = authentication.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        try {
+            // Hủy booking
+            bookingService.cancelBooking(bookingId, "Người dùng hủy");
+            ra.addFlashAttribute("success", "Đã hủy tour thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Có lỗi xảy ra khi hủy tour: " + e.getMessage());
+        }
+
+        return "redirect:/profile?tab=tours";
     }
 }

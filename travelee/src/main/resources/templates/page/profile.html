@@ -44,6 +44,7 @@
                 <ul class="profile-menu">
                     <li class="profile-menu-item active" data-tab="info"><i class="fas fa-user"></i> Thông tin cá nhân</li>
                     <li class="profile-menu-item" data-tab="tours"><i class="fas fa-suitcase-rolling"></i> Tour đã đặt</li>
+                    <li class="profile-menu-item" data-tab="booking-confirmation"><i class="fas fa-check-circle"></i> Xác nhận đặt tour</li>
                     <li class="profile-menu-item" data-tab="password"><i class="fas fa-key"></i> Đổi mật khẩu</li>
                     <li class="profile-menu-item" data-tab="support"><i class="fas fa-headset"></i> Phản hồi hỗ trợ</li>
                 </ul>
@@ -73,8 +74,16 @@
                 </div>
                 <div class="profile-tab profile-tours">
                     <h2>Tour đã đặt</h2>
+                    
+                    <!-- Thông báo thành công/lỗi -->
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                    
                     <div class="tours-table-wrapper">
-                        <table class="tours-table">
+                        <div th:if="${userBookings == null || userBookings.isEmpty()}" class="no-bookings">
+                            <p>Bạn chưa có tour nào được đặt.</p>
+                        </div>
+                        <table th:if="${userBookings != null && !userBookings.isEmpty()}" class="tours-table">
                             <thead>
                             <tr>
                                 <th>STT</th>
@@ -84,36 +93,54 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td>1</td>
+                            <tr th:each="booking, iterStat : ${userBookings}">
+                                <td th:text="${iterStat.count}">1</td>
                                 <td>
-                                    <div class="tour-title">Du lịch Cần Thơ - Cà Mau</div>
-                                    <div><b>Loại tour:</b> Gia đình</div>
-                                    <div><b>Điểm xuất phát:</b> Tp. Hồ Chí Minh</div>
-                                    <div><b>Điểm đến:</b> Cà Mau</div>
-                                    <div><b>Điểm đón:</b> a</div>
-                                    <div><b>Ngày khởi hành:</b> 2023-10-31</div>
-                                    <div><b>Ngày trở về:</b> 2023-11-02</div>
+                                    <div class="tour-title" th:text="${booking.tour.title}">Tên tour</div>
+                                    <div><b>Loại tour:</b> <span th:text="${booking.tour.category.name}">Loại tour</span></div>
+                                    <div><b>Điểm xuất phát:</b> <span th:text="${booking.tour.departure}">Điểm xuất phát</span></div>
+                                    <div><b>Điểm đến:</b> <span th:text="${booking.tour.destination}">Điểm đến</span></div>
+                                    <div th:if="${booking.schedule != null}">
+                                        <div><b>Ngày khởi hành:</b> <span th:text="${booking.schedule.departureDate}">Ngày khởi hành</span></div>
+                                        <div><b>Ngày trở về:</b> <span th:text="${booking.schedule.returnDate}">Ngày trở về</span></div>
+                                    </div>
                                 </td>
                                 <td>
-                                    <div><b>Mã booking:</b> 72</div>
-                                    <div><b>Số người lớn:</b> 1 - <b>Thành tiền:</b> 380.000 vnd</div>
-                                    <div><b>Số trẻ em (6-12 tuổi):</b> 0 - <b>Thành tiền:</b> 0 vnd</div>
-                                    <div><b>Số trẻ em (2-6 tuổi):</b> 0 - <b>Thành tiền:</b> 0 vnd</div>
-                                    <div><b>Số trẻ em (dưới 2 tuổi):</b> 0 - <b>Thành tiền:</b> 0 vnd</div>
-                                    <div><b>Tổng tiền:</b> 380.000 vnd</div>
-                                    <div><b>Ghi chú:</b> 1</div>
+                                    <div><b>Mã booking:</b> <span th:text="${booking.bookingCode}">Mã booking</span></div>
+                                    <div><b>Số người lớn:</b> <span th:text="${booking.adultCount}">0</span> - <b>Thành tiền:</b> <span th:text="${booking.adultCount * booking.tour.adultPrice}">0</span> vnd</div>
+                                    <div><b>Số trẻ em:</b> <span th:text="${booking.childCount}">0</span> - <b>Thành tiền:</b> <span th:text="${booking.childCount * booking.tour.childPrice}">0</span> vnd</div>
+                                    <div th:if="${booking.discountAmount != null && booking.discountAmount > 0}">
+                                        <b>Giảm giá:</b> <span th:text="${booking.discountAmount}">0</span> vnd
+                                    </div>
+                                    <div><b>Tổng tiền:</b> <span th:text="${booking.totalAmount}">0</span> vnd</div>
+                                    <div th:if="${booking.specialRequests != null && !booking.specialRequests.isEmpty()}">
+                                        <b>Ghi chú:</b> <span th:text="${booking.specialRequests}">Ghi chú</span>
+                                    </div>
+                                    <div><b>Ngày đặt:</b> <span th:text="${booking.createdAt}">Ngày đặt</span></div>
                                 </td>
                                 <td>
-                                    <button class="btn-cancel">Hủy</button>
-                                    <!-- Hoặc: <span class="status paid">Đã thanh toán</span> -->
+                                    <div class="booking-status">
+                                        <span th:class="'status ' + ${booking.status.name().toLowerCase()}" 
+                                              th:text="${booking.status.name() == 'PENDING' ? 'Chờ xác nhận' : 
+                                                        booking.status.name() == 'CONFIRMED' ? 'Đã xác nhận' :
+                                                        booking.status.name() == 'CANCELLED' ? 'Đã hủy' :
+                                                        booking.status.name() == 'COMPLETED' ? 'Hoàn thành' : 'Không xác định'}">
+                                            Trạng thái
+                                        </span>
+                                    </div>
+                                    <div th:if="${booking.status.name() == 'PENDING' || booking.status.name() == 'CONFIRMED'}" class="booking-actions">
+                                        <form th:action="@{/profile/cancel-booking/{id}(id=${booking.id})}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy tour này không?')">Hủy</button>
+                                        </form>
+                                        <a th:href="@{/page/booking/confirmation/{bookingId}(bookingId=${booking.id})}" class="btn-detail">Chi tiết đơn đặt tour</a>
+                                    </div>
                                 </td>
                             </tr>
-                            <!-- Thêm các tour khác nếu muốn -->
                             </tbody>
                         </table>
                     </div>
                 </div>
+                
                 <div class="profile-tab profile-password">
                     <h2>Đổi mật khẩu</h2>
                     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
@@ -187,7 +214,7 @@
                                     <p th:text="${item.content}"></p>
 
                                     <p><strong>Gửi lúc:</strong>
-                                        <span th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <span th:text="${item.createdAt}"></span>
                                     </p>
 
                                     <div th:if="${item.status.name() == 'PENDING'}">
@@ -198,7 +225,7 @@
                                         <p><strong>Phản hồi của Admin:</strong></p>
                                         <p th:text="${item.reply}"></p>
                                         <p><strong>Ngày trả lời:</strong>
-                                            <span th:text="${#temporals.format(item.repliedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            <span th:text="${item.repliedAt}"></span>
                                         </p>
                                     </div>
                                 </div>
@@ -216,6 +243,42 @@
 <div th:replace="~{/page/fragments/chatbot :: chatbot}"></div>
 
 <script th:src="@{/page/js/profile.js}"></script>
+
+<script>
+// Debug script để kiểm tra tab switching
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded');
+    
+    const menuItems = document.querySelectorAll('.profile-menu-item');
+    const tabs = document.querySelectorAll('.profile-tab');
+    
+    console.log('Menu items found:', menuItems.length);
+    console.log('Tabs found:', tabs.length);
+    
+    menuItems.forEach(item => {
+        console.log('Menu item:', item.dataset.tab);
+        item.addEventListener('click', function() {
+            console.log('Clicked on tab:', this.dataset.tab);
+            
+            const tabName = this.dataset.tab;
+            
+            // Remove active từ tất cả
+            menuItems.forEach(i => i.classList.remove('active'));
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Gán active mới
+            this.classList.add('active');
+            const targetTab = document.querySelector(`.profile-tab.profile-${tabName}`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+                console.log('Activated tab:', targetTab.className);
+            } else {
+                console.log('Target tab not found for:', tabName);
+            }
+        });
+    });
+});
+</script>
 
 </body>
 </html>

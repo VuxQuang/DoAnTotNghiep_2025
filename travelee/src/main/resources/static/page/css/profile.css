@@ -339,21 +339,51 @@
     font-size: 1.08rem;
 }
 .btn-cancel {
-    background: #d32f2f;
-    color: #fff;
+    background-color: #dc3545;
+    color: white;
     border: none;
-    border-radius: 10px;
-    padding: 12px 32px;
-    font-size: 1rem;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 8px rgba(211,47,47,0.08);
-    margin-top: 12px;
-    display: block;
+    font-size: 14px;
+    flex: 1;
+    text-align: center;
 }
-.btn-cancel:hover {
-    background: #b71c1c;
+
+.btn-detail {
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: inline-block;
+    transition: background-color 0.3s;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-detail:hover {
+    background-color: #0056b3;
+    color: white;
+    text-decoration: none;
+}
+
+.btn-print {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    flex: 1;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.btn-print:hover {
+    background-color: #1e7e34;
 }
 .status {
     display: inline-block;
@@ -378,10 +408,64 @@
     color: #e74c3c;
     border: 1.5px solid #e74c3c;
 }
+.status.confirmed {
+    background: #e6f9ed;
+    color: #1dbf73;
+    border: 1.5px solid #1dbf73;
+}
+.status.completed {
+    background: #e6f9ed;
+    color: #1dbf73;
+    border: 1.5px solid #1dbf73;
+}
+
+/* Cải thiện giao diện bảng tours */
+.tours-table td {
+    padding: 20px 16px;
+    line-height: 1.6;
+}
+
+.tours-table td div {
+    margin-bottom: 8px;
+}
+
+.tours-table td div:last-child {
+    margin-bottom: 0;
+}
+
+.booking-status {
+    margin-bottom: 12px;
+}
+
+.booking-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.no-bookings {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.no-bookings p {
+    margin: 0;
+}
+
+/* Responsive cho bảng tours */
 @media (max-width: 900px) {
     .tours-table {
-        font-size: 0.97rem;
+        font-size: 0.95rem;
         min-width: 700px;
+    }
+    .tours-table td, .tours-table th {
+        padding: 16px 12px;
+    }
+    .tour-title {
+        font-size: 1rem;
     }
 }
 
