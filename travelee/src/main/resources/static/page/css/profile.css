@@ -434,14 +434,30 @@
 }
 
 .booking-status {
-    margin-bottom: 12px;
+    margin-bottom: 0;
+    text-align: center;
 }
 
 .booking-actions {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 12px;
     align-items: center;
-    margin-top: 10px;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.action-item {
+    width: 100%;
+    text-align: center;
+}
+
+.action-item .btn-cancel,
+.action-item .btn-detail {
+    width: 100%;
+    max-width: 140px;
+    margin: 0 auto;
+    display: block;
 }
 
 .no-bookings {
@@ -473,6 +489,18 @@
 .tours-table td:last-child, .tours-table th:last-child {
     min-width: 160px;
     width: 180px;
+}
+
+/* Cột hành động mới */
+.tours-table th:nth-child(5), .tours-table td:nth-child(5) {
+    min-width: 160px;
+    width: 180px;
+    text-align: center;
+}
+
+/* Cột trạng thái */
+.tours-table th:nth-child(4), .tours-table td:nth-child(4) {
+    text-align: center;
 }
 .btn-avatar {
     margin-top: 8px;

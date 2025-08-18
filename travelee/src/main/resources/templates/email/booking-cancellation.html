@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo hủy tour</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        .title {
+            color: #e74c3c;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .booking-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .tour-details {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .participant-list {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .participant-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 0;
+        }
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .contact-info {
+            background-color: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .info-value {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">TRAVELEE</div>
+            <div class="title">THÔNG BÁO HỦY TOUR</div>
+        </div>
+
+        <p>Kính gửi <strong th:text="${user.fullName}">Khách hàng</strong>,</p>
+
+        <p>Chúng tôi rất tiếc phải thông báo rằng tour của bạn đã được hủy thành công.</p>
+
+        <div class="booking-info">
+            <h3>Thông tin đặt tour:</h3>
+            <div class="info-row">
+                <span class="info-label">Mã đặt tour:</span>
+                <span class="info-value" th:text="${booking.bookingCode}">BK123456789</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày đặt:</span>
+                <span class="info-value" th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Trạng thái:</span>
+                <span class="highlight" th:text="${booking.status}">ĐÃ HỦY</span>
+            </div>
+        </div>
+
+        <div class="tour-details">
+            <h3>Thông tin tour:</h3>
+            <div class="info-row">
+                <span class="info-label">Tên tour:</span>
+                <span class="info-value" th:text="${tour.title}">Tên tour</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Điểm khởi hành:</span>
+                <span class="info-value" th:text="${tour.departure}">Điểm khởi hành</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Điểm đến:</span>
+                <span class="info-value" th:text="${tour.destination}">Điểm đến</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày khởi hành:</span>
+                <span class="info-value" th:text="${#temporals.format(schedule.departureDate, 'dd/MM/yyyy')}">01/01/2024</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày về:</span>
+                <span class="info-value" th:text="${#temporals.format(schedule.returnDate, 'dd/MM/yyyy')}">05/01/2024</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Số người lớn:</span>
+                <span class="info-value" th:text="${booking.adultCount}">2</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Số trẻ em:</span>
+                <span class="info-value" th:text="${booking.childCount}">1</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tổng tiền:</span>
+                <span class="highlight" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">5,000,000 VNĐ</span>
+            </div>
+        </div>
+
+        <div class="participant-list" th:if="${participants != null and !participants.isEmpty()}">
+            <h3>Danh sách thành viên:</h3>
+            <div class="participant-item" th:each="participant : ${participants}">
+                <div class="info-row">
+                    <span class="info-label">Tên:</span>
+                    <span class="info-value" th:text="${participant.fullName}">Tên thành viên</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Loại:</span>
+                    <span class="info-value" th:text="${participant.type == 'ADULT' ? 'Người lớn' : 'Trẻ em'}">Người lớn</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Số điện thoại:</span>
+                    <span class="info-value" th:text="${participant.phoneNumber}">0123456789</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <h3>Liên hệ hỗ trợ:</h3>
+            <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi:</p>
+            <ul>
+                <li>Email: support@travelee.com</li>
+                <li>Điện thoại: 1900-xxxx</li>
+                <li>Giờ làm việc: 8:00 - 18:00 (Thứ 2 - Thứ 6)</li>
+            </ul>
+        </div>
+
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của TRAVELEE. Chúng tôi hy vọng sẽ có cơ hội phục vụ bạn trong tương lai.</p>
+
+        <div class="footer">
+            <p>Trân trọng,<br>
+            <strong>Đội ngũ TRAVELEE</strong></p>
+            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+        </div>
+    </div>
+</body>
+</html>

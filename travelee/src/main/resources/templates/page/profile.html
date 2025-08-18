@@ -90,6 +90,7 @@
                                 <th>Tên tour</th>
                                 <th>Thông tin</th>
                                 <th>Trạng thái</th>
+                                <th>Hành động</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -128,11 +129,17 @@
                                             Trạng thái
                                         </span>
                                     </div>
-                                    <div th:if="${booking.status.name() == 'PENDING' || booking.status.name() == 'CONFIRMED'}" class="booking-actions">
-                                        <form th:action="@{/profile/cancel-booking/{id}(id=${booking.id})}" method="post" style="display: inline;">
-                                            <button type="submit" class="btn-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy tour này không?')">Hủy</button>
-                                        </form>
-                                        <a th:href="@{/page/booking/confirmation/{bookingId}(bookingId=${booking.id})}" class="btn-detail">Chi tiết đơn đặt tour</a>
+                                </td>
+                                <td>
+                                    <div class="booking-actions">
+                                        <div th:if="${booking.status.name() == 'PENDING' || booking.status.name() == 'CONFIRMED'}" class="action-item">
+                                            <form th:action="@{/profile/cancel-booking/{id}(id=${booking.id})}" method="post" style="display: inline;">
+                                                <button type="submit" class="btn-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy tour này không?')">Hủy</button>
+                                            </form>
+                                        </div>
+                                        <div class="action-item">
+                                            <a th:href="@{/page/booking/confirmation/{bookingId}(bookingId=${booking.id})}" class="btn-detail">Chi tiết đơn đặt tour</a>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>

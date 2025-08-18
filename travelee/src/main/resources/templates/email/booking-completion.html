@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Hoàn Thành - Cảm ơn bạn!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            margin-top: 10px;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .thank-you-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .thank-you-section h2 {
+            color: #28a745;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .thank-you-section p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .tour-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #28a745;
+        }
+        .tour-details h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+        .detail-value {
+            color: #2c3e50;
+            text-align: right;
+            flex: 1;
+        }
+        .support-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .support-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .support-section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .contact-info {
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2196f3;
+        }
+        .contact-info h4 {
+            color: #1976d2;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .contact-item:last-child {
+            margin-bottom: 0;
+        }
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            background-color: #2196f3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .footer p {
+            margin: 0;
+            opacity: 0.8;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .social-link:hover {
+            opacity: 1;
+        }
+        .highlight {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+            .detail-row {
+                flex-direction: column;
+                text-align: left;
+            }
+            .detail-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎉 Tour Hoàn Thành!</h1>
+            <div class="subtitle">Cảm ơn bạn đã tham gia cùng chúng tôi</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Thank You Section -->
+            <div class="thank-you-section">
+                <h2>Xin chào <span th:text="${user.fullName}">Khách hàng</span>!</h2>
+                <p>Chúng tôi rất vui mừng thông báo rằng tour <strong th:text="${tour.title}">Tour Name</strong> của bạn đã hoàn thành thành công!</p>
+                <p>Chúng tôi hy vọng bạn đã có một trải nghiệm tuyệt vời và những kỷ niệm đáng nhớ trong chuyến đi này.</p>
+            </div>
+
+            <!-- Tour Details -->
+            <div class="tour-details">
+                <h3>📋 Thông tin tour đã hoàn thành</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Mã booking:</span>
+                    <span class="detail-value" th:text="${booking.bookingCode}">BK001</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Tên tour:</span>
+                    <span class="detail-value" th:text="${tour.title}">Tour Name</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ngày khởi hành:</span>
+                    <span class="detail-value" th:text="${#temporals.format(schedule.departureDate, 'dd/MM/yyyy')}">01/01/2024</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ngày về:</span>
+                    <span class="detail-value" th:text="${#temporals.format(schedule.returnDate, 'dd/MM/yyyy')}">05/01/2024</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Điểm đi:</span>
+                    <span class="detail-value" th:text="${tour.departure}">Hà Nội</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Điểm đến:</span>
+                    <span class="detail-value" th:text="${tour.destination}">Đà Nẵng</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Số người tham gia:</span>
+                    <span class="detail-value">
+                        <span th:text="${#lists.size(participants)}">2</span> người
+                    </span>
+                </div>
+            </div>
+
+            <!-- Support Section -->
+            <div class="support-section">
+                <h3>💝 Mong muốn của chúng tôi</h3>
+                <p>Chúng tôi rất mong nhận được sự ủng hộ và tin tưởng của bạn trong những chuyến đi tiếp theo!</p>
+                <p>Nếu bạn hài lòng với dịch vụ của chúng tôi, hãy chia sẻ trải nghiệm tuyệt vời này với bạn bè và người thân.</p>
+                <a href="#" class="cta-button">Đặt tour tiếp theo</a>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h4>📞 Cần hỗ trợ hoặc có thắc mắc?</h4>
+                <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7:</p>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <span><strong>Hotline:</strong> 1900 xxxx</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">💬</div>
+                    <span><strong>Zalo:</strong> @TraveleeSupport</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <span><strong>Email:</strong> support@travelee.com</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🌐</div>
+                    <span><strong>Website:</strong> www.travelee.com</span>
+                </div>
+            </div>
+
+            <!-- Final Message -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <p style="font-size: 16px; color: #666;">
+                    Một lần nữa, <span class="highlight">cảm ơn bạn</span> đã chọn Travelee làm người bạn đồng hành trong chuyến đi của mình!
+                </p>
+                <p style="font-size: 14px; color: #888;">
+                    Chúng tôi hẹn gặp lại bạn trong những chuyến phiêu lưu tiếp theo! 🚀
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2024 Travelee. Tất cả quyền được bảo lưu.</p>
+            <p>Travelee - Đồng hành cùng mọi chuyến đi</p>
+            <div class="social-links">
+                <a href="#" class="social-link">Facebook</a>
+                <a href="#" class="social-link">Instagram</a>
+                <a href="#" class="social-link">YouTube</a>
+                <a href="#" class="social-link">TikTok</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

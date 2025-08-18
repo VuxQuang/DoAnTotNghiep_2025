@@ -14,6 +14,7 @@ import fsa.training.travelee.entity.User;
 import fsa.training.travelee.repository.BookingRepository;
 import fsa.training.travelee.repository.TourRepository;
 import fsa.training.travelee.repository.TourScheduleRepository;
+import fsa.training.travelee.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,23 +39,24 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final TourRepository tourRepository;
     private final TourScheduleRepository tourScheduleRepository;
+    private final EmailService emailService;
 
     @Override
     public Booking createBooking(BookingRequestDto bookingRequest, User user) {
         // Kiểm tra tour và schedule
         Tour tour = tourRepository.findById(bookingRequest.getTourId())
                 .orElseThrow(() -> new IllegalArgumentException("Tour không tồn tại"));
-        
+
         TourSchedule schedule = tourScheduleRepository.findById(bookingRequest.getScheduleId())
                 .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
-        
+
         // Kiểm tra availability
-        if (!isScheduleAvailable(bookingRequest.getScheduleId(), 
-                                bookingRequest.getAdultCount(), 
-                                bookingRequest.getChildCount())) {
+        if (!isScheduleAvailable(bookingRequest.getScheduleId(),
+                bookingRequest.getAdultCount(),
+                bookingRequest.getChildCount())) {
             throw new IllegalArgumentException("Lịch trình không đủ chỗ");
         }
-        
+
         // Tính tổng tiền
         BigDecimal totalAmount = calculateTotalAmount(
                 bookingRequest.getTourId(),
@@ -62,7 +64,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingRequest.getAdultCount(),
                 bookingRequest.getChildCount()
         );
-        
+
         // Tạo booking
         Booking booking = Booking.builder()
                 .bookingCode(generateBookingCode())
@@ -75,10 +77,10 @@ public class BookingServiceImpl implements BookingService {
                 .tour(tour)
                 .schedule(schedule)
                 .build();
-        
+
         // Lưu booking trước
         final Booking savedBooking = bookingRepository.save(booking);
-        
+
         // Tạo participants với savedBooking (final)
         List<BookingParticipant> participants = new ArrayList<>();
         bookingRequest.getParticipants().forEach(participantRequest -> {
@@ -93,27 +95,27 @@ public class BookingServiceImpl implements BookingService {
                     .build();
             participants.add(participant);
         });
-        
+
         Payment payment = Payment.builder()
                 .paymentCode(generatePaymentCode())
                 .amount(totalAmount)
                 .status(PaymentStatus.PENDING)
                 .booking(savedBooking)
                 .build();
-        
+
         savedBooking.setPayment(payment);
         savedBooking.setParticipants(participants);
 
         // Lưu booking (sẽ cascade persist cả participants và payment)
         Booking finalBooking = bookingRepository.save(savedBooking);
-        
+
         // Gửi email xác nhận
         try {
-            sendBookingConfirmationEmail(finalBooking);
+            emailService.sendBookingConfirmationEmail(finalBooking);
         } catch (Exception e) {
             log.error("Lỗi gửi email xác nhận booking: {}", e.getMessage());
         }
-        
+
         return finalBooking;
     }
 
@@ -122,17 +124,17 @@ public class BookingServiceImpl implements BookingService {
         // Lấy booking với relationships cơ bản
         Booking booking = bookingRepository.findByIdWithRelationships(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
-        
+
         // Lấy thêm participants và payment
         Booking bookingWithDetails = bookingRepository.findByIdWithParticipantsAndPayment(id)
                 .orElse(booking);
-        
+
         // Merge thông tin
         if (bookingWithDetails != null) {
             booking.setParticipants(bookingWithDetails.getParticipants());
             booking.setPayment(bookingWithDetails.getPayment());
         }
-        
+
         return booking;
     }
 
@@ -154,7 +156,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<Booking> getBookingsByStatus(BookingStatus status) {
-        return bookingRepository.findByStatusOrderByCreatedAtDesc(status);
+        // Sử dụng method phân trang và convert sang List
+        Page<Booking> page = bookingRepository.findByStatusOrderByCreatedAtDesc(status, Pageable.unpaged());
+        return page.getContent();
     }
 
     @Override
@@ -170,7 +174,22 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking updateBookingStatus(Long bookingId, BookingStatus status) {
         Booking booking = getBookingById(bookingId);
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(status);
+        
+                    try {
+                        if (status == BookingStatus.CONFIRMED && oldStatus == BookingStatus.PENDING) {
+                            // Nếu xác nhận từ pending thì gửi email xác nhận
+                            emailService.sendBookingConfirmationEmail(booking);
+                        } else if (status == BookingStatus.COMPLETED) {
+                            // Nếu hoàn thành tour thì gửi email cảm ơn
+                            emailService.sendBookingCompletionEmail(booking);
+                        }
+                        // Không gửi email cho các thay đổi trạng thái khác
+                    } catch (Exception e) {
+                        log.error("Lỗi gửi email thông báo thay đổi trạng thái booking: {}", e.getMessage());
+                    }
+        
         return bookingRepository.save(booking);
     }
 
@@ -179,14 +198,14 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = getBookingById(bookingId);
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setSpecialRequests(booking.getSpecialRequests() + "\nLý do hủy: " + reason);
-        
+
         // Gửi email hủy
         try {
-            sendBookingCancellationEmail(booking);
+            emailService.sendBookingCancellationEmail(booking);
         } catch (Exception e) {
             log.error("Lỗi gửi email hủy booking: {}", e.getMessage());
         }
-        
+
         return bookingRepository.save(booking);
     }
 
@@ -194,18 +213,18 @@ public class BookingServiceImpl implements BookingService {
     public BigDecimal calculateTotalAmount(Long tourId, Long scheduleId, int adultCount, int childCount) {
         Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new IllegalArgumentException("Tour không tồn tại"));
-        
+
         TourSchedule schedule = tourScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
-        
+
         // Sử dụng giá khuyến mãi nếu có, không thì dùng giá gốc
         BigDecimal adultPrice = schedule.getSpecialPrice() != null ?
                 schedule.getSpecialPrice() : (tour.getAdultPrice() != null ? tour.getAdultPrice() : BigDecimal.ZERO);
         BigDecimal childPrice = tour.getChildPrice() != null ? tour.getChildPrice() : BigDecimal.ZERO;
-        
+
         BigDecimal adultTotal = adultPrice.multiply(BigDecimal.valueOf(adultCount));
         BigDecimal childTotal = childPrice.multiply(BigDecimal.valueOf(childCount));
-        
+
         return adultTotal.add(childTotal);
     }
 
@@ -213,7 +232,7 @@ public class BookingServiceImpl implements BookingService {
     public boolean isScheduleAvailable(Long scheduleId, int adultCount, int childCount) {
         TourSchedule schedule = tourScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("Lịch trình không tồn tại"));
-        
+
         int totalRequested = adultCount + childCount;
         Integer availableSlots = schedule.getAvailableSlots();
         if (availableSlots == null) {
@@ -238,15 +257,35 @@ public class BookingServiceImpl implements BookingService {
         return "PM" + timestamp + randomPart;
     }
 
+
+
     @Override
-    public void sendBookingConfirmationEmail(Booking booking) {
-        // TODO: Implement email service
-        log.info("Gửi email xác nhận booking: {}", booking.getBookingCode());
+    public Page<Booking> getAllBookingsWithPagination(Pageable pageable) {
+        return bookingRepository.findAll(pageable);
     }
 
     @Override
-    public void sendBookingCancellationEmail(Booking booking) {
-        // TODO: Implement email service
-        log.info("Gửi email hủy booking: {}", booking.getBookingCode());
+    public Page<Booking> getBookingsByStatusWithPagination(BookingStatus status, Pageable pageable) {
+        return bookingRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
     }
-} 
+
+    @Override
+    public Page<Booking> searchBookings(String searchTerm, Pageable pageable) {
+        return bookingRepository.searchBookings(searchTerm, pageable);
+    }
+
+    @Override
+    public Page<Booking> getBookingsByDateRange(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return bookingRepository.findByCreatedAtBetween(startDate, endDate, pageable);
+    }
+
+    @Override
+    public long getTotalBookings() {
+        return bookingRepository.count();
+    }
+
+    @Override
+    public long getTotalBookingsByStatus(BookingStatus status) {
+        return bookingRepository.countByStatus(status);
+    }
+}

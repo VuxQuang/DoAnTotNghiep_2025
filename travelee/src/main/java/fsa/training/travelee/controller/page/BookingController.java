@@ -254,7 +254,7 @@ public class BookingController {
         model.addAttribute("bookings", bookings);
         model.addAttribute("user", user);
         
-        return "page/booking/booking-history";
+        return "redirect:/profile?tab=tours";
     }
 
     // Hủy booking
