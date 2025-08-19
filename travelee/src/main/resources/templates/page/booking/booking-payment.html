@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Thanh toán - Travelee</title>
+	<link rel="stylesheet" th:href="@{/page/css/booking-confirmation.css}">
+    <script th:inline="javascript">
+		document.addEventListener('DOMContentLoaded', function () {
+			const bookingId = /*[[${booking.id}]]*/ 0;
+			const statusUrl = `/page/payment/${bookingId}/status`;
+			const pollIntervalMs = 3000;
+
+			function pollStatus() {
+				fetch(statusUrl, { credentials: 'same-origin' })
+					.then(res => res.json())
+					.then(data => {
+						if (data && (data.paymentStatus === 'COMPLETED' || data.bookingStatus === 'CONFIRMED' || data.bookingStatus === 'COMPLETED')) {
+							const redirectUrl = data.redirectUrl || `/page/booking/confirmation/${bookingId}`;
+							window.location.replace(redirectUrl);
+							return;
+						}
+						setTimeout(pollStatus, pollIntervalMs);
+					})
+					.catch(() => setTimeout(pollStatus, pollIntervalMs));
+			}
+
+			pollStatus();
+		});
+	</script>
+</head>
+<body>
+	<main class="confirmation-container">
+		<div class="container">
+			<div class="section-title">
+				<h2>Thanh toán cho booking <span th:text="${booking.bookingCode}">BK</span></h2>
+			</div>
+
+			<div class="details-grid">
+				<div class="detail-item">
+					<label>Tổng tiền:</label>
+					<span class="amount" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</span>
+				</div>
+				<div class="detail-item">
+					<label>Trạng thái thanh toán:</label>
+					<span class="status-badge" th:classappend="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'confirmed' : 'pending'}">
+						<span th:text="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
+					</span>
+				</div>
+			</div>
+
+			<div th:if="${qrImageUrl != null}" class="tour-card" style="text-align:center; padding: 16px;">
+				<img th:src="${qrImageUrl}" alt="VietQR" style="max-width: 320px; width: 100%;"/>
+				<p style="margin-top: 8px;">Quét QR để thanh toán số tiền <b th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')}">0</b> VNĐ</p>
+				<p>Nội dung chuyển khoản: <b th:text="${booking.bookingCode}">BK</b></p>
+				<p>Ngân hàng: <b th:text="${bankCode}">VCB</b> | Số tài khoản: <b th:text="${accountNumber}">0000</b> | Tên: <b th:text="${accountName}">TRAVELEE</b></p>
+			</div>
+
+			<div th:if="${qrImageUrl == null}" class="alert" style="background:#fff3cd; padding:12px; border:1px solid #ffeeba;">
+				Bạn chưa cấu hình thông tin tài khoản theo dõi của SePay. Vui lòng thêm vào application.properties: <br/>
+				<code>sepay.bank-code=VCB</code><br/>
+				<code>sepay.account-number=...</code><br/>
+				<code>sepay.account-name=...</code>
+			</div>
+
+			<div class="action-buttons">
+				<a th:href="@{'/page/booking/confirmation/' + ${booking.id}}" class="btn btn-outline-primary">Quay lại xác nhận</a>
+				<a th:href="@{/page/booking/history}" class="btn btn-primary">Lịch sử đặt tour</a>
+			</div>
+		</div>
+	</main>
+</body>
+</html>
+
+

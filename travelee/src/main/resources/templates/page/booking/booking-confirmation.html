@@ -42,7 +42,7 @@
                                                                    booking.status == 'CONFIRMED' ? 'confirmed' : 
                                                                    booking.status == 'CANCELLED' ? 'cancelled' : 'completed'}">
                             <span th:text="${booking.status == 'PENDING' ? 'Chờ xác nhận' : 
-                                          booking.status == 'CONFIRMED' ? 'Đã xác nhận' : 
+                                          booking.status == 'CONFIRMED' ? 'Đã thanh toán' : 
                                           booking.status == 'CANCELLED' ? 'Đã hủy' : 'Hoàn thành'}">Chờ xác nhận</span>
                         </span>
                     </div>

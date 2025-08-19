@@ -177,6 +177,18 @@ public class BookingServiceImpl implements BookingService {
         BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(status);
         
+        // Đồng bộ trạng thái thanh toán khi booking được xác nhận/hoàn tất
+        if (status == BookingStatus.CONFIRMED || status == BookingStatus.COMPLETED) {
+            Payment payment = booking.getPayment();
+            if (payment != null && payment.getStatus() != PaymentStatus.COMPLETED) {
+                payment.setStatus(PaymentStatus.COMPLETED);
+                if (payment.getPaidAt() == null) {
+                    payment.setPaidAt(LocalDateTime.now());
+                }
+                booking.setPayment(payment);
+            }
+        }
+
                     try {
                         if (status == BookingStatus.CONFIRMED && oldStatus == BookingStatus.PENDING) {
                             // Nếu xác nhận từ pending thì gửi email xác nhận
