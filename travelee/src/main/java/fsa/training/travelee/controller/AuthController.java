@@ -2,8 +2,6 @@ package fsa.training.travelee.controller;
 
 import fsa.training.travelee.dto.RegisterDto;
 import fsa.training.travelee.service.UserService;
-import fsa.training.travelee.service.UserServiceImpl;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,10 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/login")
     public String showLoginForm() {
@@ -37,7 +35,7 @@ public class AuthController {
         String result = userService.registerUser(dto);
 
         if (!"success".equals(result)) {
-            model.addAttribute("error", result);
+            model.addAttribute("error", result);  // Nếu có lỗi, trả về trang đăng ký với thông báo lỗi
             return "register";
         }
         return "redirect:/login";

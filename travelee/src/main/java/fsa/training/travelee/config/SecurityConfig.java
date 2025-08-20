@@ -37,12 +37,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/admin/css/**", "/admin/js/**", "/admin/imgs/**",
-                                "/page/css/**", "/page/js/**", "/page/imgs/**","/uploads/**","/ckeditor/**"
+                                "/page/css/**", "/page/js/**", "/page/imgs/**"
                         ).permitAll()
-                        .requestMatchers("/webhooks/**", "/webhook/**").permitAll()
-                        .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password","/page/**","/page/tours/**").permitAll()
-                        .requestMatchers("/admin/user/**").hasRole("ADMIN")
-                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/admin/login", "/login","/forgot-password","/register","/reset-password").permitAll()
+                        .requestMatchers("/page/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/page/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )

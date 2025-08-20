@@ -23,18 +23,22 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username không tồn tại: " + username));
 
+        // ❗ Nếu là tài khoản Google → chặn login bằng form
         if ("GOOGLE".equalsIgnoreCase(user.getProvider())) {
             throw new BadCredentialsException("Tài khoản này chỉ hỗ trợ đăng nhập bằng Google");
         }
 
+        // ❗ Nếu password bị null → chặn luôn
         if (user.getPassword() == null) {
             throw new BadCredentialsException("Tài khoản chưa có mật khẩu");
         }
 
+        // ✅ Lấy danh sách quyền
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getRoleName()))
                 .collect(Collectors.toList());
 
+        // ✅ Trả về user Spring Security
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),                     // username
                 user.getPassword(),                  // encoded password
