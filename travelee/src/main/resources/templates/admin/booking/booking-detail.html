@@ -29,18 +29,23 @@
                     <div class="header-actions">
                         <button class="btn btn-success" 
                                 th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PENDING}"
-                                onclick="confirmBooking(${booking.id})">
+                                th:onclick="'confirmBooking(' + ${booking.id} + ')'">
                             <i class="fas fa-check"></i> Xác nhận
                         </button>
                         <button class="btn btn-warning" 
                                 th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CONFIRMED}"
-                                onclick="completeBooking(${booking.id})">
+                                th:onclick="'completeBooking(' + ${booking.id} + ')'">
                             <i class="fas fa-flag-checkered"></i> Hoàn thành
                         </button>
                         <button class="btn btn-danger" 
                                 th:if="${booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED && booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).COMPLETED}"
-                                onclick="cancelBooking(${booking.id})">
+                                th:onclick="'cancelBooking(' + ${booking.id} + ')'">
                             <i class="fas fa-times"></i> Hủy tour
+                        </button>
+                        <button class="btn btn-outline-danger"
+                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PAID} or (${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED} and ${booking.payment} != null and ${booking.payment.status} == T(fsa.training.travelee.entity.payment.PaymentStatus).COMPLETED)"
+                                th:onclick="'showRefundModal(' + ${booking.id} + ')'">
+                            <i class="fas fa-rotate-left"></i> Refund
                         </button>
                     </div>
                 </div>
@@ -229,6 +234,14 @@
                                 <label>Mã giao dịch:</label>
                                 <span th:text="${booking.payment.transactionId}">TXN001</span>
                             </div>
+                            <div class="info-item" th:if="${booking.payment.refundAmount != null}">
+                                <label>Số tiền hoàn:</label>
+                                <span th:text="${#numbers.formatDecimal(booking.payment.refundAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</span>
+                            </div>
+                            <div class="info-item" th:if="${booking.payment.refundReason != null}">
+                                <label>Lý do hoàn tiền:</label>
+                                <span th:text="${booking.payment.refundReason}">-</span>
+                            </div>
                         </div>
                     </div>
 
@@ -237,6 +250,14 @@
                         <h3><i class="fas fa-comment"></i> Yêu cầu đặc biệt</h3>
                         <div class="special-requests">
                             <p th:text="${booking.specialRequests}">Yêu cầu đặc biệt của khách hàng</p>
+                        </div>
+                    </div>
+
+                    <!-- Cancellation Reason (if cancelled) -->
+                    <div class="detail-section" th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED && cancellationReason != null && !cancellationReason.isEmpty()}">
+                        <h3><i class="fas fa-ban"></i> Lý do bị hủy</h3>
+                        <div class="special-requests">
+                            <p th:text="${cancellationReason}">-</p>
                         </div>
                     </div>
 
@@ -309,6 +330,30 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
                 <button class="btn btn-danger" onclick="proceedCancel()">Hủy tour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal hoàn tiền -->
+    <div id="refundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Hoàn tiền booking</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="refundAmount">Số tiền hoàn (VNĐ):</label>
+                    <input type="number" id="refundAmount" min="0" step="1" placeholder="Nhập số tiền hoàn">
+                </div>
+                <div class="form-group">
+                    <label for="refundReason">Lý do hoàn:</label>
+                    <textarea id="refundReason" rows="3" placeholder="Nhập lý do hoàn tiền..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+                <button class="btn btn-danger" onclick="proceedRefund()">Xác nhận hoàn tiền</button>
             </div>
         </div>
     </div>

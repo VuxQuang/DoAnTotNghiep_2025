@@ -116,12 +116,26 @@ public class PaymentPageController {
 					: "PENDING";
 			String bookingStatus = booking.getStatus() != null ? booking.getStatus().name() : "PENDING";
 
+			// Log để debug
+			log.debug("Trạng thái thanh toán cho booking {}: paymentStatus={}, bookingStatus={}", 
+				booking.getBookingCode(), paymentStatus, bookingStatus);
+
 			response.put("paymentStatus", paymentStatus);
 			response.put("bookingStatus", bookingStatus);
 			response.put("bookingCode", booking.getBookingCode());
-			response.put("redirectUrl", "/page/booking/confirmation/" + booking.getId());
+			response.put("redirectUrl", "/profile?tab=tours");
+			
+			// Thêm thông tin chi tiết để debug
+			if (booking.getPayment() != null) {
+				response.put("paymentId", booking.getPayment().getId());
+				response.put("paymentAmount", booking.getPayment().getAmount());
+				response.put("paymentCreatedAt", booking.getPayment().getCreatedAt());
+				response.put("paymentPaidAt", booking.getPayment().getPaidAt());
+			}
+			
 			return response;
 		} catch (Exception e) {
+			log.error("Lỗi khi lấy trạng thái thanh toán cho booking {}: {}", id, e.getMessage(), e);
 			response.put("error", "INTERNAL_ERROR");
 			return response;
 		}

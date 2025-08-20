@@ -92,4 +92,83 @@ public class TourMapper {
         }
         return sb.toString();
     }
+
+    public TourCreateRequest toDto(Tour tour) {
+        TourCreateRequest dto = new TourCreateRequest();
+        dto.setTitle(tour.getTitle());
+        dto.setCategoryId(tour.getCategory().getId());
+        dto.setDeparture(tour.getDeparture());
+        dto.setDescription(tour.getDescription());
+        dto.setDestination(tour.getDestination());
+        dto.setDuration(tour.getDuration());
+        dto.setHighlights(tour.getHighlights());
+        dto.setAdultPrice(tour.getAdultPrice());
+        dto.setChildPrice(tour.getChildPrice());
+        dto.setMaxParticipants(tour.getMaxParticipants());
+        dto.setStatus(tour.getStatus());
+        dto.setFeatured(tour.getFeatured());
+        dto.setIsHot(tour.getIsHot());
+        dto.setHasPromotion(tour.getHasPromotion());
+        dto.setIncludes(convertStringToList(tour.getIncludes()));
+        dto.setExcludes(convertStringToList(tour.getExcludes()));
+        dto.setTerms(tour.getTerms());
+        
+        // Map images
+        if (tour.getImages() != null) {
+            dto.setImageUrls(tour.getImages().stream()
+                    .sorted((i1, i2) -> Integer.compare(i1.getSortOrder(), i2.getSortOrder()))
+                    .map(TourImage::getImageUrl)
+                    .toList());
+        }
+        
+        // Map itineraries
+        if (tour.getItineraries() != null) {
+            dto.setItineraries(tour.getItineraries().stream()
+                    .sorted((i1, i2) -> Integer.compare(i1.getDayNumber(), i2.getDayNumber()))
+                    .map(this::mapItineraryToDto)
+                    .toList());
+        }
+        
+        // Map schedules
+        if (tour.getSchedules() != null) {
+            dto.setSchedules(tour.getSchedules().stream()
+                    .map(this::mapScheduleToDto)
+                    .toList());
+        }
+        
+        return dto;
+    }
+
+    private TourItineraryDto mapItineraryToDto(TourItinerary itinerary) {
+        TourItineraryDto dto = new TourItineraryDto();
+        dto.setDayNumber(itinerary.getDayNumber());
+        dto.setTitle(itinerary.getTitle());
+        dto.setDescription(convertStringToList(itinerary.getDescription()));
+        dto.setActivities(convertStringToList(itinerary.getActivities()));
+        dto.setMeals(itinerary.getMeals());
+        dto.setAccommodation(itinerary.getAccommodation());
+        return dto;
+    }
+
+    private TourScheduleDto mapScheduleToDto(TourSchedule schedule) {
+        TourScheduleDto dto = new TourScheduleDto();
+        dto.setDepartureDate(schedule.getDepartureDate());
+        dto.setReturnDate(schedule.getReturnDate());
+        dto.setSpecialPrice(schedule.getSpecialPrice());
+        dto.setAvailableSlots(schedule.getAvailableSlots());
+        dto.setStatus(schedule.getStatus());
+        return dto;
+    }
+
+    private List<String> convertStringToList(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return List.of();
+        }
+        // Tách chuỗi HTML <p>...</p> thành list
+        return List.of(str.split("<p>"))
+                .stream()
+                .map(s -> s.replace("</p>", "").trim())
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
 }

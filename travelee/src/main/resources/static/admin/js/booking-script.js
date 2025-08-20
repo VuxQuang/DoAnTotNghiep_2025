@@ -119,6 +119,13 @@ function cancelBooking(bookingId) {
     showModal('cancelModal');
 }
 
+// Refund booking
+function showRefundModal(bookingId) {
+    currentBookingId = bookingId;
+    currentAction = 'refund';
+    showModal('refundModal');
+}
+
 // Proceed with confirm action
 function proceedConfirm() {
     if (currentBookingId && currentAction === 'confirm') {
@@ -142,6 +149,46 @@ function proceedCancel() {
             return;
         }
         updateBookingStatus(currentBookingId, 'CANCELLED', reason);
+    }
+}
+
+// Proceed with refund action
+function proceedRefund() {
+    if (currentBookingId && currentAction === 'refund') {
+        const amountStr = document.getElementById('refundAmount').value.trim();
+        const reason = document.getElementById('refundReason').value.trim();
+        if (!amountStr || isNaN(Number(amountStr)) || Number(amountStr) <= 0) {
+            showAlert('Vui lòng nhập số tiền hoàn hợp lệ!', 'error');
+            return;
+        }
+        if (!reason) {
+            showAlert('Vui lòng nhập lý do hoàn tiền!', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('amount', amountStr);
+        formData.append('reason', reason);
+
+        fetch(`/admin/bookings/${currentBookingId}/refund`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(() => {
+            showAlert('Hoàn tiền thành công!', 'success');
+            setTimeout(() => window.location.reload(), 1500);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Có lỗi xảy ra khi hoàn tiền!', 'error');
+        })
+        .finally(() => closeModal());
     }
 }
 

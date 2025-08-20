@@ -124,8 +124,10 @@
                                         <span th:class="'status ' + ${booking.status.name().toLowerCase()}" 
                                               th:text="${booking.status.name() == 'PENDING' ? 'Chờ xác nhận' : 
                                                         booking.status.name() == 'CONFIRMED' ? 'Đã xác nhận' :
+                                                        booking.status.name() == 'PAID' ? 'Đã thanh toán' :
                                                         booking.status.name() == 'CANCELLED' ? 'Đã hủy' :
-                                                        booking.status.name() == 'COMPLETED' ? 'Hoàn thành' : 'Không xác định'}">
+                                                        booking.status.name() == 'COMPLETED' ? 'Hoàn thành' :
+                                                        booking.status.name() == 'REFUNDED' ? 'Đã hoàn tiền' : 'Không xác định'}">
                                             Trạng thái
                                         </span>
                                     </div>
@@ -136,6 +138,9 @@
                                             <form th:action="@{/profile/cancel-booking/{id}(id=${booking.id})}" method="post" style="display: inline;">
                                                 <button type="submit" class="btn-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy tour này không?')">Hủy</button>
                                             </form>
+                                        </div>
+                                        <div th:if="${booking.status.name() == 'PAID' || booking.status.name() == 'COMPLETED' || booking.status.name() == 'REFUNDED'}" class="action-item">
+                                            <span style="color:#6c757d; font-size: 12px;">Không thể hủy sau khi đã thanh toán/hoàn thành/hoàn tiền</span>
                                         </div>
                                         <div class="action-item">
                                             <a th:href="@{/page/booking/confirmation/{bookingId}(bookingId=${booking.id})}" class="btn-detail">Chi tiết đơn đặt tour</a>

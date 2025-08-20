@@ -161,4 +161,60 @@ public class EmailServiceImpl implements EmailService {
         
         return templateEngine.process("email/booking-completion", context);
     }
+    
+    @Override
+    public void sendBookingPaidEmail(Booking booking) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("hotloan124@gmail.com");
+            helper.setTo(booking.getUser().getEmail());
+            helper.setSubject("Thanh toán thành công - " + booking.getTour().getTitle());
+
+            Context context = new Context(new Locale("vi", "VN"));
+            context.setVariable("booking", booking);
+            context.setVariable("tour", booking.getTour());
+            context.setVariable("schedule", booking.getSchedule());
+            context.setVariable("user", booking.getUser());
+            context.setVariable("participants", booking.getParticipants());
+
+            String emailContent = templateEngine.process("email/booking-paid", context);
+            helper.setText(emailContent, true);
+
+            mailSender.send(message);
+            log.info("Đã gửi email thanh toán thành công booking: {} đến {}",
+                    booking.getBookingCode(), booking.getUser().getEmail());
+        } catch (MessagingException e) {
+            log.error("Lỗi gửi email thanh toán thành công: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendBookingRefundEmail(Booking booking) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("hotloan124@gmail.com");
+            helper.setTo(booking.getUser().getEmail());
+            helper.setSubject("Hoàn tiền đặt tour - " + booking.getTour().getTitle());
+
+            Context context = new Context(new Locale("vi", "VN"));
+            context.setVariable("booking", booking);
+            context.setVariable("tour", booking.getTour());
+            context.setVariable("schedule", booking.getSchedule());
+            context.setVariable("user", booking.getUser());
+            context.setVariable("participants", booking.getParticipants());
+
+            String emailContent = templateEngine.process("email/booking-refund", context);
+            helper.setText(emailContent, true);
+
+            mailSender.send(message);
+            log.info("Đã gửi email hoàn tiền booking: {} đến {}",
+                    booking.getBookingCode(), booking.getUser().getEmail());
+        } catch (MessagingException e) {
+            log.error("Lỗi gửi email hoàn tiền: {}", e.getMessage());
+        }
+    }
 }

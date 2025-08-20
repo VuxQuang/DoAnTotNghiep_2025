@@ -27,14 +27,25 @@ public class SepayWebhookController {
             @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
 
         if (!isAuthorized(authorizationHeader)) {
+            log.warn("Webhook không được ủy quyền: Authorization header không hợp lệ");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid webhook credential");
         }
 
-        log.info("Nhận webhook SePay: ref={}, status={}, amount={}",
-                payload.getReferenceCode(), payload.getStatus(), payload.getAmount());
+        log.info("Nhận webhook SePay: ref={}, status={}, amount={}, transferType={}, transactionId={}",
+                payload.getReferenceCode(), payload.getStatus(), payload.getAmount(), 
+                payload.getTransferType(), payload.getTransactionId());
 
-        Booking booking = paymentService.handleSepayWebhook(payload);
-        return ResponseEntity.ok("OK:" + booking.getBookingCode());
+        try {
+            Booking booking = paymentService.handleSepayWebhook(payload);
+            log.info("Xử lý webhook thành công cho booking: {}", booking.getBookingCode());
+            return ResponseEntity.ok("OK:" + booking.getBookingCode());
+        } catch (IllegalArgumentException e) {
+            log.warn("Webhook tham chiếu không hợp lệ: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid reference: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi xử lý webhook SePay: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
 
     @PostMapping("/{bookingCode}")
@@ -52,8 +63,16 @@ public class SepayWebhookController {
         log.info("Nhận webhook SePay theo path: bookingCode={}, status={}, amount={}",
                 bookingCode, payload.getStatus(), payload.getAmount());
 
-        Booking booking = paymentService.handleSepayWebhook(payload);
-        return ResponseEntity.ok("OK:" + booking.getBookingCode());
+        try {
+            Booking booking = paymentService.handleSepayWebhook(payload);
+            return ResponseEntity.ok("OK:" + booking.getBookingCode());
+        } catch (IllegalArgumentException e) {
+            log.warn("Webhook tham chiếu không hợp lệ theo path: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid reference: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi xử lý webhook SePay theo path: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
 
     private boolean isAuthorized(String authorizationHeader) {

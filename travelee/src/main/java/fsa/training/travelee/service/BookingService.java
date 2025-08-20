@@ -44,6 +44,12 @@ public interface BookingService {
     // Hủy booking
     Booking cancelBooking(Long bookingId, String reason);
 
+    // Hủy booking bởi admin (cho phép hủy cả khi đã thanh toán)
+    Booking cancelBookingByAdmin(Long bookingId, String reason);
+
+    // Hoàn tiền booking (admin)
+    Booking refundBooking(Long bookingId, BigDecimal amount, String reason);
+
     // Tính tổng tiền booking
     BigDecimal calculateTotalAmount(Long tourId, Long scheduleId, int adultCount, int childCount);
 

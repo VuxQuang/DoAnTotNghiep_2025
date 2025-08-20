@@ -124,6 +124,14 @@ public class ProfileController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         try {
+            Booking booking = bookingService.getBookingById(bookingId);
+            // Không cho hủy nếu đã thanh toán hoặc hoàn thành
+            if (booking.getStatus() == fsa.training.travelee.entity.booking.BookingStatus.PAID
+                    || booking.getStatus() == fsa.training.travelee.entity.booking.BookingStatus.COMPLETED) {
+                ra.addFlashAttribute("error", "Không thể hủy vì booking đã thanh toán hoặc đã hoàn thành.");
+                return "redirect:/profile?tab=tours";
+            }
+
             // Hủy booking
             bookingService.cancelBooking(bookingId, "Người dùng hủy");
             ra.addFlashAttribute("success", "Đã hủy tour thành công!");

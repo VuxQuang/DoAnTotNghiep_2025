@@ -13,6 +13,7 @@ import fsa.training.travelee.entity.TourSchedule;
 import fsa.training.travelee.entity.User;
 import fsa.training.travelee.repository.BookingRepository;
 import fsa.training.travelee.repository.TourRepository;
+import fsa.training.travelee.repository.PaymentRepository;
 import fsa.training.travelee.repository.TourScheduleRepository;
 import fsa.training.travelee.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class BookingServiceImpl implements BookingService {
     private final TourRepository tourRepository;
     private final TourScheduleRepository tourScheduleRepository;
     private final EmailService emailService;
+    private final PaymentRepository paymentRepository;
 
     @Override
     public Booking createBooking(BookingRequestDto bookingRequest, User user) {
@@ -177,8 +179,8 @@ public class BookingServiceImpl implements BookingService {
         BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(status);
         
-        // Đồng bộ trạng thái thanh toán khi booking được xác nhận/hoàn tất
-        if (status == BookingStatus.CONFIRMED || status == BookingStatus.COMPLETED) {
+        // Đồng bộ trạng thái thanh toán khi booking được thanh toán/hoàn tất/được xác nhận
+        if (status == BookingStatus.PAID || status == BookingStatus.COMPLETED || status == BookingStatus.CONFIRMED) {
             Payment payment = booking.getPayment();
             if (payment != null && payment.getStatus() != PaymentStatus.COMPLETED) {
                 payment.setStatus(PaymentStatus.COMPLETED);
@@ -193,9 +195,15 @@ public class BookingServiceImpl implements BookingService {
                         if (status == BookingStatus.CONFIRMED && oldStatus == BookingStatus.PENDING) {
                             // Nếu xác nhận từ pending thì gửi email xác nhận
                             emailService.sendBookingConfirmationEmail(booking);
+                        } else if (status == BookingStatus.PAID) {
+                            // Nếu đánh dấu đã thanh toán (admin chọn Paid)
+                            emailService.sendBookingPaidEmail(booking);
                         } else if (status == BookingStatus.COMPLETED) {
                             // Nếu hoàn thành tour thì gửi email cảm ơn
                             emailService.sendBookingCompletionEmail(booking);
+                        } else if (status == BookingStatus.REFUNDED) {
+                            // Nếu đánh dấu hoàn tiền (trường hợp hiếm khi set trực tiếp)
+                            emailService.sendBookingRefundEmail(booking);
                         }
                         // Không gửi email cho các thay đổi trạng thái khác
                     } catch (Exception e) {
@@ -208,6 +216,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking cancelBooking(Long bookingId, String reason) {
         Booking booking = getBookingById(bookingId);
+        // Không cho hủy nếu đã thanh toán hoặc đã hoàn thành
+        if (booking.getStatus() == BookingStatus.PAID || booking.getStatus() == BookingStatus.COMPLETED) {
+            throw new IllegalStateException("Không thể hủy vì booking đã thanh toán hoặc đã hoàn thành");
+        }
+
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setSpecialRequests(booking.getSpecialRequests() + "\nLý do hủy: " + reason);
 
@@ -219,6 +232,52 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingRepository.save(booking);
+    }
+
+    @Override
+    public Booking cancelBookingByAdmin(Long bookingId, String reason) {
+        Booking booking = getBookingById(bookingId);
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setSpecialRequests((booking.getSpecialRequests() != null ? booking.getSpecialRequests() : "")
+                + "\nAdmin hủy: " + reason);
+
+        try {
+            emailService.sendBookingCancellationEmail(booking);
+        } catch (Exception e) {
+            log.error("Lỗi gửi email hủy booking: {}", e.getMessage());
+        }
+
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    public Booking refundBooking(Long bookingId, BigDecimal amount, String reason) {
+        Booking booking = getBookingById(bookingId);
+        Payment payment = booking.getPayment();
+        if (payment == null || payment.getStatus() != PaymentStatus.COMPLETED) {
+            throw new IllegalStateException("Không thể hoàn tiền vì booking chưa thanh toán");
+        }
+
+        // Cập nhật payment
+        payment.setStatus(PaymentStatus.REFUNDED);
+        payment.setRefundedAt(LocalDateTime.now());
+        payment.setRefundAmount(amount);
+        payment.setRefundReason(reason);
+        paymentRepository.save(payment);
+        booking.setPayment(payment);
+
+        // Cập nhật booking
+        booking.setStatus(BookingStatus.REFUNDED);
+        booking.setSpecialRequests((booking.getSpecialRequests() != null ? booking.getSpecialRequests() : "")
+                + "\nRefund: " + reason + ", amount=" + amount);
+
+        Booking saved = bookingRepository.save(booking);
+        try {
+            emailService.sendBookingRefundEmail(saved);
+        } catch (Exception e) {
+            log.error("Lỗi gửi email hoàn tiền: {}", e.getMessage());
+        }
+        return saved;
     }
 
     @Override

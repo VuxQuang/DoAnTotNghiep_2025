@@ -21,10 +21,14 @@ public class PaymentServiceImpl implements PaymentService {
 
 	private final PaymentRepository paymentRepository;
 	private final BookingRepository bookingRepository;
+	private final EmailService emailService;
 
 	@Override
 	@Transactional
 	public Booking handleSepayWebhook(SepayWebhookDto payload) {
+		log.info("Xử lý webhook SePay: ref={}, status={}, amount={}, transferType={}", 
+			payload.getReferenceCode(), payload.getStatus(), payload.getAmount(), payload.getTransferType());
+		
 		// tham chiếu bằng bookingCode trước, nếu không có thì thử paymentCode
 		Payment payment = null;
 		if (payload.getReferenceCode() != null) {
@@ -43,10 +47,13 @@ public class PaymentServiceImpl implements PaymentService {
 		}
 
 		if (payment == null) {
+			log.error("Không tìm thấy payment theo referenceCode: {}", payload.getReferenceCode());
 			throw new IllegalArgumentException("Không tìm thấy payment theo referenceCode");
 		}
 
 		Booking booking = payment.getBooking();
+		log.info("Tìm thấy booking: {} với trạng thái hiện tại: payment={}, booking={}", 
+			booking.getBookingCode(), payment.getStatus(), booking.getStatus());
 
 		// Xác nhận trạng thái từ SePay
 		// Ưu tiên status = SUCCESS; nếu thiếu status, chấp nhận transferType = in như thanh toán vào
@@ -55,15 +62,28 @@ public class PaymentServiceImpl implements PaymentService {
 		boolean amountMatched = payload.getAmount() != null && booking.getTotalAmount() != null
 				&& payload.getAmount().compareTo(booking.getTotalAmount()) == 0;
 
+		log.info("Đánh giá webhook: success={}, amountMatched={}, expectedAmount={}, actualAmount={}", 
+			success, amountMatched, booking.getTotalAmount(), payload.getAmount());
+
 		if (success && amountMatched) {
+			// Cập nhật payment
 			payment.setStatus(PaymentStatus.COMPLETED);
 			payment.setTransactionId(payload.getTransactionId());
 			payment.setPaidAt(LocalDateTime.now());
-			paymentRepository.save(payment);
+			Payment savedPayment = paymentRepository.save(payment);
+			log.info("Đã cập nhật payment {} thành COMPLETED", savedPayment.getId());
 
-			// cập nhật booking
-			booking.setStatus(BookingStatus.CONFIRMED);
-			return bookingRepository.save(booking);
+			// Cập nhật booking thành PAID theo nghiệp vụ
+			booking.setStatus(BookingStatus.PAID);
+			booking.setPayment(savedPayment); // Đảm bảo reference được cập nhật
+			Booking savedBooking = bookingRepository.save(booking);
+			log.info("Đã cập nhật booking {} thành PAID", savedBooking.getId());
+			try {
+				emailService.sendBookingPaidEmail(savedBooking);
+			} catch (Exception e) {
+				log.error("Lỗi gửi email thanh toán thành công: {}", e.getMessage());
+			}
+			return savedBooking;
 		} else if (!success) {
 			payment.setStatus(PaymentStatus.FAILED);
 			paymentRepository.save(payment);

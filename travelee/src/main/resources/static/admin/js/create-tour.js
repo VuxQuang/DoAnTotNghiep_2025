@@ -10,11 +10,45 @@ const UPLOAD_PRESET = 'unsigned_preset';
 
 // === Khi trang load ===
 document.addEventListener('DOMContentLoaded', function () {
+    const isReadOnly = document.body.getAttribute('data-readonly') === 'true';
+
+    if (isReadOnly) {
+        enableReadonlyMode();
+        return; // Không khởi tạo các chức năng thêm/sửa
+    }
+
     initializeImageUpload();
     initializeForm();
     addItinerary();
     addSchedule();
 });
+
+function enableReadonlyMode() {
+    const form = document.getElementById('createTourForm');
+    if (form) {
+        form.addEventListener('submit', function(e) { e.preventDefault(); });
+    }
+
+    // Vô hiệu hoá upload ảnh
+    const uploadZone = document.getElementById('uploadZone');
+    if (uploadZone) {
+        uploadZone.style.pointerEvents = 'none';
+    }
+
+    // Vô hiệu hoá toàn bộ input interactions (đã có readonly/disabled từ template)
+    const allInputs = document.querySelectorAll('input, textarea, select');
+    allInputs.forEach(input => {
+        input.style.pointerEvents = 'none';
+    });
+
+    // Ghi đè các hàm động để tránh thao tác
+    window.addInput = function() { return false; };
+    window.removeInput = function() { return false; };
+    window.addItinerary = function() { return false; };
+    window.addSchedule = function() { return false; };
+    window.removeItinerary = function() { return false; };
+    window.removeSchedule = function() { return false; };
+}
 
 // === Khởi tạo upload ảnh Cloudinary ===
 function initializeImageUpload() {
@@ -158,7 +192,7 @@ function addItinerary() {
                 <div class="input-group">
                     <div class="input-icon">
                         <i class="fas fa-align-left"></i>
-                        <input type="text" name="itineraries[${index}].description" placeholder="Nhập mô tả hoạt động" class="dynamic-input">
+                        <input type="text" name="itineraries[${index}].description[0]" placeholder="Nhập mô tả hoạt động" class="dynamic-input">
                     </div>
                     <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
                         <i class="fas fa-trash"></i>
@@ -175,7 +209,7 @@ function addItinerary() {
                 <div class="input-group">
                     <div class="input-icon">
                         <i class="fas fa-list"></i>
-                        <input type="text" name="itineraries[${index}].activities" placeholder="Nhập hoạt động cụ thể" class="dynamic-input">
+                        <input type="text" name="itineraries[${index}].activities[0]" placeholder="Nhập hoạt động cụ thể" class="dynamic-input">
                     </div>
                     <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
                         <i class="fas fa-trash"></i>
@@ -267,31 +301,31 @@ function removeSchedule(button) {
 // === Functions cho includes/excludes ===
 function addInput(containerId, fieldName) {
     const container = document.getElementById(containerId);
-    const counter = fieldName === 'includes' ? ++includesCounter : ++excludesCounter;
-    
+    const nextIndex = container.querySelectorAll('input.dynamic-input').length; // tính index kế tiếp trong container
+
     const inputGroup = document.createElement('div');
     inputGroup.className = 'input-group';
+    const isIncludeExclude = fieldName === 'includes' || fieldName === 'excludes';
+    const icon = fieldName.includes('activities') ? 'list' : (fieldName.includes('description') ? 'align-left' : (fieldName === 'includes' ? 'plus' : 'minus'));
+    const nameWithIndex = isIncludeExclude ? `${fieldName}[${nextIndex}]` : `${fieldName}[${nextIndex}]`;
+
     inputGroup.innerHTML = `
         <div class="input-icon">
-            <i class="fas fa-${fieldName === 'includes' ? 'plus' : 'minus'}"></i>
-            <input type="text" name="${fieldName}" placeholder="Nhập dịch vụ ${fieldName === 'includes' ? 'bao gồm' : 'không bao gồm'}" class="dynamic-input">
+            <i class="fas fa-${icon}"></i>
+            <input type="text" name="${nameWithIndex}" placeholder="Nhập ${isIncludeExclude ? (fieldName === 'includes' ? 'dịch vụ bao gồm' : 'dịch vụ không bao gồm') : 'nội dung'}" class="dynamic-input">
         </div>
         <button type="button" class="btn-remove" onclick="removeInput(this)">
             <i class="fas fa-trash"></i>
         </button>
     `;
-    
+
     container.appendChild(inputGroup);
-    
+
     // Hiển thị nút remove cho tất cả input groups
     const allInputGroups = container.querySelectorAll('.input-group');
     allInputGroups.forEach(group => {
         const removeBtn = group.querySelector('.btn-remove');
-        if (allInputGroups.length > 1) {
-            removeBtn.style.display = 'block';
-        } else {
-            removeBtn.style.display = 'none';
-        }
+        removeBtn.style.display = allInputGroups.length > 1 ? 'block' : 'none';
     });
 }
 

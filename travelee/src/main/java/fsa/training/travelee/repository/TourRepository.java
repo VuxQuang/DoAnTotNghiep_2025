@@ -17,4 +17,12 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
     @Query("SELECT t FROM Tour t WHERE t.id = :id AND t.status = :status")
     Optional<Tour> findByIdAndStatus(@Param("id") Long id, @Param("status") String status);
 
+    @Query("SELECT DISTINCT t FROM Tour t " +
+           "LEFT JOIN FETCH t.images " +
+           "LEFT JOIN FETCH t.itineraries " +
+           "LEFT JOIN FETCH t.schedules " +
+           "LEFT JOIN FETCH t.category " +
+           "WHERE t.id = :id")
+    Optional<Tour> findByIdWithDetails(@Param("id") Long id);
+
 }

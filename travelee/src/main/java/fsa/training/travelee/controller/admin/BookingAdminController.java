@@ -78,6 +78,19 @@ public class BookingAdminController {
         }
         
         model.addAttribute("booking", booking);
+        // Trích lý do hủy (nếu có) từ specialRequests để hiển thị riêng
+        String cancellationReason = null;
+        String special = booking.getSpecialRequests();
+        if (special != null) {
+            int idxAdmin = special.indexOf("Admin hủy:");
+            int idxUser = special.indexOf("Lý do hủy:");
+            if (idxAdmin >= 0) {
+                cancellationReason = special.substring(idxAdmin + "Admin hủy:".length()).trim();
+            } else if (idxUser >= 0) {
+                cancellationReason = special.substring(idxUser + "Lý do hủy:".length()).trim();
+            }
+        }
+        model.addAttribute("cancellationReason", cancellationReason);
         return "admin/booking/booking-detail";
     }
 
@@ -90,8 +103,8 @@ public class BookingAdminController {
         
         try {
             if (status == BookingStatus.CANCELLED && reason != null) {
-                // Nếu hủy thì gọi cancelBooking để cập nhật lý do
-                bookingService.cancelBooking(id, reason);
+                // Admin hủy (cho phép cả khi đã thanh toán)
+                bookingService.cancelBookingByAdmin(id, reason);
             } else {
                 // Các trạng thái khác thì gọi updateBookingStatus
                 bookingService.updateBookingStatus(id, status);
@@ -103,6 +116,20 @@ public class BookingAdminController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
             return "redirect:/admin/bookings/" + id;
         }
+    }
+
+    @PostMapping("/{id}/refund")
+    public String refundBooking(@PathVariable Long id,
+                                @RequestParam("amount") java.math.BigDecimal amount,
+                                @RequestParam("reason") String reason,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.refundBooking(id, amount, reason);
+            redirectAttributes.addFlashAttribute("success", "Hoàn tiền thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi hoàn tiền: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings/" + id;
     }
 
     @GetMapping("/statistics")

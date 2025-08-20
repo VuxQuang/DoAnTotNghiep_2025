@@ -10,21 +10,93 @@
 			const bookingId = /*[[${booking.id}]]*/ 0;
 			const statusUrl = `/page/payment/${bookingId}/status`;
 			const pollIntervalMs = 3000;
+			let pollCount = 0;
+			const maxPollCount = 60; // Tối đa 3 phút (60 * 3 giây)
 
-			function pollStatus() {
-				fetch(statusUrl, { credentials: 'same-origin' })
-					.then(res => res.json())
-					.then(data => {
-						if (data && (data.paymentStatus === 'COMPLETED' || data.bookingStatus === 'CONFIRMED' || data.bookingStatus === 'COMPLETED')) {
-							const redirectUrl = data.redirectUrl || `/page/booking/confirmation/${bookingId}`;
-							window.location.replace(redirectUrl);
-							return;
-						}
-						setTimeout(pollStatus, pollIntervalMs);
-					})
-					.catch(() => setTimeout(pollStatus, pollIntervalMs));
+			// Cập nhật trạng thái hiển thị
+			function updatePaymentStatus(paymentStatus, bookingStatus) {
+				const statusElement = document.querySelector('.status-badge span');
+				const statusBadge = document.querySelector('.status-badge');
+				
+				if (statusElement && statusBadge) {
+					// Chỉ đánh dấu đã thanh toán khi payment thực sự COMPLETED
+					if (paymentStatus === 'COMPLETED') {
+						statusElement.textContent = 'Đã thanh toán';
+						statusBadge.className = 'status-badge confirmed';
+					} else {
+						statusElement.textContent = 'Chưa thanh toán';
+						statusBadge.className = 'status-badge pending';
+					}
+				}
 			}
 
+			// Hiển thị thông tin debug
+			function showDebugInfo(data) {
+				const debugDiv = document.querySelector('.debug-info');
+				if (debugDiv && data) {
+					debugDiv.innerHTML = `
+						<strong>Real-time Status:</strong><br/>
+						Payment Status: ${data.paymentStatus || 'N/A'}<br/>
+						Booking Status: ${data.bookingStatus || 'N/A'}<br/>
+						Last Check: ${new Date().toLocaleTimeString()}<br/>
+						Poll Count: ${pollCount}
+					`;
+				}
+			}
+
+			function pollStatus() {
+				if (pollCount >= maxPollCount) {
+					console.log('Đã đạt giới hạn polling, dừng kiểm tra');
+					return;
+				}
+
+				pollCount++;
+				console.log(`Kiểm tra trạng thái lần ${pollCount}...`);
+
+				fetch(statusUrl, { credentials: 'same-origin' })
+					.then(res => {
+						if (!res.ok) {
+							throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+						}
+						return res.json();
+					})
+					.then(data => {
+						console.log('Response data:', data);
+						
+						if (data && !data.error) {
+							// Cập nhật trạng thái hiển thị real-time
+							updatePaymentStatus(data.paymentStatus, data.bookingStatus);
+							
+							// Hiển thị thông tin debug
+							showDebugInfo(data);
+							
+							// Chỉ tự động chuyển trang khi payment đã COMPLETED
+							if (data.paymentStatus === 'COMPLETED') {
+								console.log('Thanh toán thành công, chuyển hướng...');
+								const redirectUrl = data.redirectUrl || `/page/booking/confirmation/${bookingId}`;
+								window.location.replace(redirectUrl);
+								return;
+							}
+							
+							// Tiếp tục polling
+							setTimeout(pollStatus, pollIntervalMs);
+						} else {
+							console.error('API trả về lỗi:', data.error);
+							// Vẫn tiếp tục polling nếu có lỗi
+							setTimeout(pollStatus, pollIntervalMs);
+						}
+					})
+					.catch(error => {
+						console.error('Lỗi khi kiểm tra trạng thái:', error);
+						// Vẫn tiếp tục polling nếu có lỗi network
+						setTimeout(pollStatus, pollIntervalMs);
+					});
+			}
+
+			// Khởi tạo trạng thái ban đầu
+			updatePaymentStatus(/*[[${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'COMPLETED' : 'PENDING'}]]*/ 'PENDING', /*[[${booking.status}]]*/ 'PENDING');
+			
+			// Bắt đầu polling
 			pollStatus();
 		});
 	</script>
@@ -43,10 +115,34 @@
 				</div>
 				<div class="detail-item">
 					<label>Trạng thái thanh toán:</label>
-					<span class="status-badge" th:classappend="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'confirmed' : 'pending'}">
-						<span th:text="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
+					<span class="status-badge pending">
+						<span>Đang kiểm tra...</span>
 					</span>
 				</div>
+				<div class="detail-item">
+					<label>Mã booking:</label>
+					<span th:text="${booking.bookingCode}">BK</span>
+				</div>
+				<div class="detail-item">
+					<label>Trạng thái booking:</label>
+					<span th:text="${booking.status}">PENDING</span>
+				</div>
+			</div>
+
+			<!-- Thông tin debug (chỉ hiển thị trong development) -->
+			<div th:if="${@environment.getActiveProfiles().length > 0 and @environment.getActiveProfiles()[0] == 'dev'}" 
+				 class="alert alert-info" style="margin: 16px 0; font-size: 12px;">
+				<strong>Debug Info:</strong><br/>
+				Payment ID: <span th:text="${booking.payment != null ? booking.payment.id : 'N/A'}">N/A</span><br/>
+				Payment Status: <span th:text="${booking.payment != null ? booking.payment.status : 'N/A'}">N/A</span><br/>
+				Payment Created: <span th:text="${booking.payment != null ? #temporals.format(booking.payment.createdAt, 'dd/MM/yyyy HH:mm:ss') : 'N/A'}">N/A</span><br/>
+				Payment Paid: <span th:text="${booking.payment != null and booking.payment.paidAt != null ? #temporals.format(booking.payment.paidAt, 'dd/MM/yyyy HH:mm:ss') : 'N/A'}">N/A</span>
+			</div>
+
+			<!-- Real-time debug info -->
+			<div class="debug-info" style="margin: 16px 0; padding: 12px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-size: 12px;">
+				<strong>Real-time Status:</strong><br/>
+				Đang khởi tạo...
 			</div>
 
 			<div th:if="${qrImageUrl != null}" class="tour-card" style="text-align:center; padding: 16px;">

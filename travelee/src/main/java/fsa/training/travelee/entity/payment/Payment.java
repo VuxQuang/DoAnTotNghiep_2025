@@ -41,6 +41,13 @@ public class Payment {
     private LocalDateTime paidAt;
     private LocalDateTime refundedAt;
 
+    // Thông tin hoàn tiền (nếu có)
+    @Column(precision = 18, scale = 2)
+    private BigDecimal refundAmount;
+
+    @Column(columnDefinition = "TEXT")
+    private String refundReason;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "booking_id", nullable = false, unique = true)
     private Booking booking;

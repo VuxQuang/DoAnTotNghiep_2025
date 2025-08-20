@@ -29,4 +29,14 @@ public interface EmailService {
      * @param booking thông tin booking
      */
     void sendBookingCompletionEmail(Booking booking);
+
+    /**
+     * Gửi email khi khách hàng đã thanh toán thành công
+     */
+    void sendBookingPaidEmail(Booking booking);
+
+    /**
+     * Gửi email khi hoàn tiền đơn đặt tour
+     */
+    void sendBookingRefundEmail(Booking booking);
 }

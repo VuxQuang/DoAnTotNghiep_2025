@@ -58,10 +58,13 @@
                         </span>
                     </td>
                     <td class="user-actions">
-                        <a th:href="@{'/admin/tour/' + ${tour.id}}" class="action-btn view"><i class="fas fa-eye"></i> Xem</a>
+                        <a th:href="@{'/admin/tour/view/' + ${tour.id}}" class="action-btn view"><i class="fas fa-eye"></i> Xem</a>
                         <a th:href="@{'/admin/tour/edit/' + ${tour.id}}" class="action-btn edit"><i class="fas fa-edit"></i> Sửa</a>
-                        <a th:href="@{'/admin/tour/delete/' + ${tour.id}}" class="action-btn delete"
-                           onclick="return confirm('Bạn có chắc muốn xóa tour này?')">
+                        <a th:href="@{'/admin/tour/delete/' + ${tour.id}}" 
+                           class="action-btn delete"
+                           th:data-tour-id="${tour.id}"
+                           th:data-tour-title="${tour.title}"
+                           onclick="return confirmDelete(this.getAttribute('data-tour-id'), this.getAttribute('data-tour-title'))">
                             <i class="fas fa-trash"></i> Xóa
                         </a>
                     </td>

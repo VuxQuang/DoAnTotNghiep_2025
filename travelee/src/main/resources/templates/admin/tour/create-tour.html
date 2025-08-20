@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{/admin/css/users-style.css}">
     <link rel="stylesheet" th:href="@{/admin/css/create-tour.css}">
 </head>
-<body>
+<body data-readonly="[[${isReadOnly}]]">
     <div class="dashboard-container">
         <div th:replace="~{/admin/fragments/header :: header}"></div>
 
@@ -19,11 +19,18 @@
         <main class="main-content">
             <div class="create-tour-container">
                 <div class="create-tour-header">
-                    <h1><i class="fas fa-plus-circle"></i> Tạo tour mới</h1>
-                    <p>Điền thông tin để tạo tour du lịch mới</p>
+                    <h1>
+                        <i class="fas"
+                           th:classappend="${isReadOnly} ? 'fa-eye' : (isUpdate ? 'fa-edit' : 'fa-plus-circle')"></i>
+                        <span th:text="${isReadOnly} ? 'Xem chi tiết tour' : (isUpdate ? 'Cập nhật tour' : 'Tạo tour mới')"></span>
+                    </h1>
+                    <p th:text="${isReadOnly} ? 'Xem chi tiết thông tin tour du lịch' : 'Điền thông tin để tạo hoặc chỉnh sửa tour'"></p>
                 </div>
 
-                <form class="create-tour-form" id="createTourForm" th:action="@{/admin/tour/create}" method="post" th:object="${tourCreateRequest}">
+                <form class="create-tour-form" id="createTourForm" 
+                      th:action="${isReadOnly} ? '#' : @{/admin/tour/create}" 
+                      method="post" 
+                      th:object="${tourCreateRequest}">
                     <!-- Thông tin cơ bản -->
                     <div class="form-section">
                         <h3><i class="fas fa-info-circle"></i> Thông tin cơ bản</h3>
@@ -32,14 +39,16 @@
                                 <label for="title">Tên tour <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-map-marked-alt"></i>
-                                    <input type="text" id="title" name="title" placeholder="Nhập tên tour" required th:field="*{title}">
+                                    <input type="text" id="title" name="title" placeholder="Nhập tên tour" required th:field="*{title}"
+                                       th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="category">Danh mục <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-tags"></i>
-                                    <select id="category" name="categoryId" required th:field="*{categoryId}">
+                                    <select id="category" name="categoryId" required th:field="*{categoryId}"
+                                            th:attr="disabled=${isReadOnly} ? 'disabled' : null">
                                         <option value="">Chọn danh mục</option>
                                         <th:block th:each="category : ${categories}">
                                             <option th:value="${category.id}" th:text="${category.name}"></option>
@@ -53,14 +62,16 @@
                                 <label for="departure">Điểm khởi hành <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-plane-departure"></i>
-                                    <input type="text" id="departure" name="departure" placeholder="Ví dụ: Hà Nội" required th:field="*{departure}">
+                                    <input type="text" id="departure" name="departure" placeholder="Ví dụ: Hà Nội" required th:field="*{departure}"
+                                           th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="destination">Điểm đến <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    <input type="text" id="destination" name="destination" placeholder="Ví dụ: Sapa" required th:field="*{destination}">
+                                    <input type="text" id="destination" name="destination" placeholder="Ví dụ: Sapa" required th:field="*{destination}"
+                                           th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                         </div>
@@ -69,14 +80,16 @@
                                 <label for="duration">Thời gian (ngày) <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-clock"></i>
-                                    <input type="number" id="duration" name="duration" placeholder="Ví dụ: 3" required min="1" th:field="*{duration}">
+                                    <input type="number" id="duration" name="duration" placeholder="Ví dụ: 3" required min="1" th:field="*{duration}"
+                                           th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="maxParticipants">Số lượng tối đa <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-users"></i>
-                                    <input type="number" id="maxParticipants" name="maxParticipants" placeholder="Ví dụ: 20" required min="1" th:field="*{maxParticipants}">
+                                    <input type="number" id="maxParticipants" name="maxParticipants" placeholder="Ví dụ: 20" required min="1" th:field="*{maxParticipants}"
+                                           th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                         </div>
@@ -85,7 +98,8 @@
                             <label for="description">Mô tả tour <span class="required">*</span></label>
                             <div class="input-icon">
                                 <i class="fas fa-align-left"></i>
-                                <textarea id="description" name="description" placeholder="Mô tả chi tiết về tour" rows="4" required th:field="*{description}"></textarea>
+                                <textarea id="description" name="description" placeholder="Mô tả chi tiết về tour" rows="4" required th:field="*{description}"
+                                          th:attr="readonly=${isReadOnly} ? 'readonly' : null"></textarea>
                             </div>
                         </div>
 
@@ -93,7 +107,8 @@
                             <label for="highlights">Điểm nổi bật</label>
                             <div class="input-icon">
                                 <i class="fas fa-star"></i>
-                                <textarea id="highlights" name="highlights" placeholder="Các điểm nổi bật của tour" rows="3" th:field="*{highlights}"></textarea>
+                                <textarea id="highlights" name="highlights" placeholder="Các điểm nổi bật của tour" rows="3" th:field="*{highlights}"
+                                          th:attr="readonly=${isReadOnly} ? 'readonly' : null"></textarea>
                             </div>
                         </div>
                     </div>
@@ -104,36 +119,62 @@
                         <div class="includes-excludes-container">
                             <div class="includes-section">
                                 <h4><i class="fas fa-check-circle"></i> Bao gồm</h4>
-                                <div class="dynamic-inputs" id="includesContainer">
+                                <!-- Readonly view -->
+                                <div th:if="${isReadOnly}">
+                                    <div class="dynamic-inputs">
+                                        <div class="input-group" th:each="inc, iStat : ${tourCreateRequest != null ? tourCreateRequest.includes : {}}">
+                                            <div class="input-icon">
+                                                <i class="fas fa-plus"></i>
+                                                <input type="text" class="dynamic-input" th:value="${inc}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Editable view -->
+                                <div class="dynamic-inputs" id="includesContainer" th:if="${!isReadOnly}">
                                     <div class="input-group">
                                         <div class="input-icon">
                                             <i class="fas fa-plus"></i>
-                                            <input type="text" name="includes" placeholder="Nhập dịch vụ bao gồm" class="dynamic-input">
+                                            <input type="text" name="includes[0]" placeholder="Nhập dịch vụ bao gồm" class="dynamic-input"
+                                                   th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                         </div>
                                         <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <button type="button" class="btn-add" onclick="addInput('includesContainer', 'includes')">
+                                <button type="button" class="btn-add" onclick="addInput('includesContainer', 'includes')" th:if="${!isReadOnly}">
                                     <i class="fas fa-plus"></i> Thêm dịch vụ
                                 </button>
                             </div>
                             
                             <div class="excludes-section">
                                 <h4><i class="fas fa-times-circle"></i> Không bao gồm</h4>
-                                <div class="dynamic-inputs" id="excludesContainer">
+                                <!-- Readonly view -->
+                                <div th:if="${isReadOnly}">
+                                    <div class="dynamic-inputs">
+                                        <div class="input-group" th:each="exc, eStat : ${tourCreateRequest != null ? tourCreateRequest.excludes : {}}">
+                                            <div class="input-icon">
+                                                <i class="fas fa-minus"></i>
+                                                <input type="text" class="dynamic-input" th:value="${exc}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Editable view -->
+                                <div class="dynamic-inputs" id="excludesContainer" th:if="${!isReadOnly}">
                                     <div class="input-group">
                                         <div class="input-icon">
                                             <i class="fas fa-minus"></i>
-                                            <input type="text" name="excludes" placeholder="Nhập dịch vụ không bao gồm" class="dynamic-input">
+                                            <input type="text" name="excludes[0]" placeholder="Nhập dịch vụ không bao gồm" class="dynamic-input"
+                                                   th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                         </div>
                                         <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <button type="button" class="btn-add" onclick="addInput('excludesContainer', 'excludes')">
+                                <button type="button" class="btn-add" onclick="addInput('excludesContainer', 'excludes')" th:if="${!isReadOnly}">
                                     <i class="fas fa-plus"></i> Thêm dịch vụ
                                 </button>
                             </div>
@@ -148,14 +189,16 @@
                                 <label for="adultPrice">Giá người lớn (VNĐ) <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-user"></i>
-                                    <input type="number" id="adultPrice" name="adultPrice" placeholder="Ví dụ: 2000000" required min="0" th:field="*{adultPrice}">
+                                    <input type="number" id="adultPrice" name="adultPrice" placeholder="Ví dụ: 2000000" required min="0" th:field="*{adultPrice}"
+                                           th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="childPrice">Giá trẻ em (VNĐ) <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-child"></i>
-                                    <input type="number" id="childPrice" name="childPrice" placeholder="Ví dụ: 1500000" required min="0" th:field="*{childPrice}">
+                                    <input type="number" id="childPrice" name="childPrice" placeholder="Ví dụ: 1500000" required min="0" th:field="*{childPrice}"
+                                           th:attr="readonly=${isReadOnly} ? 'readonly' : null">
                                 </div>
                             </div>
                         </div>
@@ -169,7 +212,8 @@
                                 <label for="status">Trạng thái <span class="required">*</span></label>
                                 <div class="input-icon">
                                     <i class="fas fa-toggle-on"></i>
-                                    <select id="status" name="status" required th:field="*{status}">
+                                    <select id="status" name="status" required th:field="*{status}"
+                                            th:attr="disabled=${isReadOnly} ? 'disabled' : null">
                                         <option value="">Chọn trạng thái</option>
                                         <option value="active">Hoạt động</option>
                                         <option value="inactive">Tạm ngưng</option>
@@ -182,17 +226,20 @@
                                 <label>Đặc biệt</label>
                                 <div class="checkbox-group">
                                     <label class="checkbox-item">
-                                        <input type="checkbox" id="featured" name="featured" th:field="*{featured}">
+                                        <input type="checkbox" id="featured" name="featured" th:field="*{featured}"
+                                               th:attr="disabled=${isReadOnly} ? 'disabled' : null">
                                         <span class="checkmark"></span>
                                         Tour nổi bật
                                     </label>
                                     <label class="checkbox-item">
-                                        <input type="checkbox" id="isHot" name="isHot" th:field="*{isHot}">
+                                        <input type="checkbox" id="isHot" name="isHot" th:field="*{isHot}"
+                                               th:attr="disabled=${isReadOnly} ? 'disabled' : null">
                                         <span class="checkmark"></span>
                                         Tour hot
                                     </label>
                                     <label class="checkbox-item">
-                                        <input type="checkbox" id="hasPromotion" name="hasPromotion" th:field="*{hasPromotion}">
+                                        <input type="checkbox" id="hasPromotion" name="hasPromotion" th:field="*{hasPromotion}"
+                                               th:attr="disabled=${isReadOnly} ? 'disabled' : null">
                                         <span class="checkmark"></span>
                                         Có khuyến mãi
                                     </label>
@@ -208,19 +255,80 @@
                             <div class="upload-zone" id="uploadZone">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <p>Kéo thả hình ảnh vào đây hoặc <span class="upload-link">chọn file</span></p>
-                                <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+                                <input type="file" id="imageInput" multiple accept="image/*" style="display: none;"
+                                       th:attr="disabled=${isReadOnly} ? 'disabled' : null">
                             </div>
-                            <div class="image-preview" id="imagePreview"></div>
+                            <div class="image-preview" id="imagePreview">
+                                <th:block th:if="${tourCreateRequest != null and tourCreateRequest.imageUrls != null}">
+                                    <div class="image-preview-item" th:each="img : ${tourCreateRequest.imageUrls}">
+                                        <img th:src="${img}" alt="Ảnh tour">
+                                    </div>
+                                </th:block>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Lịch trình -->
                     <div class="form-section">
                         <h3><i class="fas fa-route"></i> Lịch trình tour</h3>
-                        <div id="itineraryContainer">
+                        <!-- Readonly view -->
+                        <div th:if="${isReadOnly}">
+                            <div class="itinerary-item" th:each="it, itStat : ${tourCreateRequest != null ? tourCreateRequest.itineraries : {}}">
+                                <h4>
+                                    <span th:text="${'Ngày ' + it.dayNumber}"></span>
+                                </h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Tiêu đề ngày</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-heading"></i>
+                                            <input type="text" th:value="${it.title}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" th:if="${it.meals != null}">
+                                        <label>Bữa ăn</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-utensils"></i>
+                                            <input type="text" th:value="${it.meals}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group full-width" th:if="${it.description != null and !#lists.isEmpty(it.description)}">
+                                    <label>Mô tả hoạt động</label>
+                                    <div class="dynamic-inputs">
+                                        <div class="input-group" th:each="desc : ${it.description}">
+                                            <div class="input-icon">
+                                                <i class="fas fa-align-left"></i>
+                                                <input type="text" th:value="${desc}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group full-width" th:if="${it.activities != null and !#lists.isEmpty(it.activities)}">
+                                    <label>Hoạt động cụ thể</label>
+                                    <div class="dynamic-inputs">
+                                        <div class="input-group" th:each="act : ${it.activities}">
+                                            <div class="input-icon">
+                                                <i class="fas fa-list"></i>
+                                                <input type="text" th:value="${act}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group full-width" th:if="${it.accommodation != null}">
+                                    <label>Nơi lưu trú</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-bed"></i>
+                                        <input type="text" th:value="${it.accommodation}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Editable view -->
+                        <div id="itineraryContainer" th:if="${!isReadOnly}">
                             <!-- Lịch trình sẽ được thêm động -->
                         </div>
-                        <button type="button" class="btn-add-itinerary" onclick="addItinerary()">
+                        <button type="button" class="btn-add-itinerary" onclick="addItinerary()" th:if="${!isReadOnly}">
                             <i class="fas fa-plus"></i> Thêm ngày
                         </button>
                     </div>
@@ -228,20 +336,67 @@
                     <!-- Lịch khởi hành -->
                     <div class="form-section">
                         <h3><i class="fas fa-calendar-alt"></i> Lịch khởi hành</h3>
-                        <div id="scheduleContainer">
+                        <!-- Readonly view -->
+                        <div th:if="${isReadOnly}">
+                            <div class="schedule-item" th:each="sch : ${tourCreateRequest != null ? tourCreateRequest.schedules : {}}">
+                                <h4>Lịch khởi hành</h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Ngày khởi hành</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-calendar"></i>
+                                            <input type="text" th:value="${#temporals.format(sch.departureDate, 'dd/MM/yyyy')}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Ngày về</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <input type="text" th:value="${#temporals.format(sch.returnDate, 'dd/MM/yyyy')}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group" th:if="${sch.specialPrice != null}">
+                                        <label>Giá đặc biệt (VNĐ)</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-dollar-sign"></i>
+                                            <input type="text" th:value="${#numbers.formatDecimal(sch.specialPrice, 0, 'COMMA', 0, 'POINT')}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Số chỗ còn lại</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-users"></i>
+                                            <input type="text" th:value="${sch.availableSlots}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Trạng thái</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-toggle-on"></i>
+                                        <input type="text" th:value="${sch.status}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Editable view -->
+                        <div id="scheduleContainer" th:if="${!isReadOnly}">
                             <!-- Lịch khởi hành sẽ được thêm động -->
                         </div>
-                        <button type="button" class="btn-add-schedule" onclick="addSchedule()">
+                        <button type="button" class="btn-add-schedule" onclick="addSchedule()" th:if="${!isReadOnly}">
                             <i class="fas fa-plus"></i> Thêm lịch khởi hành
                         </button>
                     </div>
 
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="window.history.back()">
-                            <i class="fas fa-times"></i> Hủy
+                            <i class="fas fa-times"></i> Quay lại
                         </button>
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-save"></i> Tạo tour
+                        <button type="submit" class="btn-submit" th:if="${!isReadOnly}">
+                            <i class="fas fa-save"></i>
+                            <span th:text="${isUpdate} ? 'Cập nhật' : 'Tạo tour'"></span>
                         </button>
                     </div>
                 </form>

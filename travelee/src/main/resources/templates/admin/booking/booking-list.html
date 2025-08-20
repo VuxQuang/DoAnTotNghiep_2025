@@ -207,6 +207,11 @@
                                                 th:onclick="'cancelBooking(' + ${booking.id} + ')'" title="Hủy">
                                             <i class="fas fa-times"></i>
                                         </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PAID} or (${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED} and ${booking.payment} != null and ${booking.payment.status} == T(fsa.training.travelee.entity.payment.PaymentStatus).COMPLETED)"
+                                                th:onclick="'showRefundModal(' + ${booking.id} + ')'" title="Hoàn tiền">
+                                            <i class="fas fa-rotate-left"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

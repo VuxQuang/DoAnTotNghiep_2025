@@ -292,3 +292,51 @@
 .btn-add:hover {
     background: #229954;
 }
+
+/* Readonly mode styles moved from template */
+body[data-readonly="true"] .input-icon input,
+body[data-readonly="true"] .input-icon textarea,
+body[data-readonly="true"] .input-icon select {
+    background-color: #f8f9fa !important;
+    border-color: #e9ecef !important;
+    color: #495057 !important;
+    cursor: not-allowed !important;
+}
+
+body[data-readonly="true"] .input-icon input:focus,
+body[data-readonly="true"] .input-icon textarea:focus,
+body[data-readonly="true"] .input-icon select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+body[data-readonly="true"] .checkbox-group input[type="checkbox"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+body[data-readonly="true"] .upload-zone {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+body[data-readonly="true"] .btn-add,
+body[data-readonly="true"] .btn-remove {
+    display: none !important;
+}
+
+/* Additional readonly styles */
+body[data-readonly="true"] .dynamic-inputs input {
+    background-color: #f8f9fa !important;
+    border-color: #e9ecef !important;
+    color: #495057 !important;
+    cursor: not-allowed !important;
+}
+
+body[data-readonly="true"] .itinerary-item input,
+body[data-readonly="true"] .schedule-item input {
+    background-color: #f8f9fa !important;
+    border-color: #e9ecef !important;
+    color: #495057 !important;
+    cursor: not-allowed !important;
+}
