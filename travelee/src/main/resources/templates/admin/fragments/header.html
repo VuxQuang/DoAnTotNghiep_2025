@@ -1,0 +1,52 @@
+<header th:fragment="header" class="header">
+    <div class="header-left">
+        <div class="logo">
+            <i class="fas fa-plane"></i>
+            <span>Travelee</span>
+        </div>
+        <span class="slogan">Du lịch cùng trải nghiệm tuyệt vời!</span>
+    </div>
+    <div class="header-center">
+        <form class="search-form">
+            <input type="text" placeholder="Tìm kiếm...">
+            <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="header-right">
+        <div class="header-icons">
+            <div class="icon-btn">
+                <i class="fas fa-envelope"></i>
+                <span class="badge">2</span>
+            </div>
+            <div class="icon-btn">
+                <i class="fas fa-bell"></i>
+                <span class="badge">5</span>
+            </div>
+            <div class="icon-btn">
+                <i class="fas fa-cog"></i>
+            </div>
+        </div>
+        <div class="profile-dropdown">
+            <div class="profile-info" onclick="toggleDropdown()">
+                <img th:src="@{/admin/imgs/img25.jpg}" alt="User Avatar" class="user-avatar">
+                <span class="user-name" th:text="${loggedInUser.username}">Tên người dùng</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu" id="profileDropdown">
+                <a href="#" class="dropdown-item">
+                    <i class="fas fa-user"></i>
+                    <span>Hồ sơ</span>
+                </a>
+                <a href="#" class="dropdown-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Cài đặt</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a th:href="@{/admin/logout}" class="dropdown-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Đăng xuất</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>

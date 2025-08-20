@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Tour - Travelee Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/admin/css/dashboard-style.css}">
+    <link rel="stylesheet" th:href="@{/admin/css/tour-style.css}">
+</head>
+<body>
+<div class="dashboard-container">
+    <div th:replace="~{/admin/fragments/header :: header}"></div>
+    <div th:replace="~{/admin/fragments/sidebar :: aside}"></div>
+
+    <main class="main-content">
+        <div class="user-table-container">
+            <div class="user-table-header">
+                <div class="user-table-title">Quản lý tour du lịch</div>
+                <div class="user-table-actions">
+                    <a th:href="@{/admin/tour/create}" class="create-tour-btn">
+                        <i class="fas fa-plus"></i> Tạo tour mới
+                    </a>
+                    <form class="tour-search-form" th:action="@{/admin/tour/create}" method="get">
+                        <input type="text" id="tour-search-input" placeholder="Tìm kiếm tên tour, thể loại...">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <table class="user-table">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên tour</th>
+                    <th>Hình ảnh</th>
+                    <th>Thể loại</th>
+                    <th>Tình trạng</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="tour, iterStat : ${tours}">
+                    <td th:text="${iterStat.count}">1</td>
+                    <td th:text="${tour.title}">Tên tour</td>
+                    <td>
+                        <img th:src="${#lists.isEmpty(tour.imageUrls) ? '/admin/images/no-image.jpg' : tour.imageUrls[0]}"
+                             th:alt="${tour.title}"
+                             class="tour-image"
+                             style="width: 80px; height: 60px; object-fit: cover;">
+                    </td>
+                    <td th:text="${tour.categoryName}">Thể loại</td>
+                    <td>
+                        <span th:class="'tour-status status-' + ${tour.status}"
+                              th:text="${tour.status == 'active' ? 'Hoạt động'
+                                       : (tour.status == 'inactive' ? 'Tạm ngưng'
+                                       : (tour.status == 'full' ? 'Đã đầy'
+                                       : (tour.status == 'canceled' ? 'Đã hủy' : tour.status)))}">
+                        </span>
+                    </td>
+                    <td class="user-actions">
+                        <a th:href="@{'/admin/tour/view/' + ${tour.id}}" class="action-btn view"><i class="fas fa-eye"></i> Xem</a>
+                        <a th:href="@{'/admin/tour/edit/' + ${tour.id}}" class="action-btn edit"><i class="fas fa-edit"></i> Sửa</a>
+                        <a th:href="@{'/admin/tour/delete/' + ${tour.id}}" 
+                           class="action-btn delete"
+                           th:data-tour-id="${tour.id}"
+                           th:data-tour-title="${tour.title}"
+                           onclick="return confirmDelete(this.getAttribute('data-tour-id'), this.getAttribute('data-tour-title'))">
+                            <i class="fas fa-trash"></i> Xóa
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+<script th:src="@{/admin/js/tour-script.js}"></script>
+</body>
+</html>

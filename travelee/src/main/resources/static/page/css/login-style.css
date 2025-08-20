@@ -517,3 +517,65 @@ body {
     color: #764ba2;
     text-decoration: underline;
 }
+.field-error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    background: #fdf2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin-top: 0.5rem;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.field-error i {
+    color: #e74c3c;
+    font-size: 0.8rem;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-icon.error input {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.input-icon.error i:first-child {
+    color: #e74c3c;
+}
+
+/* Responsive for validation errors */
+@media (max-width: 480px) {
+    .field-error {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+        margin-top: 0.3rem;
+    }
+
+    .form-group {
+        margin-bottom: 30px;
+    }
+}

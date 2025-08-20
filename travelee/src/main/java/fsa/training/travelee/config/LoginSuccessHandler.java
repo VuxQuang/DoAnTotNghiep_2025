@@ -1,6 +1,7 @@
 package fsa.training.travelee.config;
 
 import fsa.training.travelee.service.UserService;
+import fsa.training.travelee.service.UserServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.springframework.context.annotation.Lazy;
@@ -15,11 +16,11 @@ import java.io.IOException;
 @Component
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Lazy  // Trì hoãn việc khởi tạo UserService để tránh vòng lặp phụ thuộc
+    @Lazy
     private final UserService userService;
     private final HttpSession session;
 
-    public LoginSuccessHandler(@Lazy UserService userService, HttpSession session) {
+    public LoginSuccessHandler(@Lazy  UserService userService, HttpSession session) {
         this.userService = userService;
         this.session = session;
     }
@@ -51,10 +52,31 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             redirectURL += "/page/home";
         } else {
             // Login bằng form
+            String email = authentication.getName(); // Email là username
+            String fullName = null;
+            
+            // Lấy thông tin user từ database
+            try {
+                var userOpt = userService.findByEmail(email);
+                if (userOpt.isPresent()) {
+                    var user = userOpt.get();
+                    fullName = user.getFullName();
+                    // Lưu thông tin vào session cho form login
+                    session.setAttribute("email", email);
+                    session.setAttribute("fullName", fullName);
+                    if (user.getPhoneNumber() != null) {
+                        session.setAttribute("phoneNumber", user.getPhoneNumber());
+                    }
+                }
+            } catch (Exception e) {
+                // Log error nhưng không dừng quá trình đăng nhập
+                System.err.println("Error getting user info: " + e.getMessage());
+            }
+            
             var authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 String role = authority.getAuthority();
-                if ("ROLE_ADMIN".equals(role)) {
+                if ("ROLE_ADMIN".equals(role) || "ROLE_STAFF".equals(role)) {
                     redirectURL += "/admin/dashboard";
                     break;
                 } else if ("ROLE_USER".equals(role)) {

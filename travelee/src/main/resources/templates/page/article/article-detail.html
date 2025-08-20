@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết bài viết - Travelee Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/page/css/homepage.css}">
+    <link rel="stylesheet" th:href="@{/page/css/article.css}">
+    <style>
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 16px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .article-content {
+            line-height: 1.7;
+            font-size: 1.08rem;
+        }
+        .article-content li {
+            padding-left: 30px; /* Lùi nội dung của <li> 30px */
+        }
+
+        .article-content li::marker {
+            margin-left: -30px; /* Điều chỉnh dấu chấm lùi lại 30px để theo cùng nội dung */
+        }
+        .article-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+        .article-detail-header img {
+            width: 120px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .article-meta {
+            color: #888;
+            font-size: 0.98rem;
+            margin-bottom: 12px;
+        }
+        .article-categories {
+            margin-bottom: 8px;
+        }
+        .article-category {
+            display: inline-block;
+            background: #f3f3f3;
+            color: #764ba2;
+            border-radius: 12px;
+            padding: 2px 12px;
+            font-size: 0.95em;
+            margin-right: 8px;
+        }
+        .article-description {
+            font-style: italic;
+            color: #888;
+            margin-bottom: 18px;
+            font-size: 1.05em;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{/page/fragments/header :: header}"></div>
+<!-- Wrapper căn giữa toàn bộ layout -->
+<div class="article-layout-wrapper">
+  <div class="article-layout-inner">
+    <aside class="ad-left"></aside>
+    <main class="main-content">
+      <div class="article-detail-header">
+        <div>
+          <h2 th:text="${article.title}"></h2>
+          <div class="article-meta">
+            <span><i class="fa-solid fa-calendar"></i> <span th:text="${#temporals.format(article.createdAt, 'dd/MM/yyyy')}"></span></span> &nbsp;|&nbsp;
+            <span><i class="fa-solid fa-user"></i> <span th:text="${article.user.fullName}"></span></span>
+          </div>
+          <div class="article-categories">
+            <span class="article-category" th:each="category : ${article.categories}" th:text="${category.name}"></span>
+          </div>
+        </div>
+      </div>
+      <div class="article-description">
+         <span th:text="${article.description}"></span>
+      </div>
+      <hr>
+      <div class="article-content" th:utext="${article.content}"></div>
+    </main>
+      <aside class="news-sidebar">
+          <h3 style="margin-bottom: 18px; color: #764ba2; font-size: 1.18em;"><i class="fa-solid fa-bolt"></i> Tin mới cập nhật</h3>
+          <div class="latest-news-list" style="display: flex; flex-direction: column; gap: 18px; max-height: 480px; overflow-y: auto;">
+              <div th:each="article : ${latestArticles}">
+                  <a th:href="@{/page/article/{id}(id=${article.id})}" class="latest-news-item" style="display: flex; gap: 12px; align-items: flex-start; text-decoration: none; color: #222; margin-bottom: 30px;">
+                      <img th:src="${article.thumbnail}" alt="thumb" style="width: 64px; height: 44px; object-fit: cover; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);">
+                      <div>
+                          <div style="font-weight: 500; line-height: 1.3; font-size: 1.08em" th:text="${article.title}">Bài viết</div>
+                          <div style="font-size: 0.95em; color: #888; margin-top: 4px;">
+                              <span><i class="fa-solid fa-calendar"></i> <span th:text="${#temporals.format(article.createdAt, 'dd/MM/yyyy')}"></span></span>
+                      </div>
+                      </div>
+                  </a>
+              </div>
+          </div>
+      </aside>
+    <aside class="ad-right"></aside>
+  </div>
+</div>
+<div class="article-comments">
+  <h3 style="margin-bottom: 18px;"><i class="fa-solid fa-comments"></i> Bình luận</h3>
+    <!-- Danh sách bình luận -->
+    <div class="comment-list">
+        <div class="comment-item" style="display: flex; gap: 16px; margin-bottom: 20px;">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" style="width:44px; height:44px; border-radius:50%; object-fit:cover;">
+            <div>
+                <div style="font-weight:500; color:#764ba2;">Nguyễn Văn A <span style="color:#aaa; font-size:0.95em; font-weight:400;">- 10 phút trước</span></div>
+                <div style="margin-top:2px;">Bài viết rất hữu ích, cảm ơn admin!</div>
+            </div>
+        </div>
+        <div class="comment-item" style="display: flex; gap: 16px; margin-bottom: 20px;">
+            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="avatar" style="width:44px; height:44px; border-radius:50%; object-fit:cover;">
+            <div>
+                <div style="font-weight:500; color:#764ba2;">Trần Thị B <span style="color:#aaa; font-size:0.95em; font-weight:400;">- 1 giờ trước</span></div>
+                <div style="margin-top:2px;">Mình đã đi Phú Quốc và rất thích, cảm ơn vì bài review chi tiết!</div>
+            </div>
+        </div>
+    </div>
+    <!-- Khung gửi bình luận -->
+    <form class="comment-form" style="margin-top: 24px; display: flex; gap: 12px; align-items: flex-start;">
+        <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="avatar" style="width:44px; height:44px; border-radius:50%; object-fit:cover;">
+        <textarea placeholder="Nhập bình luận của bạn..." rows="2" style="flex:1; border-radius:8px; border:1px solid #ddd; padding:10px 14px; font-size:1em; resize:vertical;"></textarea>
+        <button type="submit" style="background:#764ba2; color:#fff; border:none; border-radius:8px; padding:10px 18px; font-weight:500; cursor:pointer; transition:background 0.2s;">Gửi</button>
+    </form>
+</div>
+
+<div th:replace="~{/page/fragments/footer :: footer}"></div>
+
+<!-- Chat Widget -->
+<div th:replace="~{/page/fragments/chatbot :: chatbot}"></div>
+</body>
+</html>
