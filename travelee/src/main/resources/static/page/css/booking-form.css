@@ -229,6 +229,96 @@ body {
     cursor: not-allowed;
 }
 
+/* Promotion Section */
+.promotion-section {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #e1e5e9;
+    margin-top: 20px;
+}
+
+.promotion-section h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.promotion-section h4 i {
+    color: #e74c3c;
+}
+
+.promotion-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.promotion-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.promotion-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-apply-promotion {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-apply-promotion:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.promotion-message {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    margin-top: 10px;
+}
+
+.promotion-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.promotion-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.promotion-message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
 /* Price Summary */
 .price-summary {
     background: white;
@@ -254,6 +344,11 @@ body {
     font-weight: 700;
     font-size: 1.1rem;
     color: #667eea;
+}
+
+.discount-amount {
+    color: #e74c3c;
+    font-weight: 600;
 }
 
 /* Participants */

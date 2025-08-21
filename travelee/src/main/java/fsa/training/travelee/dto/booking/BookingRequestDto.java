@@ -1,6 +1,7 @@
 package fsa.training.travelee.dto.booking;
 
 import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,4 +46,8 @@ public class BookingRequestDto {
     @NotEmpty(message = "Danh sách người tham gia không được để trống")
     @Size(min = 1, max = 50, message = "Số người tham gia phải từ 1 đến 50")
     private List<ParticipantRequestDto> participants;
+
+    // Promotion (optional)
+    private String promotionCode;
+    private BigDecimal discountAmount;
 }

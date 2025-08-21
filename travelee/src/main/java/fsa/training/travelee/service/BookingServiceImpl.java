@@ -16,6 +16,8 @@ import fsa.training.travelee.repository.TourRepository;
 import fsa.training.travelee.repository.PaymentRepository;
 import fsa.training.travelee.repository.TourScheduleRepository;
 import fsa.training.travelee.service.EmailService;
+import fsa.training.travelee.service.PromotionService;
+import fsa.training.travelee.repository.PromotionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,6 +44,8 @@ public class BookingServiceImpl implements BookingService {
     private final TourScheduleRepository tourScheduleRepository;
     private final EmailService emailService;
     private final PaymentRepository paymentRepository;
+    private final PromotionService promotionService;
+    private final PromotionRepository promotionRepository;
 
     @Override
     public Booking createBooking(BookingRequestDto bookingRequest, User user) {
@@ -59,13 +63,33 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("Lịch trình không đủ chỗ");
         }
 
-        // Tính tổng tiền
-        BigDecimal totalAmount = calculateTotalAmount(
+        // Tính tổng tiền gốc
+        BigDecimal subtotal = calculateTotalAmount(
                 bookingRequest.getTourId(),
                 bookingRequest.getScheduleId(),
                 bookingRequest.getAdultCount(),
                 bookingRequest.getChildCount()
         );
+
+        // Áp dụng giảm giá nếu có mã (tính lại server-side để tránh làm giả)
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (bookingRequest.getPromotionCode() != null && !bookingRequest.getPromotionCode().isBlank()) {
+            try {
+                var validation = promotionService.validatePromotionCode(
+                        bookingRequest.getPromotionCode(),
+                        bookingRequest.getTourId(),
+                        subtotal
+                );
+                if (validation.isSuccess() && validation.getDiscountAmount() != null) {
+                    discountAmount = validation.getDiscountAmount();
+                }
+            } catch (Exception ignored) {
+                discountAmount = BigDecimal.ZERO;
+            }
+        }
+        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) discountAmount = BigDecimal.ZERO;
+        if (discountAmount.compareTo(subtotal) > 0) discountAmount = subtotal;
+        BigDecimal totalAmount = subtotal.subtract(discountAmount);
 
         // Tạo booking
         Booking booking = Booking.builder()
@@ -73,12 +97,17 @@ public class BookingServiceImpl implements BookingService {
                 .adultCount(bookingRequest.getAdultCount())
                 .childCount(bookingRequest.getChildCount())
                 .totalAmount(totalAmount)
+                .discountAmount(discountAmount)
                 .specialRequests(bookingRequest.getSpecialRequests())
                 .status(BookingStatus.PENDING)
                 .user(user)
                 .tour(tour)
                 .schedule(schedule)
                 .build();
+        booking.setDiscountAmount(discountAmount);
+        if (bookingRequest.getPromotionCode() != null && !bookingRequest.getPromotionCode().isBlank()) {
+            promotionRepository.findByCode(bookingRequest.getPromotionCode()).ifPresent(booking::setPromotion);
+        }
 
         // Lưu booking trước
         final Booking savedBooking = bookingRepository.save(booking);

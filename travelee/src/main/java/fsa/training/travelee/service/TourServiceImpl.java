@@ -1,6 +1,7 @@
 package fsa.training.travelee.service;
 
 import fsa.training.travelee.dto.TourCreateRequest;
+import fsa.training.travelee.dto.TourSelectionDto;
 import fsa.training.travelee.dto.TourListDto;
 import fsa.training.travelee.entity.*;
 import fsa.training.travelee.mapper.TourMapper;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +61,49 @@ public class TourServiceImpl implements TourService {
 
             return dto;
         }).toList();
+    }
+
+    @Override
+    public List<TourSelectionDto> getToursForSelection() {
+        try {
+            System.out.println("=== DEBUG: getToursForSelection() called ===");
+            System.out.println("TourRepository: " + tourRepository);
+            
+            // Lấy tất cả tour từ database
+            System.out.println("Calling tourRepository.findAll()...");
+            List<Tour> allTours = tourRepository.findAll();
+            System.out.println("Total tours found in database: " + allTours.size());
+            
+            if (allTours.isEmpty()) {
+                System.out.println("WARNING: No tours found in database!");
+                return new ArrayList<>();
+            }
+            
+            // Log từng tour
+            allTours.forEach(tour -> {
+                System.out.println("Tour ID: " + tour.getId() + ", Title: " + tour.getTitle() + ", Status: " + tour.getStatus());
+            });
+            
+            // Map sang DTO
+            System.out.println("Mapping to DTOs...");
+            List<TourSelectionDto> result = allTours.stream().map(tour -> {
+                TourSelectionDto dto = new TourSelectionDto();
+                dto.setId(tour.getId());
+                dto.setTitle(tour.getTitle());
+                System.out.println("Created DTO: ID=" + dto.getId() + ", Title=" + dto.getTitle());
+                return dto;
+            }).toList();
+            
+            System.out.println("Mapped to DTOs: " + result.size());
+            System.out.println("=== END DEBUG ===");
+            
+            return result;
+            
+        } catch (Exception e) {
+            System.err.println("ERROR in getToursForSelection: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
 

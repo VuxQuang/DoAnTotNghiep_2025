@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Mã giảm giá - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/admin/css/promotion-style.css}">
+    <link rel="stylesheet" th:href="@{/admin/css/dashboard-style.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div th:replace="~{/admin/fragments/header :: header}"></div>
+        
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div th:replace="~{/admin/fragments/sidebar :: aside}"></div>
+            
+            <!-- Content -->
+            <div class="content">
+                <div class="content-header">
+                    <h1><i class="fas fa-tags"></i> Quản lý Mã giảm giá</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="updateExpiredPromotions()">
+                            <i class="fas fa-sync"></i> Cập nhật hết hạn
+                        </button>
+                        <a href="/admin/promotions/create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Tạo mới
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Statistics Cards -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon active">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 th:text="${activeCount}">0</h3>
+                            <p>Đang hoạt động</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon expired">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 th:text="${expiredCount}">0</h3>
+                            <p>Hết hạn</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon used">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 th:text="${fullyUsedCount}">0</h3>
+                            <p>Đã sử dụng hết</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon total">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 th:text="${totalPromotions}">0</h3>
+                            <p>Tổng cộng</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="search-filter-container">
+                    <form th:action="@{/admin/promotions}" method="get" class="search-form">
+                        <div class="search-group">
+                            <input type="text" name="keyword" th:value="${keyword}" 
+                                   placeholder="Tìm kiếm theo mã, tiêu đề, mô tả..." class="search-input">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <select name="status" class="filter-select">
+                                <option value="">Tất cả trạng thái</option>
+                                <option th:each="status : ${statusOptions}" 
+                                        th:value="${status}" 
+                                        th:text="${status == 'ACTIVE' ? 'Đang hoạt động' : 
+                                                  status == 'INACTIVE' ? 'Không hoạt động' : 
+                                                  status == 'EXPIRED' ? 'Hết hạn' : status}"
+                                        th:selected="${status == selectedStatus}">
+                                </option>
+                            </select>
+                            
+                            <select name="size" class="filter-select">
+                                <option value="5" th:selected="${size == 5}">5</option>
+                                <option value="10" th:selected="${size == 10}">10</option>
+                                <option value="20" th:selected="${size == 20}">20</option>
+                                <option value="50" th:selected="${size == 50}">50</option>
+                            </select>
+                            
+                            <button type="submit" class="btn btn-primary">Lọc</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                
+                <!-- Promotions Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <a th:href="@{/admin/promotions(keyword=${keyword}, status=${selectedStatus}, page=${currentPage}, size=${size}, sortBy='code', sortDir=${sortBy == 'code' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                        Mã giảm giá
+                                        <i th:if="${sortBy == 'code'}" 
+                                           th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"></i>
+                                    </a>
+                                </th>
+                                <th>
+                                    <a th:href="@{/admin/promotions(keyword=${keyword}, status=${selectedStatus}, page=${currentPage}, size=${size}, sortBy='title', sortDir=${sortBy == 'title' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                        Tiêu đề
+                                        <i th:if="${sortBy == 'title'}" 
+                                           th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"></i>
+                                    </a>
+                                </th>
+                                <th>Loại giảm giá</th>
+                                <th>Giá trị</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày bắt đầu</th>
+                                <th>Ngày kết thúc</th>
+                                <th>Sử dụng</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="promotion : ${promotions}" th:key="${promotion.id}">
+                                <td>
+                                    <span class="promotion-code" th:text="${promotion.code}"></span>
+                                </td>
+                                <td>
+                                    <div class="promotion-title">
+                                        <strong th:text="${promotion.title}"></strong>
+                                        <small th:if="${promotion.description}" th:text="${promotion.description}" class="description"></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:text="${promotion.discountType == 'PERCENTAGE' ? 'Phần trăm' : 'Số tiền cố định'}"></span>
+                                </td>
+                                <td>
+                                    <span class="discount-value" th:text="${promotion.discountDisplay}"></span>
+                                </td>
+                                <td>
+                                    <span th:class="${'status-badge ' + (promotion.isExpired ? 'expired' : 
+                                                           promotion.isFullyUsed ? 'used' : 
+                                                           promotion.status == 'ACTIVE' ? 'active' : 'inactive')}"
+                                          th:text="${promotion.statusDisplay}">
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                </td>
+                                <td>
+                                    <div class="usage-info">
+                                        <span th:text="${promotion.usedCount + '/' + promotion.totalUsageLimit}"></span>
+                                        <div class="usage-bar">
+                                            <div class="usage-fill" th:style="'width: ' + ${(promotion.usedCount * 100 / promotion.totalUsageLimit)} + '%'"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/admin/promotions/edit/{id}(id=${promotion.id})}" 
+                                           class="btn btn-sm btn-primary" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-secondary dropdown-toggle" onclick="toggleDropdown(this)">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <button th:onclick="'updateStatus(' + ${promotion.id} + ', \'ACTIVE\')'"
+                                                        th:class="${'dropdown-item ' + (promotion.status == 'ACTIVE' ? 'active' : '')}"
+                                                        th:disabled="${promotion.isExpired || promotion.isFullyUsed}">
+                                                    <i class="fas fa-check"></i> Kích hoạt
+                                                </button>
+                                                <button th:onclick="'updateStatus(' + ${promotion.id} + ', \'INACTIVE\')'"
+                                                        th:class="${'dropdown-item ' + (promotion.status == 'INACTIVE' ? 'active' : '')}">
+                                                    <i class="fas fa-pause"></i> Tạm dừng
+                                                </button>
+                                                <button th:onclick="'updateStatus(' + ${promotion.id} + ', \'EXPIRED\')'"
+                                                        th:class="${'dropdown-item ' + (promotion.status == 'EXPIRED' ? 'active' : '')}">
+                                                    <i class="fas fa-clock"></i> Hết hạn
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <button th:onclick="'deletePromotion(' + ${promotion.id} + ')'" 
+                                                class="btn btn-sm btn-danger" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div th:if="${totalPages > 1}" class="pagination">
+                    <div class="pagination-info">
+                        Hiển thị <span th:text="${currentPage * size + 1}">1</span> - 
+                        <span th:text="${currentPage * size + promotions.size()}">10</span> 
+                        trong tổng số <span th:text="${totalElements}">0</span> kết quả
+                    </div>
+                    
+                    <div class="pagination-controls">
+                        <a th:if="${hasPrevious}" 
+                           th:href="@{/admin/promotions(keyword=${keyword}, status=${selectedStatus}, page=${currentPage - 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                           class="page-link">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </a>
+                        
+                        <div class="page-numbers">
+                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:if="${pageNum >= currentPage - 2 && pageNum <= currentPage + 2}"
+                               th:href="@{/admin/promotions(keyword=${keyword}, status=${selectedStatus}, page=${pageNum}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                               th:class="${'page-link ' + (pageNum == currentPage ? 'active' : '')}"
+                               th:text="${pageNum + 1}">
+                            </a>
+                        </div>
+                        
+                        <a th:if="${hasNext}" 
+                           th:href="@{/admin/promotions(keyword=${keyword}, status=${selectedStatus}, page=${currentPage + 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                           class="page-link">
+                            Sau <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Xác nhận xóa</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa mã giảm giá này?</p>
+                <p>Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Xóa</button>
+            </div>
+        </div>
+    </div>
+    
+    <script th:src="@{/admin/js/promotion-script.js}"></script>
+</body>
+</html>

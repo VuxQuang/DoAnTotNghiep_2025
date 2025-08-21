@@ -146,12 +146,15 @@ function updateTotalPrice() {
     const adultPriceElement = document.getElementById('adultPrice');
     const childPriceElement = document.getElementById('childPrice');
     const totalPriceElement = document.getElementById('totalPrice');
+    const discountElement = document.getElementById('discountAmountValue');
     
     const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, ''));
     const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, ''));
     
     // Tính tổng tiền
-    const totalAmount = (adultCount * adultPrice) + (childCount * childPrice);
+    const subtotal = (adultCount * adultPrice) + (childCount * childPrice);
+    const discount = discountElement ? (parseFloat(discountElement.textContent.replace(/[^\d]/g, '')) || 0) : 0;
+    const totalAmount = Math.max(subtotal - discount, 0);
     
     // Format và hiển thị
     const formattedTotal = new Intl.NumberFormat('vi-VN').format(totalAmount);
@@ -165,47 +168,6 @@ function updateTotalPrice() {
         totalPriceElement.style.fontWeight = '';
     }, 1000);
 }
-
-// Form validation
-function validateForm() {
-    const form = document.querySelector('.booking-form');
-    const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
-    const childCount = parseInt(document.getElementById('childCount').value) || 0;
-    const participantsContainer = document.getElementById('participants-container');
-    
-    // Kiểm tra số lượng participants
-    const participantCards = participantsContainer.querySelectorAll('.participant-card');
-    const totalParticipants = participantCards.length;
-    const requiredParticipants = adultCount + childCount;
-    
-    if (totalParticipants !== requiredParticipants) {
-        alert(`Số lượng người tham gia không khớp. Cần ${requiredParticipants} người nhưng chỉ có ${totalParticipants} người.`);
-        return false;
-    }
-    
-    // Kiểm tra form validation
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return false;
-    }
-    
-    return true;
-}
-
-// Submit form
-document.querySelector('.booking-form').addEventListener('submit', function(e) {
-    if (!validateForm()) {
-        e.preventDefault();
-        return false;
-    }
-    
-    // Hiển thị loading
-    const submitBtn = document.querySelector('.btn-submit');
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-    submitBtn.disabled = true;
-    
-    // Form sẽ được submit bình thường
-});
 
 // Real-time validation
 document.addEventListener('input', function(e) {
@@ -293,4 +255,4 @@ window.addEventListener('load', function() {
     if (error) {
         showMessage(decodeURIComponent(error), 'error');
     }
-}); 
+});

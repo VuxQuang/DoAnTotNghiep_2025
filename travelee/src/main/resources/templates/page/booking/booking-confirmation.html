@@ -137,6 +137,10 @@
                         <label>Tổng tiền:</label>
                         <span class="amount" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">2,500,000 VNĐ</span>
                     </div>
+                    <div class="discount" th:if="${booking.discountAmount != null && booking.discountAmount > 0}">
+                        <label>Giảm giá:</label>
+                        <span class="amount" th:text="${'-' + #numbers.formatDecimal(booking.discountAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">-100,000 VNĐ</span>
+                    </div>
                 </div>
 
                 <div class="participants-table-wrapper">

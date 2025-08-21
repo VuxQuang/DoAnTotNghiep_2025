@@ -54,6 +54,7 @@
                 <!-- Hidden fields -->
                 <input type="hidden" th:field="*{tourId}" th:value="${tour.id}">
                 <input type="hidden" th:field="*{scheduleId}" th:value="${selectedSchedule.id}">
+                <input type="hidden" th:field="*{discountAmount}" th:value="${discountAmount}">
 
                 <!-- Customer Information -->
                 <div class="form-section">
@@ -102,6 +103,27 @@
                             <span class="error" th:if="${#fields.hasErrors('childCount')}" th:errors="*{childCount}"></span>
                         </div>
                     </div>
+                    <!-- Mã giảm giá (Thymeleaf, không dùng JS) -->
+                    <div class="promotion-section">
+                        <h4><i class="fas fa-tag"></i> Mã giảm giá</h4>
+                        <div class="promotion-input-group">
+                            <input type="text" name="promotionCode"
+                                   th:value="${appliedPromotion != null} ? ${appliedPromotion.code} : ''"
+                                   placeholder="Nhập mã giảm giá (nếu có)"
+                                   class="promotion-input">
+                            <button type="submit" class="btn-apply-promotion"
+                                    th:formaction="@{/page/promotions/apply}" formmethod="post"
+                                    name="action" value="applyPromotion" formnovalidate>
+                                <i class="fas fa-check"></i> Áp dụng
+                            </button>
+                        </div>
+                        <div class="promotion-message"
+                             th:if="${promotionMessage != null}"
+                             th:text="${promotionMessage}"
+                             th:classappend="${promotionSuccess} ? ' success' : ' error'">
+                        </div>
+                    </div>
+
                     <div class="price-summary">
                         <div class="price-item">
                             <span>Người lớn:</span>
@@ -111,9 +133,20 @@
                             <span>Trẻ em:</span>
                             <span id="childPrice" th:text="${#numbers.formatDecimal(tour.childPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Child Price</span>
                         </div>
+                        <div class="price-item" id="discountRow" style="display: none;">
+                            <span>Giảm giá:</span>
+                            <span id="discountAmount" class="discount-amount">0₫</span>
+                        </div>
+                        <div class="price-item" th:if="${discountAmount != null}">
+                            <span>Giảm giá:</span>
+                            <span id="discountAmountValue" class="discount-amount" th:text="${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                        </div>
                         <div class="price-total">
                             <span>Tổng tiền:</span>
-                            <span id="totalPrice" th:text="${#numbers.formatDecimal(selectedSchedule.specialPrice != null ? selectedSchedule.specialPrice : tour.adultPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Total Price</span>
+                            <span id="totalPrice"
+                                  th:text="${#numbers.formatDecimal(finalTotal != null ? finalTotal : (subtotal != null ? subtotal : ( (selectedSchedule != null and selectedSchedule.specialPrice != null) ? selectedSchedule.specialPrice : tour.adultPrice )), 0, 'COMMA', 0, 'POINT') + '₫'}">
+                                Total Price
+                            </span>
                         </div>
                     </div>
                 </div>
