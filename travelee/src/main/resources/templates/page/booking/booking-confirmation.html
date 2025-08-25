@@ -17,8 +17,8 @@
                 <div class="success-icon">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h1>Đặt tour thành công!</h1>
-                <p>Cảm ơn bạn đã đặt tour. Dưới đây là thông tin chi tiết về booking của bạn.</p>
+                <h1 th:text="${booking.status.name() == 'PAID' ? 'Đã thanh toán thành công!' : 'Đặt tour thành công!'}">Đặt tour thành công!</h1>
+                <p th:text="${booking.status.name() == 'PAID' ? 'Cảm ơn bạn đã thanh toán. Dưới đây là thông tin chi tiết về booking của bạn.' : 'Cảm ơn bạn đã đặt tour. Dưới đây là thông tin chi tiết về booking của bạn.'}">Cảm ơn bạn đã đặt tour. Dưới đây là thông tin chi tiết về booking của bạn.</p>
             </div>
 
             <!-- Booking Details -->
@@ -39,17 +39,17 @@
                     <div class="detail-item">
                         <label>Trạng thái:</label>
                         <span class="status-badge" th:classappend="${booking.status == 'PENDING' ? 'pending' : 
-                                                                   booking.status == 'CONFIRMED' ? 'confirmed' : 
+                                                                   booking.status == 'PAID' ? 'paid' : 
                                                                    booking.status == 'CANCELLED' ? 'cancelled' : 'completed'}">
                             <span th:text="${booking.status == 'PENDING' ? 'Chờ xác nhận' : 
-                                          booking.status == 'CONFIRMED' ? 'Đã thanh toán' : 
+                                          booking.status == 'PAID' ? 'Đã thanh toán' : 
                                           booking.status == 'CANCELLED' ? 'Đã hủy' : 'Hoàn thành'}">Chờ xác nhận</span>
                         </span>
                     </div>
                      <div class="detail-item">
                          <label>Thanh toán:</label>
-                         <span class="status-badge" th:classappend="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'confirmed' : 'pending'}">
-                             <span th:text="${booking.payment != null and booking.payment.status == 'COMPLETED' ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
+                         <span class="status-badge" th:classappend="${booking.status == 'PAID' or (booking.payment != null and booking.payment.status == 'COMPLETED') ? 'confirmed' : 'pending'}">
+                             <span th:text="${booking.status.name() == 'PAID' or (booking.payment.name() != null and booking.payment.status.name() == 'COMPLETED') ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
                          </span>
                      </div>
                 </div>
@@ -172,7 +172,7 @@
             </div>
 
             <!-- Next Steps -->
-            <div class="next-steps">
+            <div class="next-steps" th:if="${booking.status.name() != 'PAID'}">
                 <div class="section-title">
                     <h2><i class="fas fa-arrow-right"></i> Các bước tiếp theo</h2>
                 </div>
@@ -202,18 +202,49 @@
                 </div>
             </div>
 
+            <!-- Success Message for Paid Bookings -->
+            <div class="next-steps" th:if="${booking.status.name() == 'PAID'}">
+                <div class="section-title">
+                    <h2><i class="fas fa-check-circle"></i> Thông tin quan trọng</h2>
+                </div>
+                
+                <div class="steps-list">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Thanh toán hoàn tất</h4>
+                            <p>Booking của bạn đã được thanh toán thành công</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Chờ xác nhận</h4>
+                            <p>Nhân viên của chúng tôi sẽ xác nhận và gửi voucher trong vòng 24 giờ</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Chuẩn bị hành trình</h4>
+                            <p>Hãy chuẩn bị cho chuyến du lịch tuyệt vời sắp tới</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="action-buttons">
                 
                 <!-- Nút thanh toán - chỉ hiển thị khi chưa thanh toán -->
-                <a th:if="${booking.payment != null and (booking.payment.status == 'PENDING' or booking.payment.method == null)}"
+                <a th:if="${booking.status != 'PAID' and booking.payment != null and (booking.payment.status == 'PENDING' or booking.payment.method == null)}"
                    th:href="@{/page/payment/{id}(id=${booking.id})}" 
                    class="btn btn-primary btn-payment">
                     <i class="fas fa-credit-card"></i> Thanh toán ngay
                 </a>
                 
                 <!-- Hiển thị trạng thái đã thanh toán -->
-                <span th:if="${booking.payment != null and booking.payment.status == 'COMPLETED'}"
+                <span th:if="${booking.status == 'PAID' or (booking.payment != null and booking.payment.status == 'COMPLETED')}"
                       class="btn btn-success" style="cursor: default;">
                     <i class="fas fa-check"></i> Đã thanh toán
                 </span>

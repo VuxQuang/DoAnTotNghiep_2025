@@ -10,6 +10,7 @@ import fsa.training.travelee.service.BookingService;
 import fsa.training.travelee.service.SupportRequestService;
 import fsa.training.travelee.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ProfileController {
 
     private final SupportRequestService supportRequestService;
@@ -44,8 +46,18 @@ public class ProfileController {
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setAddress(user.getAddress());
 
-        // Lấy danh sách booking của user
+        // Lấy danh sách booking của user với đầy đủ relationships
         List<Booking> userBookings = bookingService.getBookingsByUser(user);
+        // Load đầy đủ thông tin cho từng booking để đảm bảo hiển thị đúng trạng thái
+        for (int i = 0; i < userBookings.size(); i++) {
+            try {
+                Booking fullBooking = bookingService.getBookingById(userBookings.get(i).getId());
+                userBookings.set(i, fullBooking);
+            } catch (Exception e) {
+                // Nếu có lỗi khi load booking chi tiết, giữ nguyên booking cũ
+                log.warn("Không thể load chi tiết booking {}: {}", userBookings.get(i).getId(), e.getMessage());
+            }
+        }
 
         model.addAttribute("updateUserDto", dto);
         model.addAttribute("supportRequest", new SupportRequest());

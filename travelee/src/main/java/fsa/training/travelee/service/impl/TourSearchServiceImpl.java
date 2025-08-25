@@ -88,7 +88,7 @@ public class TourSearchServiceImpl implements TourSearchService {
                 .and(hasDateRange(departureDateFrom, departureDateTo))
                 .and(isActive());
 
-        log.debug("Tour specification created successfully with {} conditions",
+        log.debug(" Tour specification created successfully with {} conditions",
                 (keyword != null ? 1 : 0) +
                         (departure != null ? 1 : 0) +
                         (destination != null ? 1 : 0) +
