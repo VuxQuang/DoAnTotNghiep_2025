@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tour Search Component</title>
+</head>
+<body>
+<!-- Tour Search Component Fragment - Horizontal Layout -->
+<div th:fragment="tour-search" class="tour-search-container horizontal">
+    <form th:action="@{/page/tours/search}" method="GET" class="search-form" id="tourSearchForm">
+
+        <!-- Row 1: Keyword, Departure, Destination, Category -->
+        <div class="search-row">
+            <div class="search-group">
+                <label for="keyword">
+                    <i class="fas fa-search"></i> Từ Khóa
+                </label>
+                <input type="text" id="keyword" name="keyword"
+                       placeholder="Tên tour, địa điểm..."
+                       th:value="${param.keyword}"
+                       aria-label="Nhập từ khóa tìm kiếm tour">
+            </div>
+
+            <div class="search-group">
+                <label for="departure">
+                    <i class="fas fa-map-marker-alt"></i> Điểm Đi
+                </label>
+                <select id="departure" name="departure" aria-label="Chọn điểm khởi hành">
+                    <option value="">Tất cả điểm đi</option>
+                    <option value="Hà Nội" th:selected="${param.departure == 'Hà Nội'}">Hà Nội</option>
+                    <option value="TP. Hồ Chí Minh" th:selected="${param.departure == 'TP. Hồ Chí Minh'}">TP.HCM</option>
+                    <option value="Đà Nẵng" th:selected="${param.departure == 'Đà Nẵng'}">Đà Nẵng</option>
+                    <option value="Nha Trang" th:selected="${param.departure == 'Nha Trang'}">Nha Trang</option>
+                    <option value="Phú Quốc" th:selected="${param.departure == 'Phú Quốc'}">Phú Quốc</option>
+                </select>
+            </div>
+
+            <div class="search-group">
+                <label for="destination">
+                    <i class="fas fa-flag-checkered"></i> Điểm Đến
+                </label>
+                <select id="destination" name="destination" aria-label="Chọn điểm đến">
+                    <option value="">Tất cả điểm đến</option>
+                    <option value="Sapa" th:selected="${param.destination == 'Sapa'}">Sapa</option>
+                    <option value="Hạ Long" th:selected="${param.destination == 'Hạ Long'}">Hạ Long</option>
+                    <option value="Huế" th:selected="${param.destination == 'Huế'}">Huế</option>
+                    <option value="Hội An" th:selected="${param.destination == 'Hội An'}">Hội An</option>
+                    <option value="Nha Trang" th:selected="${param.destination == 'Nha Trang'}">Nha Trang</option>
+                    <option value="Phú Quốc" th:selected="${param.destination == 'Phú Quốc'}">Phú Quốc</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 2: Price Range, Duration, Participants -->
+        <div class="search-row">
+            <div class="search-group price-range-group">
+                <label for="minPrice">
+                    <i class="fas fa-dollar-sign"></i> Khoảng Giá
+                </label>
+                <div class="price-slider-container">
+                    <div class="price-inputs">
+                        <label for="minPrice" class="sr-only">Giá từ</label>
+                        <input type="number" id="minPrice" name="minPrice"
+                               placeholder="Giá từ" min="0" step="100000"
+                               th:value="${param.minPrice}"
+                               aria-label="Nhập giá tối thiểu">
+                        <span class="price-separator">-</span>
+                        <label for="maxPrice" class="sr-only">Giá đến</label>
+                        <input type="number" id="maxPrice" name="maxPrice"
+                               placeholder="Giá đến" min="0" step="100000"
+                               th:value="${param.maxPrice}"
+                               aria-label="Nhập giá tối đa">
+                    </div>
+                    <!-- Hidden inputs để sync với sliders -->
+                    <input type="hidden" id="minPriceHidden" name="minPriceHidden"
+                           th:value="${param.minPriceHidden != null ? param.minPriceHidden : 0}">
+                    <input type="hidden" id="maxPriceHidden" name="maxPriceHidden"
+                           th:value="${param.maxPriceHidden != null ? param.maxPriceHidden : 20000000}">
+                    <div class="price-slider">
+                        <label for="minPriceSlider" class="sr-only">Giá tối thiểu</label>
+                        <div class="slider-track">
+                            <div class="slider-fill"></div>
+                        </div>
+                        <input type="range" id="minPriceSlider" name="minPriceSlider" min="0" max="20000000"
+                               th:value="${param.minPriceSlider != null ? param.minPriceSlider : 0}" step="100000"
+                               aria-label="Điều chỉnh giá tối thiểu">
+                        <label for="maxPriceSlider" class="sr-only">Giá tối đa</label>
+                        <input type="range" id="maxPriceSlider" name="maxPriceSlider" min="0" max="20000000"
+                               th:value="${param.maxPriceSlider != null ? param.maxPriceSlider : 20000000}" step="100000"
+                               aria-label="Điều chỉnh giá tối đa">
+                    </div>
+                    <div class="price-labels">
+                        <span class="min-price-label">0 VNĐ</span>
+                        <span class="max-price-label">20,000,000 VNĐ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Dates, Sort, Actions -->
+        <div class="search-row">
+            <div class="search-group">
+                <label for="departureDateFrom">
+                    <i class="fas fa-calendar-alt"></i> Từ Ngày
+                </label>
+                <input type="date" id="departureDateFrom" name="departureDateFrom"
+                       th:value="${param.departureDateFrom}"
+                       aria-label="Chọn ngày khởi hành từ">
+            </div>
+
+            <div class="search-group">
+                <label for="departureDateTo">
+                    <i class="fas fa-calendar-alt"></i> Đến Ngày
+                </label>
+                <input type="date" id="departureDateTo" name="departureDateTo"
+                       th:value="${param.departureDateTo}"
+                       aria-label="Chọn ngày khởi hành đến">
+            </div>
+
+            <!-- Search Actions -->
+            <div class="search-actions">
+                <button type="submit" class="btn-search" aria-label="Tìm kiếm tour">
+                    <i class="fas fa-search"></i> Tìm Kiếm
+                </button>
+                <button type="reset" class="btn-reset" aria-label="Đặt lại tất cả bộ lọc">
+                    <i class="fas fa-undo"></i> Đặt Lại
+                </button>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

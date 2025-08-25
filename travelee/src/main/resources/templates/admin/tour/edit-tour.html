@@ -237,29 +237,29 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Tiêu đề</label>
-                                        <input type="text" name="itineraries[__${iterStat.index}__].title" th:value="${itinerary.title}" required>
+                                        <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].title'" th:value="${itinerary.title}" required>
                                     </div>
                                     <div class="form-group">
                                         <label>Ngày</label>
-                                        <input type="number" name="itineraries[__${iterStat.index}__].dayNumber" th:value="${itinerary.dayNumber}" required min="1">
+                                        <input type="number" th:name="'itineraries[' + ${iterStat.index} + '].dayNumber'" th:value="${itinerary.dayNumber}" required min="1">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label>Mô tả</label>
-                                    <textarea name="itineraries[__${iterStat.index}__].description" rows="3" th:value="${itinerary.description}"></textarea>
+                                    <textarea th:name="'itineraries[' + ${iterStat.index} + '].description'" rows="3" th:value="${itinerary.description}"></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label>Hoạt động</label>
-                                    <textarea name="itineraries[__${iterStat.index}__].activities" rows="2" th:value="${itinerary.activities}"></textarea>
+                                    <textarea th:name="'itineraries[' + ${iterStat.index} + '].activities'" rows="2" th:value="${itinerary.activities}"></textarea>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Bữa ăn</label>
-                                        <input type="text" name="itineraries[__${iterStat.index}__].meals" th:value="${itinerary.meals}">
+                                        <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].meals'" th:value="${itinerary.meals}">
                                     </div>
                                     <div class="form-group">
                                         <label>Nơi ở</label>
-                                        <input type="text" name="itineraries[__${iterStat.index}__].accommodation" th:value="${itinerary.accommodation}">
+                                        <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].accommodation'" th:value="${itinerary.accommodation}">
                                     </div>
                                 </div>
                                 <button type="button" class="btn-remove-itinerary" onclick="removeItinerary(this)">
@@ -282,26 +282,26 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Ngày khởi hành</label>
-                                        <input type="date" name="schedules[__${iterStat.index}__].departureDate" th:value="${schedule.departureDate}" required>
+                                        <input type="date" th:name="'schedules[' + ${iterStat.index} + '].departureDate'" th:value="${schedule.departureDate}" required>
                                     </div>
                                     <div class="form-group">
                                         <label>Ngày về</label>
-                                        <input type="date" name="schedules[__${iterStat.index}__].returnDate" th:value="${schedule.returnDate}" required>
+                                        <input type="date" th:name="'schedules[' + ${iterStat.index} + '].returnDate'" th:value="${schedule.returnDate}" required>
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Giá đặc biệt</label>
-                                        <input type="number" name="schedules[__${iterStat.index}__].specialPrice" th:value="${schedule.specialPrice}" min="0">
+                                        <input type="number" th:name="'schedules[' + ${iterStat.index} + '].specialPrice'" th:value="${schedule.specialPrice}" min="0">
                                     </div>
                                     <div class="form-group">
                                         <label>Số chỗ còn trống</label>
-                                        <input type="number" name="schedules[__${iterStat.index}__].availableSlots" th:value="${schedule.availableSlots}" min="0" required>
+                                        <input type="number" th:name="'schedules[' + ${iterStat.index} + '].availableSlots'" th:value="${schedule.availableSlots}" min="0" required>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label>Trạng thái</label>
-                                    <select name="schedules[__${iterStat.index}__].status" th:value="${schedule.status}">
+                                    <select th:name="'schedules[' + ${iterStat.index} + '].status'" th:value="${schedule.status}">
                                         <option value="available">Còn chỗ</option>
                                         <option value="full">Đã đầy</option>
                                         <option value="closed">Đã đóng</option>

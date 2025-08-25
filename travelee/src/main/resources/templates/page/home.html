@@ -7,6 +7,7 @@
     <link rel="stylesheet" th:href="@{/page/css/homepage.css}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/page/css/home-search-bar.css}">
 </head>
 <body>
 <!-- Header với thông tin liên hệ -->
@@ -14,6 +15,8 @@
 
 <!-- Sidebar -->
 <div th:replace="~{/page/fragments/navbar :: navbar}"></div>
+
+<div th:replace="~{fragments/home-search-bar :: home-search-bar}"></div>
 
 <!-- Main Content -->
 <main class="main">
@@ -424,7 +427,7 @@
 
 <!-- Chat Widget -->
 <div th:replace="~{/page/fragments/chatbot :: chatbot}"></div>
-
+<script th:src="@{/page/js/home-search-bar.js}"></script>
 <script th:src="@{/page/js/homepage-script.js}"></script>
 </body>
 </html>

@@ -8,12 +8,103 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/page/css/tour-list.css}">
+    <link rel="stylesheet" th:href="@{/page/css/homepage.css}">
+    <link rel="stylesheet" th:href="@{/page/css/tour-search.css}">
 </head>
 <body>
 
+<div th:replace="~{fragments/tour-search :: tour-search}"></div>
 <main class="main-content">
-    <!-- Tour mới -->
-    <section class="tour-section">
+
+    <!-- Hiển thị kết quả tìm kiếm nếu có -->
+    <div th:if="${tours != null and !tours.empty}" class="search-results">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-search"></i>
+                Kết quả tìm kiếm
+                (<span th:text="${totalElements}">0</span> tours)
+            </h2>
+        </div>
+
+        <div class="tour-list grid grid-cols-3 gap-4">
+            <div th:each="tour : ${tours}" class="tour-card rounded-xl shadow p-4 hover:shadow-lg transition duration-300">
+                <img th:if="${tour.images != null and !tour.images.empty}"
+                     th:src="${tour.images[0].imageUrl}" alt="Tour Image"
+                     class="w-full h-48 object-cover rounded-lg mb-3"/>
+                <img th:unless="${tour.images != null and !tour.images.empty}"
+                     src="/page/imgs/default-tour.jpg" alt="Default Tour Image"
+                     class="w-full h-48 object-cover rounded-lg mb-3"/>
+
+                <div class="tour-info space-y-2">
+                    <h2 class="text-xl font-semibold text-gray-800" th:text="${tour.title}"></h2>
+
+                    <div class="text-sm text-gray-600">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span th:text="${tour.departure} + ' → ' + ${tour.destination}"></span>
+                    </div>
+
+                    <div class="text-lg text-green-600 font-bold">
+                        <span th:text="${#numbers.formatDecimal(tour.adultPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                    </div>
+
+                    <!-- Badges và Likes -->
+                    <div class="tour-badges">
+                        <span class="tour-badge new">Mới</span>
+                        <span th:if="${tour.id % 3 == 0}" class="tour-badge hot">Hot</span>
+                        <div class="tour-likes">
+                            <i class="fas fa-heart"></i>
+                            <span th:text="${tour.id * 2 + 10}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <a th:href="@{/page/tours/{id}(id=${tour.id})}" class="text-blue-600 hover:underline">
+                        <i class="fas fa-eye"></i> Xem chi tiết
+                    </a>
+                    <a th:href="@{/page/tours/{id}/book(id=${tour.id})}" class="text-green-600 hover:underline">
+                        <i class="fas fa-plane-departure"></i> Đặt tour
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phân trang cho kết quả tìm kiếm -->
+        <div th:if="${totalPages > 1}" class="admin-pagination">
+            <a th:if="${hasPrevious}"
+               th:href="@{/page/tours/search(page=${currentPage - 1}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
+               class="admin-page-btn prev"
+               title="Trang trước">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+
+            <span class="admin-page-numbers">
+                <a th:each="i : ${#numbers.sequence(0, (totalPages - 1))}"
+                   th:href="@{/page/tours/search(page=${i}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
+                   th:text="${i+1}"
+                   th:classappend="${i == currentPage} ? 'admin-page-btn active' : 'admin-page-btn'">
+                </a>
+            </span>
+
+            <a th:if="${hasNext}"
+               th:href="@{/page/tours/search(page=${currentPage + 1}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
+               class="admin-page-btn next"
+               title="Trang tiếp">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Hiển thị thông báo lỗi nếu có -->
+    <div th:if="${error != null}" class="error-message">
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span th:text="${error}"></span>
+        </div>
+    </div>
+
+    <!-- Hiển thị tour mới nếu không có kết quả tìm kiếm -->
+    <div th:if="${tours == null or tours.empty}" class="tour-section">
         <div class="section-header">
             <h2><i class="fas fa-sparkles"></i> Tour mới</h2>
         </div>
@@ -22,7 +113,11 @@
             <div th:each="tour : ${newestTours}">
                 <!-- Slot có dữ liệu -->
                 <div th:if="${tour != null}" class="tour-card rounded-xl shadow p-4 hover:shadow-lg transition duration-300">
-                    <img th:src="${tour.imageUrls[0]}" alt="Tour Image"
+                    <img th:if="${tour.imageUrls != null and !tour.imageUrls.empty}"
+                         th:src="${tour.imageUrls[0]}" alt="Tour Image"
+                         class="w-full h-48 object-cover rounded-lg mb-3"/>
+                    <img th:unless="${tour.imageUrls != null and !tour.imageUrls.empty}"
+                         src="/page/imgs/default-tour.jpg" alt="Default Tour Image"
                          class="w-full h-48 object-cover rounded-lg mb-3"/>
 
                     <div class="tour-info space-y-2">
@@ -52,7 +147,7 @@
                         <a th:href="@{/page/tours/{id}(id=${tour.id})}" class="text-blue-600 hover:underline">
                             <i class="fas fa-eye"></i> Xem chi tiết
                         </a>
-                        <a th:href="@{/booking-detail(tourId=${tour.id})}" class="text-green-600 hover:underline">
+                        <a th:href="@{/page/tours/{id}/book(id=${tour.id})}" class="text-green-600 hover:underline">
                             <i class="fas fa-plane-departure"></i> Đặt tour
                         </a>
                     </div>
@@ -66,7 +161,7 @@
             </div>
         </div>
 
-        <!-- Phân trang -->
+        <!-- Phân trang cho tour mới -->
         <div class="admin-pagination">
             <a th:if="${currentPage > 0 and totalPages > 0}"
                th:href="@{/client/tours/newest(page=${currentPage - 1}, size=${size})}"
@@ -89,18 +184,13 @@
             </a>
 
         </div>
-    </section>
+    </div>
 
-    <!-- Tour hot (chưa xử lý dữ liệu, placeholder) -->
-    <section class="tour-section">
-        <div class="section-header">
-            <h2><i class="fas fa-fire"></i> Tour hot nhiều người thích</h2>
-        </div>
-        <div class="tour-list">
-            <p class="text-center text-gray-400 italic">Đang cập nhật...</p>
-        </div>
-    </section>
 </main>
+
+<div th:replace="~{/page/fragments/footer :: footer}"></div>
+<script th:src="@{/page/js/tour-search.js}"></script>
+<script th:src="@{/page/js/homepage-script.js}"></script>
 <script th:src="@{/page/js/tour-list.js}"></script>
 </body>
 </html>

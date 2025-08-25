@@ -105,6 +105,53 @@
     font-size: 0.7rem;
 }
 
+/* Phân biệt ảnh cũ và mới */
+.image-preview-item[data-new="true"] {
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+
+.image-preview-item[data-new="true"] .remove-image {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+.image-label {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 500;
+}
+
+.no-images-message {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.image-stats {
+    margin-top: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.image-stats strong {
+    color: #ffd700;
+}
+
 /* Itinerary and Schedule items */
 .itinerary-item, .schedule-item {
     background: #f8f9fa;

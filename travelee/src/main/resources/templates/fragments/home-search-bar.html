@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Search Bar</title>
+</head>
+<body>
+<!-- Home Search Bar - Compact & Elegant -->
+<div th:fragment="home-search-bar" class="home-search-container">
+    <div class="search-hero">
+        <h2>Khám Phá Những Điểm Đến Tuyệt Vời</h2>
+        <p>Đặt tour du lịch với giá tốt nhất và trải nghiệm đáng nhớ</p>
+    </div>
+
+    <form th:action="@{/page/tours/search}" method="GET" class="home-search-form" id="homeSearchForm">
+        <div class="search-inputs">
+            <div class="search-field">
+                <div class="field-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <input type="text" id="homeKeyword" name="keyword"
+                       placeholder="Bạn muốn đi đâu?"
+                       th:value="${param.keyword}">
+            </div>
+
+            <div class="search-field">
+                <div class="field-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <input type="date" id="homeDepartureDate" name="departureDateFrom"
+                       th:value="${param.departureDateFrom}">
+            </div>
+
+            <div class="search-field">
+                <div class="field-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <select id="homePriceRange" name="priceRange">
+                    <option value="">Tất cả mức giá</option>
+                    <option value="0-2000000" th:selected="${param.priceRange == '0-2000000'}">Dưới 2 triệu</option>
+                    <option value="2000000-5000000" th:selected="${param.priceRange == '2000000-5000000'}">2 - 5 triệu</option>
+                    <option value="5000000-10000000" th:selected="${param.priceRange == '5000000-10000000'}">5 - 10 triệu</option>
+                    <option value="10000000-999999999" th:selected="${param.priceRange == '10000000-999999999'}">Trên 10 triệu</option>
+                </select>
+            </div>
+
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>
+                <span>Tìm Kiếm</span>
+            </button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

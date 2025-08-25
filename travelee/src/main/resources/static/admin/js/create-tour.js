@@ -19,8 +19,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initializeImageUpload();
     initializeForm();
-    addItinerary();
-    addSchedule();
+    
+    // Chỉ thêm itinerary và schedule mới khi tạo tour mới
+    // Khi sửa tour, dữ liệu sẽ được load từ template
+    if (!document.body.getAttribute('data-update')) {
+        addItinerary();
+        addSchedule();
+    } else {
+        // Cập nhật counter để tránh xung đột index khi thêm mới
+        const existingItineraries = document.querySelectorAll('#itineraryContainer .itinerary-item');
+        const existingSchedules = document.querySelectorAll('#scheduleContainer .schedule-item');
+        const existingIncludes = document.querySelectorAll('#includesContainer .input-group');
+        const existingExcludes = document.querySelectorAll('#excludesContainer .input-group');
+        
+        itineraryCounter = existingItineraries.length;
+        scheduleCounter = existingSchedules.length;
+        includesCounter = Math.max(existingIncludes.length - 1, 0); // Trừ đi input mới
+        excludesCounter = Math.max(existingExcludes.length - 1, 0); // Trừ đi input mới
+        
+        // Kiểm tra và cập nhật validation ảnh
+        updateImageValidation();
+    }
 });
 
 function enableReadonlyMode() {
@@ -107,24 +126,96 @@ function handleFiles(files) {
 // === Hiển thị ảnh + input hidden để submit ===
 function updateImagePreview() {
     const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
+    
+    // Giữ lại các ảnh cũ (nếu có) - không xóa
+    // Chỉ xóa những ảnh mới upload để cập nhật
+    const newImages = preview.querySelectorAll('.image-preview-item[data-new]');
+    newImages.forEach(img => img.remove());
 
+    // Thêm các ảnh mới upload
     uploadedImages.forEach((image, index) => {
         const item = document.createElement('div');
         item.className = 'image-preview-item';
+        item.setAttribute('data-new', 'true');
         item.innerHTML = `
-            <img src="${image.url}" alt="Ảnh ${index + 1}">
+            <img src="${image.url}" alt="Ảnh mới ${index + 1}">
             <input type="hidden" name="imageUrls" value="${image.url}">
-            <button type="button" class="remove-image" onclick="removeImage(${index})">×</button>
+            <button type="button" class="remove-image" onclick="removeImage(${index})" title="Xóa ảnh mới">×</button>
         `;
         preview.appendChild(item);
     });
+    
+    // Cập nhật validation sau khi thay đổi ảnh
+    updateImageValidation();
 }
 
 // === Xoá ảnh đã upload (cả UI & mảng) ===
 function removeImage(index) {
-    uploadedImages.splice(index, 1);
-    updateImagePreview();
+    if (confirm('Bạn có chắc muốn xóa ảnh mới này?')) {
+        uploadedImages.splice(index, 1);
+        updateImagePreview();
+    }
+}
+
+// === Xóa ảnh cũ ===
+function removeExistingImage(element) {
+    if (confirm('Bạn có chắc muốn xóa ảnh cũ này? Ảnh sẽ bị xóa khỏi tour.')) {
+        const imageItem = element.closest('.image-preview-item');
+        imageItem.remove();
+        
+        // Cập nhật validation nếu cần
+        updateImageValidation();
+    }
+}
+
+// === Cập nhật validation ảnh ===
+function updateImageValidation() {
+    const existingImages = document.querySelectorAll('#imagePreview .image-preview-item img');
+    const totalImages = uploadedImages.length + existingImages.length;
+    
+    // Hiển thị thông báo nếu không còn ảnh nào
+    if (totalImages === 0) {
+        const preview = document.getElementById('imagePreview');
+        if (!preview.querySelector('.no-images-message')) {
+            const message = document.createElement('div');
+            message.className = 'no-images-message';
+            message.innerHTML = '<p style="color: #ff6b6b; text-align: center; padding: 20px;">⚠️ Chưa có ảnh nào cho tour. Vui lòng upload ít nhất 1 ảnh.</p>';
+            preview.appendChild(message);
+        }
+    } else {
+        // Xóa thông báo nếu có ảnh
+        const message = document.querySelector('.no-images-message');
+        if (message) message.remove();
+    }
+    
+    // Cập nhật thống kê ảnh
+    updateImageStats();
+}
+
+// === Cập nhật thống kê ảnh ===
+function updateImageStats() {
+    const existingImages = document.querySelectorAll('#imagePreview .image-preview-item img');
+    const totalImages = uploadedImages.length + existingImages.length;
+    
+    // Tìm hoặc tạo element hiển thị thống kê
+    let statsElement = document.querySelector('.image-stats');
+    if (!statsElement) {
+        statsElement = document.createElement('div');
+        statsElement.className = 'image-stats';
+        statsElement.style.cssText = 'margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem; color: #666; text-align: center;';
+        
+        const preview = document.getElementById('imagePreview');
+        preview.parentNode.insertBefore(statsElement, preview.nextSibling);
+    }
+    
+    if (totalImages > 0) {
+        statsElement.innerHTML = `
+            📊 Tổng số ảnh: <strong>${totalImages}</strong> 
+            (${existingImages.length} ảnh cũ, ${uploadedImages.length} ảnh mới)
+        `;
+    } else {
+        statsElement.innerHTML = '📊 Chưa có ảnh nào';
+    }
 }
 
 // === Form truyền thống (không cần fetch) ===
@@ -150,8 +241,12 @@ function validateForm() {
         }
     }
 
-    if (uploadedImages.length === 0) {
-        alert('Vui lòng upload ít nhất 1 hình ảnh cho tour.');
+    // Kiểm tra ảnh: cần có ít nhất 1 ảnh (từ upload mới hoặc ảnh cũ)
+    const existingImages = document.querySelectorAll('#imagePreview .image-preview-item img');
+    const totalImages = uploadedImages.length + existingImages.length;
+    
+    if (totalImages === 0) {
+        alert('Vui lòng upload ít nhất 1 hình ảnh cho tour hoặc giữ lại ảnh cũ.');
         return false;
     }
 
