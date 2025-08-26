@@ -14,4 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface TourScheduleRepository extends JpaRepository<TourSchedule, Long> {
+    @Query("SELECT s FROM TourSchedule s JOIN FETCH s.tour t WHERE s.departureDate BETWEEN :start AND :end")
+    List<TourSchedule> findByDepartureDateBetweenWithTour(@Param("start") LocalDate start,
+                                                          @Param("end") LocalDate end);
 }
