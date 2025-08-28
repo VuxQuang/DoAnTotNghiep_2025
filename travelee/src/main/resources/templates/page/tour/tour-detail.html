@@ -15,6 +15,14 @@
     <div class="tour-detail-container">
         <!-- Tour Header -->
         <div class="tour-header" th:if="${tour != null}">
+            <!-- Availability Alert -->
+            <div th:if="${tour.schedules != null and tour.schedules.size() > 0}" class="availability-alert">
+                <div class="alert available">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Tour đang mở đặt với nhiều chỗ trống</span>
+                </div>
+            </div>
+            
             <div class="tour-title">
                 <h1 th:text="${tour.title != null ? tour.title : 'Tour Title'}">Tour Title</h1>
                 <div class="tour-badges">
@@ -35,6 +43,10 @@
                 <div class="meta-item">
                     <i class="fas fa-users"></i>
                     <span th:text="${tour.maxParticipants != null ? 'Tối đa ' + tour.maxParticipants + ' khách' : 'Max Participants'}">Max Participants</span>
+                </div>
+                <div class="meta-item" th:if="${tour.schedules != null and tour.schedules.size() > 0}">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Lịch trình khởi hành</span>
                 </div>
                 <div class="meta-item">
                     <span th:class="${'status-badge ' + (tour.status != null and tour.status == 'active' ? 'active' : 'inactive')}" 
@@ -191,6 +203,10 @@
                         <i class="fas fa-calendar-check"></i>
                         Đặt tour ngay
                     </button>
+                    <div class="booking-note" th:if="${tour.schedules != null and tour.schedules.size() > 0}">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Chọn ngày khởi hành phù hợp để đặt tour</span>
+                    </div>
                 </div>
 
                 <!-- Schedule Card -->
@@ -213,16 +229,20 @@
                                       th:text="${#numbers.formatDecimal(schedule.specialPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Special Price</span>
                                 <span th:unless="${schedule.specialPrice}" class="special-price" 
                                       th:text="${#numbers.formatDecimal(tour.adultPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Regular Price</span>
-                                <span class="slots" th:text="'Còn ' + ${schedule.availableSlots} + ' chỗ'">Available Slots</span>
                             </div>
-                            <button class="btn-select-date" 
+                            <div class="schedule-slots">
+                                <div class="slots-info">
+                                    <i class="fas fa-users"></i>
+                                    <span class="slots-count" 
+                                          th:text="${schedule.availableSlots != null ? 'Còn ' + schedule.availableSlots + ' chỗ' : 'Không giới hạn chỗ'}">Available Slots</span>
+                                </div>
+                            </div>
+                            <button class="btn-select-date available" 
                                     th:onclick="'selectSchedule(' + ${schedule.id} + ')'"
                                     th:data-schedule-id="${schedule.id}"
-                                    th:data-promotional-price="${schedule.specialPrice != null ? schedule.specialPrice : tour.adultPrice}"
-                                    th:disabled="${schedule.status == 'full' or schedule.status == 'closed'}">
-                                <span th:text="${schedule.status == 'available' ? 'Chọn ngày này' : 
-                                               schedule.status == 'limited' ? 'Sắp hết chỗ' : 
-                                               schedule.status == 'full' ? 'Đã đầy' : 'Đã đóng'}">Select Date</span>
+                                    th:data-promotional-price="${schedule.specialPrice != null ? schedule.specialPrice : tour.adultPrice}">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>Chọn ngày này</span>
                             </button>
                         </div>
                     </div>

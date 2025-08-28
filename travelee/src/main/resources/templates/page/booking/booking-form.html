@@ -127,11 +127,15 @@
                     <div class="price-summary">
                         <div class="price-item">
                             <span>Người lớn:</span>
-                            <span id="adultPrice" th:text="${#numbers.formatDecimal(selectedSchedule.specialPrice != null ? selectedSchedule.specialPrice : tour.adultPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Adult Price</span>
+                            <span id="adultPriceDisplay" th:text="${#numbers.formatDecimal(selectedSchedule.specialPrice != null ? selectedSchedule.specialPrice : tour.adultPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Adult Price</span>
+                            <!-- Hidden element để lưu giá đơn vị -->
+                            <span id="adultPrice" th:text="${#numbers.formatDecimal(selectedSchedule.specialPrice != null ? selectedSchedule.specialPrice : tour.adultPrice, 0, 'COMMA', 0, 'POINT') + '₫'}" style="display: none;">Adult Price</span>
                         </div>
                         <div class="price-item">
                             <span>Trẻ em:</span>
-                            <span id="childPrice" th:text="${#numbers.formatDecimal(tour.childPrice, 0, 'COMMA', 0, 'POINT') + '₫'}">Child Price</span>
+                            <span id="childPriceDisplay" th:text="'0₫'">Child Price</span>
+                            <!-- Hidden element để lưu giá đơn vị -->
+                            <span id="childPrice" th:text="${#numbers.formatDecimal(tour.childPrice, 0, 'COMMA', 0, 'POINT') + '₫'}" style="display: none;">Child Price</span>
                         </div>
                         <div class="price-item" id="discountRow" style="display: none;">
                             <span>Giảm giá:</span>

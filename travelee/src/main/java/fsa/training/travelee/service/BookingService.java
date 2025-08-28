@@ -78,4 +78,5 @@ public interface BookingService {
 
     // Thống kê số booking theo status
     long getTotalBookingsByStatus(BookingStatus status);
+
 }

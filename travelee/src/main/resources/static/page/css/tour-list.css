@@ -472,8 +472,11 @@ body {
 .admin-pagination {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
+    margin: 40px 0;
+    width: 100%;
 }
 .admin-pagination form {
     margin-left: 16px;
@@ -552,7 +555,8 @@ body {
 @media (max-width: 768px) {
     .admin-pagination {
         gap: 8px;
-        margin: 30px 0 0 0;
+        margin: 30px 0;
+        justify-content: center;
     }
     .admin-page-numbers {
         gap: 6px;

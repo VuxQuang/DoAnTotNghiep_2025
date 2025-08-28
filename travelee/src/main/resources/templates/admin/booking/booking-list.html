@@ -192,25 +192,33 @@
                                            class="btn btn-sm btn-info" title="Xem chi tiết">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-success" 
-                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PENDING}"
-                                                th:onclick="'confirmBooking(' + ${booking.id} + ')'" title="Xác nhận">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-warning" 
+
+                                        <button class="btn btn-primary"
                                                 th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CONFIRMED}"
-                                                th:onclick="'completeBooking(' + ${booking.id} + ')'" title="Hoàn thành">
-                                            <i class="fas fa-flag-checkered"></i>
+                                                th:onclick="'markAsPaid(' + ${booking.id} + ')'">
+                                            <i class="fas fa-credit-card"></i> Đánh dấu PAID
                                         </button>
-                                        <button class="btn btn-sm btn-danger" 
-                                                th:if="${booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED and booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).COMPLETED}"
-                                                th:onclick="'cancelBooking(' + ${booking.id} + ')'" title="Hủy">
-                                            <i class="fas fa-times"></i>
+
+                                        <!-- Xác nhận -->
+                                        <button class="btn btn-success"
+                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PENDING}"
+                                                th:onclick="'confirmBooking(' + ${booking.id} + ')'">
+                                            <i class="fas fa-check"></i> Xác nhận
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PAID} or (${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED} and ${booking.payment} != null and ${booking.payment.status} == T(fsa.training.travelee.entity.payment.PaymentStatus).COMPLETED)"
-                                                th:onclick="'showRefundModal(' + ${booking.id} + ')'" title="Hoàn tiền">
-                                            <i class="fas fa-rotate-left"></i>
+
+                                        <!-- Hoàn thành -->
+                                        <button class="btn btn-info"
+                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PAID}"
+                                                th:onclick="'completeBooking(' + ${booking.id} + ')'">
+                                            <i class="fas fa-flag-checkered"></i> Hoàn thành
+                                        </button>
+
+                                        <!-- Hủy -->
+                                        <button class="btn btn-danger"
+                                                th:if="${booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED
+                                                and booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).COMPLETED}"
+                                                th:onclick="'cancelBooking(' + ${booking.id} + ')'">
+                                            <i class="fas fa-times"></i> Hủy
                                         </button>
                                     </div>
                                 </td>
@@ -269,6 +277,27 @@
         </div>
     </div>
 
+    <!-- Modal đánh dấu đã thanh toán (PAID) -->
+    <div id="paidModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Đánh dấu đã thanh toán</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn đánh dấu tour này đã được thanh toán?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Lưu ý:</strong> Khi đánh dấu PAID, trạng thái booking sẽ chuyển sang "Đã thanh toán" và khách hàng sẽ nhận được email thông báo.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="proceedMarkAsPaid()">Đánh dấu PAID</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal hoàn thành booking -->
     <div id="completeModal" class="modal">
         <div class="modal-content">
@@ -302,6 +331,30 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
                 <button class="btn btn-danger" onclick="proceedCancel()">Hủy tour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal hoàn tiền -->
+    <div id="refundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Hoàn tiền booking</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="refundAmount">Số tiền hoàn (VNĐ):</label>
+                    <input type="number" id="refundAmount" min="0" step="1" placeholder="Nhập số tiền hoàn">
+                </div>
+                <div class="form-group">
+                    <label for="refundReason">Lý do hoàn:</label>
+                    <textarea id="refundReason" rows="3" placeholder="Nhập lý do hoàn tiền..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+                <button class="btn btn-danger" onclick="proceedRefund()">Xác nhận hoàn tiền</button>
             </div>
         </div>
     </div>

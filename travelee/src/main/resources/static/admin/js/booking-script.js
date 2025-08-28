@@ -1,14 +1,33 @@
 // Booking Management JavaScript
 
+// Debug: Kiểm tra script có được load không
+console.log('Booking script loaded successfully');
+
 // Global variables
 let currentBookingId = null;
 let currentAction = null;
 
+// Đảm bảo các function được định nghĩa trước khi sử dụng
+window.confirmBooking = confirmBooking;
+window.cancelBooking = cancelBooking;
+window.completeBooking = completeBooking;
+window.showRefundModal = showRefundModal;
+window.markAsPaid = markAsPaid;
+window.proceedMarkAsPaid = proceedMarkAsPaid;
+
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing booking functions...');
     initializeModals();
     initializeFilters();
     initializeSearch();
+    initializeDateRangePicker();
+    initializeTooltips();
+    
+    // Debug: Kiểm tra các function có được định nghĩa không
+    console.log('confirmBooking function:', typeof confirmBooking);
+    console.log('cancelBooking function:', typeof cancelBooking);
+    console.log('completeBooking function:', typeof completeBooking);
 });
 
 // Initialize modals
@@ -126,10 +145,24 @@ function showRefundModal(bookingId) {
     showModal('refundModal');
 }
 
+// Mark booking as paid
+function markAsPaid(bookingId) {
+    currentBookingId = bookingId;
+    currentAction = 'markAsPaid';
+    showModal('paidModal');
+}
+
 // Proceed with confirm action
 function proceedConfirm() {
     if (currentBookingId && currentAction === 'confirm') {
         updateBookingStatus(currentBookingId, 'CONFIRMED');
+    }
+}
+
+// Proceed with mark as paid action
+function proceedMarkAsPaid() {
+    if (currentBookingId && currentAction === 'markAsPaid') {
+        updateBookingStatus(currentBookingId, 'PAID');
     }
 }
 
@@ -391,11 +424,6 @@ function initializeDateRangePicker() {
     }
 }
 
-// Initialize date range picker
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDateRangePicker();
-});
-
 // Real-time statistics update
 function updateStatistics() {
     fetch('/admin/bookings/statistics-data')
@@ -482,8 +510,3 @@ function initializeTooltips() {
         });
     });
 }
-
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    initializeTooltips();
-});

@@ -49,7 +49,7 @@
                      <div class="detail-item">
                          <label>Thanh toán:</label>
                          <span class="status-badge" th:classappend="${booking.status == 'PAID' or (booking.payment != null and booking.payment.status == 'COMPLETED') ? 'confirmed' : 'pending'}">
-                             <span th:text="${booking.status.name() == 'PAID' or (booking.payment.name() != null and booking.payment.status.name() == 'COMPLETED') ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
+                             <span th:text="${booking.status == 'PAID' or (booking.payment != null and booking.payment.status == 'COMPLETED') ? 'Đã thanh toán' : 'Chưa thanh toán'}">Chưa thanh toán</span>
                          </span>
                      </div>
                 </div>

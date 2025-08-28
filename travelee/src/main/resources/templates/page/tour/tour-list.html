@@ -12,6 +12,9 @@
     <link rel="stylesheet" th:href="@{/page/css/tour-search.css}">
 </head>
 <body>
+<div th:replace="~{/page/fragments/header :: header}"></div>
+
+<div th:replace="~{/page/fragments/navbar :: navbar}"></div>
 
 <div th:replace="~{fragments/tour-search :: tour-search}"></div>
 <main class="main-content">
@@ -68,17 +71,17 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Phân trang cho kết quả tìm kiếm -->
-        <div th:if="${totalPages > 1}" class="admin-pagination">
-            <a th:if="${hasPrevious}"
-               th:href="@{/page/tours/search(page=${currentPage - 1}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
-               class="admin-page-btn prev"
-               title="Trang trước">
-                <i class="fas fa-chevron-left"></i>
-            </a>
+    <div th:if="${totalPages > 1}" class="admin-pagination">
+        <a th:if="${hasPrevious}"
+           th:href="@{/page/tours/search(page=${currentPage - 1}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
+           class="admin-page-btn prev"
+           title="Trang trước">
+            <i class="fas fa-chevron-left"></i>
+        </a>
 
-            <span class="admin-page-numbers">
+        <span class="admin-page-numbers">
                 <a th:each="i : ${#numbers.sequence(0, (totalPages - 1))}"
                    th:href="@{/page/tours/search(page=${i}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
                    th:text="${i+1}"
@@ -86,15 +89,13 @@
                 </a>
             </span>
 
-            <a th:if="${hasNext}"
-               th:href="@{/page/tours/search(page=${currentPage + 1}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
-               class="admin-page-btn next"
-               title="Trang tiếp">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        </div>
+        <a th:if="${hasNext}"
+           th:href="@{/page/tours/search(page=${currentPage + 1}, size=12, keyword=${keyword}, departure=${departure}, destination=${destination}, minPrice=${minPrice}, maxPrice=${maxPrice}, departureDateFrom=${departureDateFrom}, departureDateTo=${departureDateTo}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
+           class="admin-page-btn next"
+           title="Trang tiếp">
+            <i class="fas fa-chevron-right"></i>
+        </a>
     </div>
-
     <!-- Hiển thị thông báo lỗi nếu có -->
     <div th:if="${error != null}" class="error-message">
         <div class="alert alert-danger">
@@ -175,7 +176,7 @@
                                th:text="${i+1}"
                                th:classappend="${i == currentPage} ? 'admin-page-btn active' : 'admin-page-btn'">
                             </a>
-                        </span>
+            </span>
             <a th:if="${currentPage < (totalPages - 1) and totalPages > 0}"
                th:href="@{/client/tours/newest(page=${currentPage + 1}, size=${size})}"
                class="admin-page-btn next"

@@ -17,8 +17,8 @@ function initializeBookingForm() {
     const childPriceElement = document.getElementById('childPrice');
     const totalPriceElement = document.getElementById('totalPrice');
     
-    const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, ''));
-    const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, ''));
+    const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, '')) || 0;
+    const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, '')) || 0;
     
     // Thêm participant đầu tiên (người đặt)
     addParticipant('Người đặt', true);
@@ -26,10 +26,12 @@ function initializeBookingForm() {
     // Event listeners
     if (adultCountInput) {
         adultCountInput.addEventListener('change', updateParticipants);
+        adultCountInput.addEventListener('input', updateTotalPrice); // Cập nhật real-time
     }
     
     if (childCountInput) {
         childCountInput.addEventListener('change', updateParticipants);
+        childCountInput.addEventListener('input', updateTotalPrice); // Cập nhật real-time
     }
     
     if (addParticipantBtn) {
@@ -142,21 +144,40 @@ function updateTotalPrice() {
     const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
     const childCount = parseInt(document.getElementById('childCount').value) || 0;
     
-    // Lấy giá từ elements
+    // Lấy giá từ elements (hidden elements)
     const adultPriceElement = document.getElementById('adultPrice');
     const childPriceElement = document.getElementById('childPrice');
     const totalPriceElement = document.getElementById('totalPrice');
     const discountElement = document.getElementById('discountAmountValue');
     
-    const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, ''));
-    const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, ''));
+    // Lấy elements hiển thị số tiền thực tế
+    const adultPriceDisplayElement = document.getElementById('adultPriceDisplay');
+    const childPriceDisplayElement = document.getElementById('childPriceDisplay');
     
-    // Tính tổng tiền
-    const subtotal = (adultCount * adultPrice) + (childCount * childPrice);
+    const adultPrice = parseFloat(adultPriceElement.textContent.replace(/[^\d]/g, '')) || 0;
+    const childPrice = parseFloat(childPriceElement.textContent.replace(/[^\d]/g, '')) || 0;
+    
+    // Tính số tiền thực tế cho từng loại
+    const adultTotal = adultCount * adultPrice;
+    const childTotal = childCount * childPrice;
+    
+    // Cập nhật hiển thị số tiền thực tế
+    if (adultPriceDisplayElement) {
+        const formattedAdultTotal = new Intl.NumberFormat('vi-VN').format(adultTotal);
+        adultPriceDisplayElement.textContent = formattedAdultTotal + '₫';
+    }
+    
+    if (childPriceDisplayElement) {
+        const formattedChildTotal = new Intl.NumberFormat('vi-VN').format(childTotal);
+        childPriceDisplayElement.textContent = formattedChildTotal + '₫';
+    }
+    
+    // Tính tổng tiền - xử lý trường hợp childCount = 0
+    const subtotal = adultTotal + childTotal;
     const discount = discountElement ? (parseFloat(discountElement.textContent.replace(/[^\d]/g, '')) || 0) : 0;
     const totalAmount = Math.max(subtotal - discount, 0);
     
-    // Format và hiển thị
+    // Format và hiển thị tổng tiền
     const formattedTotal = new Intl.NumberFormat('vi-VN').format(totalAmount);
     totalPriceElement.textContent = formattedTotal + '₫';
     

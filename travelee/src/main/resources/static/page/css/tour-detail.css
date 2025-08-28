@@ -907,3 +907,245 @@ body {
     color: #27ae60;
     font-weight: bold;
 }
+
+/* ===== AVAILABILITY ALERT STYLES ===== */
+.availability-alert {
+    margin-bottom: 20px;
+}
+
+.availability-alert .alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+.availability-alert .alert.available {
+    background: #d4edda;
+    color: #155724;
+    border-left-color: #28a745;
+}
+
+.availability-alert .alert.limited {
+    background: #fff3cd;
+    color: #856404;
+    border-left-color: #ffc107;
+}
+
+.availability-alert .alert.full {
+    background: #f8d7da;
+    color: #721c24;
+    border-left-color: #dc3545;
+}
+
+.availability-alert .alert i {
+    font-size: 1.2rem;
+}
+
+/* ===== SCHEDULE SLOTS STYLES ===== */
+.schedule-slots {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.slots-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.slots-info i {
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.slots-count {
+    font-weight: 600;
+    color: #333;
+}
+
+.slots-status {
+    display: flex;
+    justify-content: center;
+}
+
+.slots-status .status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    min-width: 120px;
+}
+
+.slots-status .status.unlimited {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.slots-status .status.available {
+    background: #d4edda;
+    color: #155724;
+}
+
+.slots-status .status.limited {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.slots-status .status.full {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ===== UPDATED BUTTON STYLES ===== */
+.btn-select-date {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.btn-select-date.available {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-select-date.available:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-select-date.limited {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    color: white;
+}
+
+.btn-select-date.limited:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+}
+
+.btn-select-date.full {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-select-date.full:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-select-date:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-select-date i {
+    font-size: 1rem;
+}
+
+/* ===== BOOKING NOTE STYLES ===== */
+.booking-note {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background: #e3f2fd;
+    border-radius: 6px;
+    border-left: 4px solid #2196f3;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #0d47a1;
+}
+
+.booking-note i {
+    color: #2196f3;
+    font-size: 1rem;
+}
+
+/* ===== ENHANCED META ITEM STYLES ===== */
+.tour-meta .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tour-meta .meta-item i {
+    color: #667eea;
+    font-size: 1rem;
+    min-width: 16px;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    .availability-alert .alert {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .schedule-slots {
+        padding: 12px;
+        margin: 10px 0;
+    }
+    
+    .slots-status .status {
+        min-width: 100px;
+        font-size: 0.8rem;
+    }
+    
+    .booking-note {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-select-date {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .availability-alert .alert {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .schedule-slots {
+        padding: 10px;
+    }
+    
+    .slots-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .slots-status .status {
+        min-width: 90px;
+        font-size: 0.75rem;
+    }
+}

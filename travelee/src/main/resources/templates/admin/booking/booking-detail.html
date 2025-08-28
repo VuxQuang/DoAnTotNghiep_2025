@@ -27,25 +27,39 @@
                         <h1><i class="fas fa-calendar-check"></i> Chi tiết đặt tour</h1>
                     </div>
                     <div class="header-actions">
+                        <!-- Nút đánh dấu đã thanh toán (PAID) - chỉ hiển thị khi status là PENDING -->
+                        <button class="btn btn-primary" 
+                                th:if="${booking.status == 'PENDING'}"
+                                th:onclick="'markAsPaid(' + ${booking.id} + ')'">
+                            <i class="fas fa-credit-card"></i> Đánh dấu PAID
+                        </button>
+                        
+                        <!-- Nút xác nhận - chỉ hiển thị khi status là PENDING -->
                         <button class="btn btn-success" 
-                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PENDING}"
+                                th:if="${booking.status == 'PENDING'}"
                                 th:onclick="'confirmBooking(' + ${booking.id} + ')'">
                             <i class="fas fa-check"></i> Xác nhận
                         </button>
+                        
+                        <!-- Nút hoàn thành tour - chỉ hiển thị khi status là PAID -->
                         <button class="btn btn-warning" 
-                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CONFIRMED}"
+                                th:if="${booking.status == 'PAID'}"
                                 th:onclick="'completeBooking(' + ${booking.id} + ')'">
-                            <i class="fas fa-flag-checkered"></i> Hoàn thành
+                            <i class="fas fa-flag-checkered"></i> Hoàn thành tour
                         </button>
+                        
+                        <!-- Nút hủy tour - chỉ hiển thị khi chưa hoàn thành và chưa hủy -->
                         <button class="btn btn-danger" 
-                                th:if="${booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED && booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).COMPLETED}"
+                                th:if="${booking.status != 'CANCELLED' && booking.status != 'COMPLETED'}"
                                 th:onclick="'cancelBooking(' + ${booking.id} + ')'">
                             <i class="fas fa-times"></i> Hủy tour
                         </button>
+                        
+                        <!-- Nút hoàn tiền - chỉ hiển thị khi đã thanh toán hoặc đã hủy nhưng đã thanh toán -->
                         <button class="btn btn-outline-danger"
-                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PAID} or (${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED} and ${booking.payment} != null and ${booking.payment.status} == T(fsa.training.travelee.entity.payment.PaymentStatus).COMPLETED)"
+                                th:if="${booking.status == 'PAID' or (booking.status == 'CANCELLED' and booking.payment != null and booking.payment.status == 'COMPLETED')}"
                                 th:onclick="'showRefundModal(' + ${booking.id} + ')'">
-                            <i class="fas fa-rotate-left"></i> Refund
+                            <i class="fas fa-rotate-left"></i> Hoàn tiền
                         </button>
                     </div>
                 </div>
@@ -178,8 +192,8 @@
                                             <td th:text="${participant.gender}">Nam</td>
                                             <td th:text="${participant.idCard}">123456789</td>
                                             <td>
-                                                <span th:if="${participant.type == T(fsa.training.travelee.entity.booking.ParticipantType).ADULT}" class="badge badge-adult">Người lớn</span>
-                                                <span th:unless="${participant.type == T(fsa.training.travelee.entity.booking.ParticipantType).ADULT}" class="badge badge-child">Trẻ em</span>
+                                                                                                 <span th:if="${participant.type == 'ADULT'}" class="badge badge-adult">Người lớn</span>
+                                                 <span th:unless="${participant.type == 'ADULT'}" class="badge badge-child">Trẻ em</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -254,7 +268,7 @@
                     </div>
 
                     <!-- Cancellation Reason (if cancelled) -->
-                    <div class="detail-section" th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED && cancellationReason != null && !cancellationReason.isEmpty()}">
+                    <div class="detail-section" th:if="${booking.status == 'CANCELLED' && cancellationReason != null && !cancellationReason.isEmpty()}">
                         <h3><i class="fas fa-ban"></i> Lý do bị hủy</h3>
                         <div class="special-requests">
                             <p th:text="${cancellationReason}">-</p>
@@ -293,6 +307,27 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
                 <button class="btn btn-success" onclick="proceedConfirm()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal đánh dấu đã thanh toán (PAID) -->
+    <div id="paidModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Đánh dấu đã thanh toán</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn đánh dấu tour này đã được thanh toán?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Lưu ý:</strong> Khi đánh dấu PAID, trạng thái booking sẽ chuyển sang "Đã thanh toán" và khách hàng sẽ nhận được email thông báo.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="proceedMarkAsPaid()">Đánh dấu PAID</button>
             </div>
         </div>
     </div>

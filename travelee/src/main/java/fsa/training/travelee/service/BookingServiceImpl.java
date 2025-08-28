@@ -140,6 +140,17 @@ public class BookingServiceImpl implements BookingService {
         // Lưu booking (sẽ cascade persist cả participants và payment)
         Booking finalBooking = bookingRepository.save(savedBooking);
 
+        // Cập nhật số chỗ còn lại nếu booking được tạo với trạng thái khác PENDING
+        if (finalBooking.getStatus() != BookingStatus.PENDING) {
+            // Kiểm tra lại số chỗ còn lại trước khi trừ
+            if (!isScheduleAvailable(bookingRequest.getScheduleId(), 
+                    bookingRequest.getAdultCount(), 
+                    bookingRequest.getChildCount())) {
+                throw new IllegalStateException("Không đủ chỗ để xác nhận booking này");
+            }
+            updateAvailableSlots(finalBooking, null, finalBooking.getStatus());
+        }
+
         // Gửi email xác nhận
         try {
             emailService.sendBookingConfirmationEmail(finalBooking);
@@ -208,6 +219,22 @@ public class BookingServiceImpl implements BookingService {
         BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(status);
         
+        // Cập nhật số chỗ còn lại dựa trên thay đổi trạng thái
+        // Kiểm tra số chỗ còn lại trước khi cập nhật (nếu cần trừ chỗ)
+        if ((status == BookingStatus.CONFIRMED && oldStatus == BookingStatus.PENDING) ||
+            (status == BookingStatus.PAID && oldStatus == BookingStatus.PENDING) ||
+            (status == BookingStatus.CONFIRMED && oldStatus == BookingStatus.CANCELLED) ||
+            (status == BookingStatus.PAID && oldStatus == BookingStatus.CANCELLED)) {
+            
+            if (!isScheduleAvailable(booking.getSchedule().getId(), 
+                    booking.getAdultCount(), 
+                    booking.getChildCount())) {
+                throw new IllegalStateException("Không đủ chỗ để cập nhật trạng thái booking này");
+            }
+        }
+        
+        updateAvailableSlots(booking, oldStatus, status);
+        
         // Đồng bộ trạng thái thanh toán khi booking được thanh toán/hoàn tất/được xác nhận
         if (status == BookingStatus.PAID || status == BookingStatus.COMPLETED || status == BookingStatus.CONFIRMED) {
             Payment payment = booking.getPayment();
@@ -250,8 +277,12 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Không thể hủy vì booking đã thanh toán hoặc đã hoàn thành");
         }
 
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setSpecialRequests(booking.getSpecialRequests() + "\nLý do hủy: " + reason);
+
+        // Cập nhật số chỗ còn lại khi hủy
+        updateAvailableSlots(booking, oldStatus, BookingStatus.CANCELLED);
 
         // Gửi email hủy
         try {
@@ -266,9 +297,13 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking cancelBookingByAdmin(Long bookingId, String reason) {
         Booking booking = getBookingById(bookingId);
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setSpecialRequests((booking.getSpecialRequests() != null ? booking.getSpecialRequests() : "")
                 + "\nAdmin hủy: " + reason);
+
+        // Cập nhật số chỗ còn lại khi hủy
+        updateAvailableSlots(booking, oldStatus, BookingStatus.CANCELLED);
 
         try {
             emailService.sendBookingCancellationEmail(booking);
@@ -296,9 +331,13 @@ public class BookingServiceImpl implements BookingService {
         booking.setPayment(payment);
 
         // Cập nhật booking
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(BookingStatus.REFUNDED);
         booking.setSpecialRequests((booking.getSpecialRequests() != null ? booking.getSpecialRequests() : "")
                 + "\nRefund: " + reason + ", amount=" + amount);
+
+        // Cập nhật số chỗ còn lại khi refund (hoàn tác số chỗ đã trừ)
+        updateAvailableSlots(booking, oldStatus, BookingStatus.REFUNDED);
 
         Booking saved = bookingRepository.save(booking);
         try {
@@ -387,5 +426,102 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public long getTotalBookingsByStatus(BookingStatus status) {
         return bookingRepository.countByStatus(status);
+    }
+
+    /**
+     * Cập nhật số chỗ còn lại dựa trên thay đổi trạng thái booking
+     * @param booking Booking cần cập nhật
+     * @param oldStatus Trạng thái cũ (có thể null khi tạo booking mới)
+     * @param newStatus Trạng thái mới
+     */
+    private void updateAvailableSlots(Booking booking, BookingStatus oldStatus, BookingStatus newStatus) {
+        TourSchedule schedule = booking.getSchedule();
+        if (schedule == null || schedule.getAvailableSlots() == null) {
+            return; // Không có schedule hoặc không giới hạn số chỗ
+        }
+
+        int totalParticipants = booking.getAdultCount() + booking.getChildCount();
+        int currentAvailableSlots = schedule.getAvailableSlots();
+
+        // Xác định khi nào cần trừ hoặc cộng số chỗ
+        boolean shouldDecreaseSlots = false;
+        boolean shouldIncreaseSlots = false;
+
+        // Trường hợp 0: Tạo booking mới với trạng thái khác PENDING
+        if (oldStatus == null) {
+            if (newStatus == BookingStatus.CONFIRMED || newStatus == BookingStatus.PAID) {
+                shouldDecreaseSlots = true;
+            }
+        }
+        // Trường hợp 1: Từ PENDING -> CONFIRMED (xác nhận giữ chỗ)
+        else if (oldStatus == BookingStatus.PENDING && newStatus == BookingStatus.CONFIRMED) {
+            shouldDecreaseSlots = true;
+        }
+        // Trường hợp 2: Từ PENDING -> PAID (thanh toán trực tiếp)
+        else if (oldStatus == BookingStatus.PENDING && newStatus == BookingStatus.PAID) {
+            shouldDecreaseSlots = true;
+        }
+        // Trường hợp 3: Từ CONFIRMED -> PAID (thanh toán sau khi xác nhận)
+        else if (oldStatus == BookingStatus.CONFIRMED && newStatus == BookingStatus.PAID) {
+            // Không cần thay đổi vì đã trừ từ trước
+        }
+        // Trường hợp 4: Từ bất kỳ trạng thái nào -> CANCELLED (hủy booking)
+        else if (newStatus == BookingStatus.CANCELLED) {
+            // Chỉ hoàn tác số chỗ nếu trước đó đã trừ (CONFIRMED, PAID, hoặc COMPLETED)
+            if (oldStatus == BookingStatus.CONFIRMED || oldStatus == BookingStatus.PAID || oldStatus == BookingStatus.COMPLETED) {
+                shouldIncreaseSlots = true;
+            }
+        }
+        // Trường hợp 5: Từ CANCELLED -> CONFIRMED (khôi phục booking đã hủy)
+        else if (oldStatus == BookingStatus.CANCELLED && newStatus == BookingStatus.CONFIRMED) {
+            shouldDecreaseSlots = true;
+        }
+        // Trường hợp 6: Từ CANCELLED -> PAID (khôi phục và thanh toán trực tiếp)
+        else if (oldStatus == BookingStatus.CANCELLED && newStatus == BookingStatus.PAID) {
+            shouldDecreaseSlots = true;
+        }
+        // Trường hợp 7: Từ PAID -> REFUNDED (hoàn tiền)
+        else if (oldStatus == BookingStatus.PAID && newStatus == BookingStatus.REFUNDED) {
+            shouldIncreaseSlots = true;
+        }
+        // Trường hợp 8: Từ CONFIRMED -> REFUNDED (hoàn tiền trước khi thanh toán)
+        else if (oldStatus == BookingStatus.CONFIRMED && newStatus == BookingStatus.REFUNDED) {
+            shouldIncreaseSlots = true;
+        }
+        // Trường hợp 9: Từ PAID -> COMPLETED (hoàn thành tour)
+        else if (oldStatus == BookingStatus.PAID && newStatus == BookingStatus.COMPLETED) {
+            // Không cần thay đổi số chỗ vì đây là trạng thái cuối cùng
+        }
+        // Trường hợp 10: Từ CONFIRMED -> COMPLETED (hoàn thành tour mà chưa thanh toán)
+        else if (oldStatus == BookingStatus.CONFIRMED && newStatus == BookingStatus.COMPLETED) {
+            // Không cần thay đổi số chỗ vì đây là trạng thái cuối cùng
+        }
+
+        // Thực hiện cập nhật số chỗ
+        if (shouldDecreaseSlots) {
+            if (currentAvailableSlots >= totalParticipants) {
+                schedule.setAvailableSlots(currentAvailableSlots - totalParticipants);
+                log.info("Đã trừ {} chỗ từ lịch trình {} (còn lại: {}) - Booking {}: {} -> {}", 
+                    totalParticipants, schedule.getId(), schedule.getAvailableSlots(), 
+                    booking.getId(), oldStatus, newStatus);
+            } else {
+                log.warn("Không đủ chỗ để trừ: yêu cầu {}, có sẵn {} - Booking {}: {} -> {}", 
+                    totalParticipants, currentAvailableSlots, 
+                    booking.getId(), oldStatus, newStatus);
+            }
+        } else if (shouldIncreaseSlots) {
+            schedule.setAvailableSlots(currentAvailableSlots + totalParticipants);
+            log.info("Đã hoàn tác {} chỗ cho lịch trình {} (còn lại: {}) - Booking {}: {} -> {}", 
+                totalParticipants, schedule.getId(), schedule.getAvailableSlots(), 
+                booking.getId(), oldStatus, newStatus);
+        } else {
+            log.debug("Không cần thay đổi số chỗ - Booking {}: {} -> {}", 
+                booking.getId(), oldStatus, newStatus);
+        }
+
+        // Lưu thay đổi vào database
+        if (shouldDecreaseSlots || shouldIncreaseSlots) {
+            tourScheduleRepository.save(schedule);
+        }
     }
 }
