@@ -24,8 +24,12 @@ public class SepayWebhookDto {
 	private String signature; // chữ ký xác thực webhook (nếu có)
 
 	// Các trường nội dung mô tả giao dịch để fallback trích mã booking
-	@JsonAlias({"des", "content", "description"})
-	private String description; 
+	@JsonAlias({"des", "description"})
+	private String description;
+	
+	// Trường content riêng biệt (nếu có)
+	@JsonAlias({"content"})
+	private String content; 
 
 
 }
