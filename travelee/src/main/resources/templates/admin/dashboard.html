@@ -7,6 +7,109 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/admin/css/dashboard-style.css}">
+    <style>
+        .revenue-chart-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .chart-header h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chart-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chart-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .chart-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chart-stats {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .chart-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        #revenueChart {
+            max-height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .chart-stats {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="dashboard-container">
@@ -37,7 +140,7 @@
                     <i class="fas fa-map-marked-alt"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>56</h3>
+                    <h3 th:text="${totalTours}"></h3>
                     <p>Tours hiện có</p>
                 </div>
             </div>
@@ -46,7 +149,7 @@
                     <i class="fas fa-calendar-check"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>89</h3>
+                    <h3 th:text="${todayBookings}"></h3>
                     <p>Đặt tour hôm nay</p>
                 </div>
             </div>
@@ -61,33 +164,45 @@
             </div>
         </div>
 
-        <!-- Thống kê tour đã đặt trong tháng và tổng tiền thu về -->
-        <div class="dashboard-analytics">
-            <div class="analytics-header">
-                <h2>Thống kê tour đã đặt trong tháng</h2>
-                <select id="monthSelect" class="month-select">
-                    <option value="1">Tháng 1/2024</option>
-                    <option value="2">Tháng 2/2024</option>
-                    <option value="3">Tháng 3/2024</option>
-                    <option value="4">Tháng 4/2024</option>
-                    <option value="5" selected>Tháng 5/2024</option>
-                    <option value="6">Tháng 6/2024</option>
-                    <option value="7">Tháng 7/2024</option>
-                    <option value="8">Tháng 8/2024</option>
-                    <option value="9">Tháng 9/2024</option>
-                    <option value="10">Tháng 10/2024</option>
-                    <option value="11">Tháng 11/2024</option>
-                    <option value="12">Tháng 12/2024</option>
-                </select>
-            </div>
-            <div class="analytics-content">
-                <div class="analytics-stat">
-                    <h3 id="totalTours">320</h3>
-                    <p>Tổng số tour đã đặt trong tháng</p>
+        <!-- Biểu đồ doanh thu theo ngày -->
+        <div class="revenue-chart-section">
+            <div class="chart-header">
+                <h2>Biểu đồ doanh thu theo ngày</h2>
+                <div class="chart-controls">
+                    <select id="chartYearSelect" class="chart-select">
+                        <option value="2024" th:selected="${currentYear == 2024}">2024</option>
+                        <option value="2025" th:selected="${currentYear == 2025}">2025</option>
+                        <option value="2026" th:selected="${currentYear == 2026}">2026</option>
+                    </select>
+                    <select id="chartMonthSelect" class="chart-select">
+                        <option value="1" th:selected="${currentMonth == 1}">Tháng 1</option>
+                        <option value="2" th:selected="${currentMonth == 2}">Tháng 2</option>
+                        <option value="3" th:selected="${currentMonth == 3}">Tháng 3</option>
+                        <option value="4" th:selected="${currentMonth == 4}">Tháng 4</option>
+                        <option value="5" th:selected="${currentMonth == 5}">Tháng 5</option>
+                        <option value="6" th:selected="${currentMonth == 6}">Tháng 6</option>
+                        <option value="7" th:selected="${currentMonth == 7}">Tháng 7</option>
+                        <option value="8" th:selected="${currentMonth == 8}">Tháng 8</option>
+                        <option value="9" th:selected="${currentMonth == 9}">Tháng 9</option>
+                        <option value="10" th:selected="${currentMonth == 10}">Tháng 10</option>
+                        <option value="11" th:selected="${currentMonth == 11}">Tháng 11</option>
+                        <option value="12" th:selected="${currentMonth == 12}">Tháng 12</option>
+                    </select>
                 </div>
-                <div class="analytics-chart">
-                    <canvas id="revenueChart" height="120"></canvas>
-                    <p class="chart-label">Tổng số tiền thu về từng ngày trong tháng</p>
+            </div>
+            <div class="chart-content">
+                <div class="chart-stats">
+                    <div class="chart-stat-item">
+                        <span class="stat-label">Tổng doanh thu tháng:</span>
+                        <span class="stat-value" id="monthlyRevenueDisplay">0 VNĐ</span>
+                    </div>
+                    <div class="chart-stat-item">
+                        <span class="stat-label">Số tour đã đặt:</span>
+                        <span class="stat-value" id="monthlyBookingsDisplay">0</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart" width="800" height="400"></canvas>
                 </div>
             </div>
         </div>
@@ -96,31 +211,26 @@
             <div class="content-section">
                 <h2>Hoạt động gần đây</h2>
                 <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="activity-info">
-                            <p>Người dùng mới đăng ký: <strong>Nguyễn Văn A</strong></p>
-                            <span class="activity-time">2 phút trước</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="activity-info">
-                            <p>Đặt tour mới: <strong>Tour Hà Nội - Sapa</strong></p>
-                            <span class="activity-time">15 phút trước</span>
+                    <div th:if="${recentActivities != null and !recentActivities.isEmpty()}" th:each="activity : ${recentActivities}">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i th:class="${activity.icon}"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p th:text="${activity.title} + ': ' + ${activity.description}"></p>
+                                <span class="activity-time" th:text="${activity.timeAgo}"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="activity-info">
-                            <p>Đánh giá mới: <strong>5 sao cho Tour Đà Nẵng</strong></p>
-                            <span class="activity-time">1 giờ trước</span>
+                    <div th:if="${recentActivities == null or recentActivities.isEmpty()}">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p>Chưa có hoạt động nào gần đây</p>
+                                <span class="activity-time">-</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -133,74 +243,18 @@
 
 </div>
 
-<script th:src="@{/admin/js/dashboard-script.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Dữ liệu mẫu cho từng tháng
-    const revenueData = {
-        5: {
-            days: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],
-            revenue: [12000000, 15000000, 10000000, 18000000, 9000000, 20000000, 17000000, 16000000, 14000000, 21000000, 18000000, 15000000, 12000000, 13000000, 17000000, 16000000, 18000000, 20000000, 21000000, 22000000, 19000000, 17000000, 16000000, 15000000, 14000000, 13000000, 12000000, 11000000, 10000000, 9000000, 8000000],
-            totalTours: 320
-        },
-        4: {
-            days: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],
-            revenue: [10000000, 12000000, 9000000, 15000000, 8000000, 17000000, 14000000, 13000000, 12000000, 16000000, 15000000, 12000000, 11000000, 12000000, 14000000, 13000000, 15000000, 16000000, 17000000, 18000000, 15000000, 14000000, 13000000, 12000000, 11000000, 10000000, 9000000, 8000000, 7000000, 6000000],
-            totalTours: 270
-        }
-        // Thêm dữ liệu cho các tháng khác nếu muốn
-    };
+<script th:src="@{/admin/js/revenue-chart.js}"></script>
+<script th:src="@{/admin/js/dashboard-script.js}"></script>
 
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    let chart;
-    function renderChart(month) {
-        const data = revenueData[month] || revenueData[5];
-        document.getElementById('totalTours').textContent = data.totalTours;
-        if (chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.days.map(d => `Ngày ${d}`),
-                datasets: [{
-                    label: 'Doanh thu (VNĐ)',
-                    data: data.revenue,
-                    backgroundColor: 'rgba(102, 126, 234, 0.7)',
-                    borderColor: 'rgba(102, 126, 234, 1)',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    maxBarThickness: 18
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString('vi-VN') + ' VNĐ';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value.toLocaleString('vi-VN') + ' VNĐ';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-    document.getElementById('monthSelect').addEventListener('change', function() {
-        renderChart(this.value);
-    });
-    renderChart(5);
+<!-- Pass data from server to JavaScript -->
+<script>
+    // Make server data available to revenue-chart.js
+    window.initialMonthlyStats = /*[[${monthlyStats}]]*/ [];
+    window.initialMonthlyRevenue = /*[[${monthlyRevenue}]]*/ 0;
+    window.initialMonthlyBookings = /*[[${monthlyBookings}]]*/ 0;
+    window.currentYear = /*[[${currentYear}]]*/ new Date().getFullYear();
+    window.currentMonth = /*[[${currentMonth}]]*/ new Date().getMonth() + 1;
 </script>
 </body>
 </html>

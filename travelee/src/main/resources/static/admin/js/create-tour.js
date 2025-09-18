@@ -19,10 +19,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initializeImageUpload();
     initializeForm();
+    initializeHashtagSelection();
+    initializeDateCalculation();
     
     // Chỉ thêm itinerary và schedule mới khi tạo tour mới
-    // Khi sửa tour, dữ liệu sẽ được load từ template
-    if (!document.body.getAttribute('data-update')) {
+    // Khi xem tour, dữ liệu sẽ được load từ template
+    if (!isReadOnly) {
         addItinerary();
         addSchedule();
     } else {
@@ -387,6 +389,19 @@ function addSchedule() {
         </div>
     `;
     container.appendChild(item);
+    
+    // Auto-calculate return date for new schedule
+    const newScheduleItem = container.lastElementChild;
+    updateReturnDateForSchedule(newScheduleItem);
+    
+    // Add event listener for departure date change
+    const departureDateInput = newScheduleItem.querySelector('input[name*="departureDate"]');
+    if (departureDateInput) {
+        setMinimumDateForInput(departureDateInput);
+        departureDateInput.addEventListener('change', function() {
+            updateReturnDateForSchedule(newScheduleItem);
+        });
+    }
 }
 
 function removeSchedule(button) {
@@ -436,4 +451,237 @@ function removeInput(button) {
         const removeBtn = remainingInputs[0].querySelector('.btn-remove');
         removeBtn.style.display = 'none';
     }
+}
+
+// === Hashtag Category Selection ===
+function initializeHashtagSelection() {
+    const hashtagInput = document.querySelector('.hashtag-input');
+    const hashtagDropdown = document.querySelector('.hashtag-dropdown');
+    const hashtagOptions = document.querySelectorAll('.hashtag-option');
+    const selectedTagsContainer = document.getElementById('selectedTags');
+    const hiddenCheckboxes = document.querySelectorAll('.hidden-inputs input[type="checkbox"]');
+    
+    let selectedCategories = new Set();
+    
+    // Load existing selections from hidden checkboxes
+    hiddenCheckboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const categoryId = checkbox.value;
+            const categoryName = checkbox.closest('.hashtag-option')?.dataset.categoryName || 
+                               document.querySelector(`[data-category-id="${categoryId}"]`)?.dataset.categoryName;
+            if (categoryName) {
+                selectedCategories.add(categoryId);
+                updateSelectedTags();
+            }
+        }
+    });
+    
+    // Show dropdown when input is clicked
+    hashtagInput.addEventListener('click', function() {
+        if (!hashtagInput.disabled) {
+            hashtagDropdown.classList.toggle('show');
+            updateDropdownOptions();
+        }
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.hashtag-container')) {
+            hashtagDropdown.classList.remove('show');
+        }
+    });
+    
+    // Handle option selection
+    hashtagOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const categoryId = this.dataset.categoryId;
+            const categoryName = this.dataset.categoryName;
+            
+            if (selectedCategories.has(categoryId)) {
+                // Remove selection
+                selectedCategories.delete(categoryId);
+                this.classList.remove('selected');
+                this.querySelector('i').className = 'fas fa-plus';
+            } else {
+                // Add selection
+                selectedCategories.add(categoryId);
+                this.classList.add('selected');
+                this.querySelector('i').className = 'fas fa-check';
+            }
+            
+            updateSelectedTags();
+            updateHiddenCheckboxes();
+            hashtagDropdown.classList.remove('show');
+        });
+    });
+    
+    function updateSelectedTags() {
+        selectedTagsContainer.innerHTML = '';
+        
+        selectedCategories.forEach(categoryId => {
+            const categoryName = document.querySelector(`[data-category-id="${categoryId}"]`)?.dataset.categoryName;
+            if (categoryName) {
+                const tag = document.createElement('div');
+                tag.className = 'hashtag-tag';
+                tag.innerHTML = `
+                    <span>${categoryName}</span>
+                    <span class="remove-tag" data-category-id="${categoryId}">×</span>
+                `;
+                
+                // Add remove functionality
+                tag.querySelector('.remove-tag').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const idToRemove = this.dataset.categoryId;
+                    selectedCategories.delete(idToRemove);
+                    
+                    // Update option appearance
+                    const option = document.querySelector(`[data-category-id="${idToRemove}"]`);
+                    if (option) {
+                        option.classList.remove('selected');
+                        option.querySelector('i').className = 'fas fa-plus';
+                    }
+                    
+                    updateSelectedTags();
+                    updateHiddenCheckboxes();
+                });
+                
+                selectedTagsContainer.appendChild(tag);
+            }
+        });
+    }
+    
+    function updateHiddenCheckboxes() {
+        hiddenCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectedCategories.has(checkbox.value);
+        });
+    }
+    
+    function updateDropdownOptions() {
+        hashtagOptions.forEach(option => {
+            const categoryId = option.dataset.categoryId;
+            if (selectedCategories.has(categoryId)) {
+                option.classList.add('selected');
+                option.querySelector('i').className = 'fas fa-check';
+            } else {
+                option.classList.remove('selected');
+                option.querySelector('i').className = 'fas fa-plus';
+            }
+        });
+    }
+    
+    // Initialize
+    updateSelectedTags();
+    updateHiddenCheckboxes();
+}
+
+// === Auto Calculate Return Date ===
+function initializeDateCalculation() {
+    const durationInput = document.getElementById('duration');
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    
+    if (!durationInput || !scheduleContainer) return;
+    
+    // Set minimum date for all existing departure date inputs
+    setMinimumDateForAllSchedules();
+    
+    // Listen for duration changes
+    durationInput.addEventListener('input', function() {
+        updateAllReturnDates();
+    });
+    
+    // Listen for departure date changes in existing schedules
+    scheduleContainer.addEventListener('change', function(e) {
+        if (e.target.name && e.target.name.includes('departureDate')) {
+            const scheduleItem = e.target.closest('.schedule-item');
+            updateReturnDateForSchedule(scheduleItem);
+        }
+    });
+    
+    // Add event listeners to existing schedules (for edit mode)
+    const existingSchedules = scheduleContainer.querySelectorAll('.schedule-item');
+    existingSchedules.forEach(scheduleItem => {
+        const departureDateInput = scheduleItem.querySelector('input[name*="departureDate"]');
+        if (departureDateInput) {
+            setMinimumDateForInput(departureDateInput);
+            departureDateInput.addEventListener('change', function() {
+                updateReturnDateForSchedule(scheduleItem);
+            });
+        }
+    });
+}
+
+function updateAllReturnDates() {
+    const duration = parseInt(document.getElementById('duration').value);
+    if (!duration || duration <= 0) return;
+    
+    const scheduleItems = document.querySelectorAll('#scheduleContainer .schedule-item');
+    scheduleItems.forEach(item => {
+        updateReturnDateForSchedule(item, duration);
+    });
+}
+
+function updateReturnDateForSchedule(scheduleItem, duration = null) {
+    if (!duration) {
+        duration = parseInt(document.getElementById('duration').value);
+    }
+    
+    if (!duration || duration <= 0) return;
+    
+    const departureDateInput = scheduleItem.querySelector('input[name*="departureDate"]');
+    const returnDateInput = scheduleItem.querySelector('input[name*="returnDate"]');
+    
+    if (!departureDateInput || !returnDateInput) return;
+    
+    const departureDate = departureDateInput.value;
+    if (!departureDate) return;
+    
+    // Calculate return date (departure + duration days)
+    const departure = new Date(departureDate);
+    const returnDate = new Date(departure);
+    returnDate.setDate(departure.getDate() + duration);
+    
+    // Format date for input (YYYY-MM-DD)
+    const returnDateString = returnDate.toISOString().split('T')[0];
+    returnDateInput.value = returnDateString;
+    
+    // Add visual feedback
+    returnDateInput.style.backgroundColor = '#e8f5e8';
+    returnDateInput.style.borderColor = '#28a745';
+    
+    // Remove visual feedback after 2 seconds
+    setTimeout(() => {
+        returnDateInput.style.backgroundColor = '';
+        returnDateInput.style.borderColor = '';
+    }, 2000);
+}
+
+// === Date Validation Functions ===
+function setMinimumDateForAllSchedules() {
+    const departureDateInputs = document.querySelectorAll('input[name*="departureDate"]');
+    departureDateInputs.forEach(input => {
+        setMinimumDateForInput(input);
+    });
+}
+
+function setMinimumDateForInput(input) {
+    if (!input) return;
+    
+    // Set minimum date to today
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    input.setAttribute('min', todayString);
+    
+    // Add validation message if needed
+    input.addEventListener('invalid', function() {
+        if (this.validity.rangeUnderflow) {
+            this.setCustomValidity('Ngày khởi hành không được là ngày quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày sau.');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Clear custom validity when user starts typing
+    input.addEventListener('input', function() {
+        this.setCustomValidity('');
+    });
 }

@@ -65,9 +65,14 @@ public class Tour {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String terms;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @ManyToMany
+    @JoinTable(
+            name = "tour_categories",
+            joinColumns = @JoinColumn(name = "tour_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    @Builder.Default
+    private Set<Category> categories = new HashSet<>();
 
     @ManyToMany
     @JoinTable(

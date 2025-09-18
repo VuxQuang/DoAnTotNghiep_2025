@@ -85,12 +85,17 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByUsername(dto.getUsername())) {
             return "Tài khoản đã tồn tại";
         }
+        
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            return "Email đã được sử dụng";
+        }
 
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setFullName(dto.getFullName());
         user.setStatus("ACTIVE");
         // Đăng ký qua form → gán provider là FORM
         user.setProvider("FORM");

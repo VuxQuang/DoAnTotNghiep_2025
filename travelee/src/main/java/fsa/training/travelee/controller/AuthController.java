@@ -40,7 +40,7 @@ public class AuthController {
             model.addAttribute("error", result);
             return "register";
         }
-        return "redirect:/login";
+        return "redirect:/login?success=true";
     }
 
     @PostMapping("/forgot-password")

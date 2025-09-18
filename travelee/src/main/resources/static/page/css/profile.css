@@ -338,6 +338,36 @@
     margin-bottom: 6px;
     font-size: 1.08rem;
 }
+
+.tour-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.tour-link:hover {
+    color: #5a6fd8;
+    text-decoration: underline;
+    transform: translateY(-1px);
+}
+
+.tour-link:active {
+    transform: translateY(0);
+}
+
+.tour-link i {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.tour-link:hover i {
+    opacity: 1;
+}
 .btn-cancel {
     background-color: #dc3545;
     color: white;

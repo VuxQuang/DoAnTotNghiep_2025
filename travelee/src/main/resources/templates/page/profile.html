@@ -97,13 +97,18 @@
                             <tr th:each="booking, iterStat : ${userBookings}">
                                 <td th:text="${iterStat.count}">1</td>
                                 <td>
-                                    <div class="tour-title" th:text="${booking.tour.title}">Tên tour</div>
-                                    <div><b>Loại tour:</b> <span th:text="${booking.tour.category.name}">Loại tour</span></div>
+                                    <div class="tour-title">
+                                        <a th:href="@{/page/tours/{id}(id=${booking.tour.id})}" 
+                                           class="tour-link">
+                                            <i class="fas fa-external-link-alt"></i> <span th:text="${booking.tour.title}">Tên tour</span>
+                                        </a>
+                                    </div>
+                                    <div><b>Loại tour:</b> <span th:text="${booking.tour.categories != null and !booking.tour.categories.isEmpty() ? #strings.listJoin(booking.tour.categories.![name], ', ') : 'Chưa phân loại'}">Loại tour</span></div>
                                     <div><b>Điểm xuất phát:</b> <span th:text="${booking.tour.departure}">Điểm xuất phát</span></div>
                                     <div><b>Điểm đến:</b> <span th:text="${booking.tour.destination}">Điểm đến</span></div>
                                     <div th:if="${booking.schedule != null}">
-                                        <div><b>Ngày khởi hành:</b> <span th:text="${booking.schedule.departureDate}">Ngày khởi hành</span></div>
-                                        <div><b>Ngày trở về:</b> <span th:text="${booking.schedule.returnDate}">Ngày trở về</span></div>
+                                        <div><b>Ngày khởi hành:</b> <span th:text="${#temporals.format(booking.schedule.departureDate, 'dd/MM/yyyy')}">Ngày khởi hành</span></div>
+                                        <div><b>Ngày trở về:</b> <span th:text="${#temporals.format(booking.schedule.returnDate, 'dd/MM/yyyy')}">Ngày trở về</span></div>
                                     </div>
                                 </td>
                                 <td>
@@ -252,7 +257,6 @@
 
 <div th:replace="~{/page/fragments/footer :: footer}"></div>
 
-<div th:replace="~{/page/fragments/chatbot :: chatbot}"></div>
 
 <script th:src="@{/page/js/profile.js}"></script>
 

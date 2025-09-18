@@ -1,7 +1,9 @@
 package fsa.training.travelee.controller.admin;
 
 import fsa.training.travelee.entity.TourSchedule;
+import fsa.training.travelee.entity.booking.Booking;
 import fsa.training.travelee.repository.TourScheduleRepository;
+import fsa.training.travelee.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class CalendarAdminController {
 
     private final TourScheduleRepository tourScheduleRepository;
+    private final BookingRepository bookingRepository;
 
     @GetMapping
     public String calendarPage(Model model) {
@@ -47,8 +50,18 @@ public class CalendarAdminController {
             e.put("id", s.getId());
             e.put("title", s.getTour() != null ? s.getTour().getTitle() : "Tour");
             e.put("start", s.getDepartureDate().toString());
+            
+            // Lấy booking đầu tiên (mới nhất) của tour này
             if (s.getTour() != null) {
-                e.put("url", "/admin/tour/view/" + s.getTour().getId());
+                List<Booking> bookings = bookingRepository.findByTourIdOrderByCreatedAtDesc(s.getTour().getId());
+                if (!bookings.isEmpty()) {
+                    // Lấy booking đầu tiên (mới nhất) và link đến booking detail
+                    Booking firstBooking = bookings.get(0);
+                    e.put("url", "/admin/bookings/" + firstBooking.getId());
+                } else {
+                    // Nếu chưa có booking nào, link đến danh sách booking của tour
+                    e.put("url", "/admin/bookings?tourId=" + s.getTour().getId());
+                }
             }
             events.add(e);
         }

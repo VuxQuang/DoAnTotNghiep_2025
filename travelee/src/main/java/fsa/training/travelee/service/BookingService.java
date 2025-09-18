@@ -32,8 +32,14 @@ public interface BookingService {
     // Lấy booking theo tour
     List<Booking> getBookingsByTour(Long tourId);
 
+    // Lấy booking theo tour với phân trang
+    Page<Booking> getBookingsByTourWithPagination(Long tourId, Pageable pageable);
+
     // Lấy booking theo schedule
     List<Booking> getBookingsBySchedule(Long scheduleId);
+
+    // Lấy booking theo schedule với phân trang
+    Page<Booking> getBookingsByScheduleWithPagination(Long scheduleId, Pageable pageable);
 
     // Lấy booking theo status
     List<Booking> getBookingsByStatus(BookingStatus status);
@@ -58,6 +64,21 @@ public interface BookingService {
 
     // Tạo booking code
     String generateBookingCode();
+
+    // Đếm số booking hôm nay
+    long countTodayBookings();
+
+    // Đếm số booking theo ngày cụ thể
+    long countBookingsByDate(int year, int month, int day);
+
+    // Lấy thống kê booking theo tháng
+    long countBookingsByMonth(int year, int month);
+
+    // Lấy doanh thu theo tháng
+    java.math.BigDecimal getRevenueByMonth(int year, int month);
+
+    // Lấy dữ liệu booking theo ngày trong tháng
+    java.util.List<fsa.training.travelee.dto.MonthlyBookingStatsDto> getMonthlyBookingStats(int year, int month);
 
 
 

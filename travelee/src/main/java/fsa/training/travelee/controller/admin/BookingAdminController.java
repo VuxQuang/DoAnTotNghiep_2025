@@ -13,6 +13,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -32,13 +35,19 @@ public class BookingAdminController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Long scheduleId,
+            @RequestParam(required = false) Long tourId,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
         
         Page<Booking> bookings;
         
-        if (status != null && !status.isEmpty()) {
+        if (scheduleId != null) {
+            bookings = bookingService.getBookingsByScheduleWithPagination(scheduleId, pageable);
+        } else if (tourId != null) {
+            bookings = bookingService.getBookingsByTourWithPagination(tourId, pageable);
+        } else if (status != null && !status.isEmpty()) {
             try {
                 BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
                 bookings = bookingService.getBookingsByStatusWithPagination(bookingStatus, pageable);
@@ -66,6 +75,14 @@ public class BookingAdminController {
         model.addAttribute("searchTerm", search);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
+        model.addAttribute("selectedScheduleId", scheduleId);
+        model.addAttribute("selectedTourId", tourId);
+        
+        // Add statistics for the cards
+        model.addAttribute("pendingBookings", bookingService.getTotalBookingsByStatus(BookingStatus.PENDING));
+        model.addAttribute("confirmedBookings", bookingService.getTotalBookingsByStatus(BookingStatus.CONFIRMED));
+        model.addAttribute("completedBookings", bookingService.getTotalBookingsByStatus(BookingStatus.COMPLETED));
+        model.addAttribute("cancelledBookings", bookingService.getTotalBookingsByStatus(BookingStatus.CANCELLED));
 
         return "admin/booking/booking-list";
     }
@@ -147,5 +164,18 @@ public class BookingAdminController {
         model.addAttribute("completedBookings", completedBookings);
         
         return "admin/booking/booking-statistics";
+    }
+
+    @GetMapping("/statistics-data")
+    @ResponseBody
+    public Map<String, Long> getStatisticsData() {
+        Map<String, Long> statistics = new HashMap<>();
+        statistics.put("totalBookings", bookingService.getTotalBookings());
+        statistics.put("pendingBookings", bookingService.getTotalBookingsByStatus(BookingStatus.PENDING));
+        statistics.put("confirmedBookings", bookingService.getTotalBookingsByStatus(BookingStatus.CONFIRMED));
+        statistics.put("cancelledBookings", bookingService.getTotalBookingsByStatus(BookingStatus.CANCELLED));
+        statistics.put("completedBookings", bookingService.getTotalBookingsByStatus(BookingStatus.COMPLETED));
+        
+        return statistics;
     }
 }

@@ -30,7 +30,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -209,8 +211,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Page<Booking> getBookingsByTourWithPagination(Long tourId, Pageable pageable) {
+        return bookingRepository.findByTourIdOrderByCreatedAtDesc(tourId, pageable);
+    }
+
+    @Override
     public List<Booking> getBookingsBySchedule(Long scheduleId) {
         return bookingRepository.findByScheduleIdOrderByCreatedAtDesc(scheduleId);
+    }
+
+    @Override
+    public Page<Booking> getBookingsByScheduleWithPagination(Long scheduleId, Pageable pageable) {
+        return bookingRepository.findByScheduleIdOrderByCreatedAtDesc(scheduleId, pageable);
     }
 
     @Override
@@ -426,6 +438,91 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public long getTotalBookingsByStatus(BookingStatus status) {
         return bookingRepository.countByStatus(status);
+    }
+
+    @Override
+    public long countTodayBookings() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+        return bookingRepository.countByCreatedAtDate(startOfDay, endOfDay);
+    }
+
+    @Override
+    public long countBookingsByDate(int year, int month, int day) {
+        return bookingRepository.countByYearMonthAndDay(year, month, day);
+    }
+
+    @Override
+    public long countBookingsByMonth(int year, int month) {
+        return bookingRepository.countByYearAndMonth(year, month);
+    }
+
+    @Override
+    public BigDecimal getRevenueByMonth(int year, int month) {
+        BigDecimal revenue = bookingRepository.getRevenueByYearAndMonth(year, month);
+        System.out.println("=== DEBUG REVENUE ===");
+        System.out.println("Year: " + year + ", Month: " + month);
+        System.out.println("Revenue: " + revenue);
+        System.out.println("====================");
+        return revenue;
+    }
+
+    @Override
+    public List<fsa.training.travelee.dto.MonthlyBookingStatsDto> getMonthlyBookingStats(int year, int month) {
+        List<Object[]> results = bookingRepository.getMonthlyStatsByDay(year, month);
+        System.out.println("=== MONTHLY STATS DEBUG ===");
+        System.out.println("Year: " + year + ", Month: " + month);
+        System.out.println("Results count: " + results.size());
+        
+        // Tạo map để dễ dàng lookup dữ liệu theo ngày
+        Map<java.time.LocalDate, fsa.training.travelee.dto.MonthlyBookingStatsDto> statsMap = new HashMap<>();
+        
+        // Xử lý dữ liệu từ database
+        for (Object[] row : results) {
+            fsa.training.travelee.dto.MonthlyBookingStatsDto dto = new fsa.training.travelee.dto.MonthlyBookingStatsDto();
+            
+            // Xử lý date từ SQL Server
+            java.time.LocalDate date;
+            if (row[0] instanceof java.sql.Date) {
+                date = ((java.sql.Date) row[0]).toLocalDate();
+            } else if (row[0] instanceof java.sql.Timestamp) {
+                date = ((java.sql.Timestamp) row[0]).toLocalDateTime().toLocalDate();
+            } else if (row[0] instanceof java.time.LocalDate) {
+                date = (java.time.LocalDate) row[0];
+            } else {
+                continue; // Skip invalid data
+            }
+            
+            dto.setDate(date);
+            dto.setBookingCount(((Number) row[1]).longValue());
+            dto.setRevenue((BigDecimal) row[2]);
+            
+            statsMap.put(date, dto);
+            System.out.println("Date: " + dto.getDate() + ", Bookings: " + dto.getBookingCount() + ", Revenue: " + dto.getRevenue());
+        }
+        
+        // Tạo danh sách đầy đủ tất cả các ngày trong tháng
+        List<fsa.training.travelee.dto.MonthlyBookingStatsDto> fullMonthStats = new ArrayList<>();
+        java.time.LocalDate firstDayOfMonth = java.time.LocalDate.of(year, month, 1);
+        java.time.LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
+        
+        for (java.time.LocalDate date = firstDayOfMonth; !date.isAfter(lastDayOfMonth); date = date.plusDays(1)) {
+            if (statsMap.containsKey(date)) {
+                // Ngày có dữ liệu booking
+                fullMonthStats.add(statsMap.get(date));
+            } else {
+                // Ngày không có booking, tạo dữ liệu với giá trị 0
+                fsa.training.travelee.dto.MonthlyBookingStatsDto emptyDto = new fsa.training.travelee.dto.MonthlyBookingStatsDto();
+                emptyDto.setDate(date);
+                emptyDto.setBookingCount(0L);
+                emptyDto.setRevenue(BigDecimal.ZERO);
+                fullMonthStats.add(emptyDto);
+            }
+        }
+        
+        System.out.println("Full month stats count: " + fullMonthStats.size());
+        return fullMonthStats;
     }
 
     /**

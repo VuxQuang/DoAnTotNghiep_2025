@@ -32,7 +32,8 @@ public class Review {
     private String adminResponse;
 
     @Enumerated(EnumType.STRING)
-    private ReviewStatus status; // PENDING, APPROVED, REJECTED
+    @Builder.Default
+    private ReviewStatus status = ReviewStatus.APPROVED; // Mặc định là APPROVED để hiển thị ngay lập tức
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -42,14 +43,26 @@ public class Review {
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tour_id")
+    @JoinColumn(name = "tour_id", nullable = false)
     private Tour tour;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
+
+    // Helper methods
+    public boolean isApproved() {
+        return ReviewStatus.APPROVED.equals(this.status);
+    }
+
+    public String getDisplayName() {
+        if (user != null) {
+            return user.getFullName() != null ? user.getFullName() : user.getEmail();
+        }
+        return "Khách hàng";
+    }
 }

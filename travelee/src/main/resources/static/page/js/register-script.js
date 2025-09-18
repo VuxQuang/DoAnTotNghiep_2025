@@ -13,16 +13,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!valid) e.preventDefault();
     });
 
-    // Validate realtime khi blur
+    // Validate realtime khi blur và input
     form.querySelectorAll('input').forEach(input => {
         input.addEventListener('blur', function() {
             removeError(this);
             switch (this.name) {
                 case 'email': validateEmail(); break;
-                case 'phone': validatePhone(); break;
+                case 'phoneNumber': validatePhone(); break;
                 case 'password': validatePassword(); break;
             }
         });
+        
+        // Real-time validation cho password
+        if (input.name === 'password') {
+            input.addEventListener('input', function() {
+                removeError(this);
+                validatePassword();
+            });
+        }
     });
 
     // Toggle password visibility
@@ -68,16 +76,54 @@ function showError(input, message) {
     input.classList.add('error');
 }
 
+function showSuccess(input, message) {
+    removeError(input);
+    const success = document.createElement('div');
+    success.className = 'field-success';
+    success.style.cssText = `
+        color: #10b981;
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        margin-top: 0.5rem;
+    `;
+    success.innerHTML = `<i class="fas fa-check-circle"></i>${message}`;
+    const formGroup = input.closest('.form-group');
+    formGroup.style.position = 'relative';
+    formGroup.appendChild(success);
+    input.classList.add('success');
+    input.style.borderColor = '#10b981';
+}
+
 function removeError(input) {
     const formGroup = input.closest('.form-group');
     const err = formGroup.querySelector('.field-error');
+    const success = formGroup.querySelector('.field-success');
     if (err) err.remove();
-    input.classList.remove('error');
+    if (success) success.remove();
+    input.classList.remove('error', 'success');
+    input.style.borderColor = '';
 }
 
 function removeAllErrors() {
     document.querySelectorAll('.field-error').forEach(e => e.remove());
+    document.querySelectorAll('.field-success').forEach(e => e.remove());
     document.querySelectorAll('.error').forEach(e => e.classList.remove('error'));
+    document.querySelectorAll('.success').forEach(e => e.classList.remove('success'));
+    document.querySelectorAll('input').forEach(input => {
+        input.style.borderColor = '';
+    });
 }
 
 function validateEmail() {
@@ -95,7 +141,7 @@ function validateEmail() {
 }
 
 function validatePhone() {
-    const input = document.querySelector('input[name="phone"]');
+    const input = document.querySelector('input[name="phoneNumber"]');
     const value = input.value.trim();
     if (!value) {
         showError(input, 'Số điện thoại là bắt buộc');
@@ -111,17 +157,41 @@ function validatePhone() {
 function validatePassword() {
     const input = document.querySelector('input[name="password"]');
     const value = input.value.trim();
+    
+    // Xóa các class cũ
+    input.classList.remove('error', 'success');
+    removeError(input);
+    
     if (!value) {
         showError(input, 'Mật khẩu là bắt buộc');
         return false;
     }
-    if (value.length < 6) {
-        showError(input, 'Mật khẩu ít nhất 6 ký tự');
+    
+    // Kiểm tra từng quy tắc
+    const hasMinLength = value.length >= 6;
+    const hasLowercase = /[a-z]/.test(value);
+    const hasUppercase = /[A-Z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    
+    // Tạo progress indicator
+    const rules = [
+        { check: hasMinLength, text: 'Ít nhất 6 ký tự' },
+        { check: hasLowercase, text: 'Có chữ thường' },
+        { check: hasUppercase, text: 'Có chữ hoa' },
+        { check: hasNumber, text: 'Có số' }
+    ];
+    
+    const completedRules = rules.filter(rule => rule.check).length;
+    const totalRules = rules.length;
+    
+    if (completedRules === totalRules) {
+        // Tất cả quy tắc đều đúng
+        showSuccess(input, 'Mật khẩu hợp lệ');
+        return true;
+    } else {
+        // Hiển thị tiến độ
+        const message = `Mật khẩu: ${completedRules}/${totalRules} quy tắc (${rules.filter(r => !r.check).map(r => r.text).join(', ')} còn thiếu)`;
+        showError(input, message);
         return false;
     }
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
-        showError(input, 'Phải có chữ hoa, chữ thường, số');
-        return false;
-    }
-    return true;
 } 

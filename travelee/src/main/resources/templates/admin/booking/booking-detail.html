@@ -133,7 +133,7 @@
                             </div>
                             <div class="info-item">
                                 <label>Danh mục:</label>
-                                <span th:text="${booking.tour.category.name}">Danh mục tour</span>
+                                <span th:text="${booking.tour.categories != null and !booking.tour.categories.isEmpty() ? #strings.listJoin(booking.tour.categories.![name], ', ') : 'Chưa phân loại'}">Danh mục tour</span>
                             </div>
                             <div class="info-item">
                                 <label>Ngày khởi hành:</label>

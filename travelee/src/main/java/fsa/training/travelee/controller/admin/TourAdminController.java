@@ -42,7 +42,6 @@ public class TourAdminController {
             model.addAttribute("tourCreateRequest", tourRequest);
             model.addAttribute("categories", categories);
             model.addAttribute("isReadOnly", true);
-            model.addAttribute("isUpdate", false);
             
             return "admin/tour/create-tour";
         } catch (RuntimeException e) {
@@ -60,11 +59,13 @@ public class TourAdminController {
 
     @GetMapping("/create")
     public String showCreateTourForm(Model model) {
+        System.out.println("=== CREATE TOUR FORM DEBUG ===");
         List<Category> categories = categoryRepository.findByType(CategoryType.TOUR);
         model.addAttribute("categories", categories);
         model.addAttribute("tourCreateRequest", new TourCreateRequest());
         model.addAttribute("isReadOnly", false);
-        model.addAttribute("isUpdate", false);
+        System.out.println("isReadOnly: false");
+        System.out.println("==============================");
         return "admin/tour/create-tour";
     }
 
@@ -88,7 +89,7 @@ public class TourAdminController {
             model.addAttribute("isReadOnly", false);
             model.addAttribute("isUpdate", true);
             
-            return "admin/tour/create-tour";
+            return "admin/tour/edit-tour";
         } catch (RuntimeException e) {
             return "redirect:/admin/tour/list";
         }

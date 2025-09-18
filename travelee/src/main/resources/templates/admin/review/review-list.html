@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đánh giá - Admin</title>
+    <link rel="stylesheet" th:href="@{/admin/css/dashboard-style.css}">
+    <link rel="stylesheet" th:href="@{/admin/css/review-style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div th:replace="~{admin/fragments/header :: header}"></div>
+        
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div th:replace="~{/admin/fragments/sidebar :: aside}"></div>
+            
+            <!-- Content -->
+            <div class="content">
+                <div class="content-header">
+                    <h1><i class="fas fa-star"></i> Quản lý đánh giá</h1>
+                    <div class="header-actions">
+                        <a th:href="@{/admin/reviews/statistics}" class="btn btn-info">
+                            <i class="fas fa-chart-bar"></i> Thống kê
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <form th:action="@{/admin/reviews}" method="get" class="filter-form">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="search">Tìm kiếm:</label>
+                                <input type="text" name="search" id="search" 
+                                       th:value="${searchTerm}" 
+                                       placeholder="Tên người dùng, tên tour, nội dung...">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Tìm kiếm
+                                </button>
+                                <a th:href="@{/admin/reviews}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Xóa bộ lọc
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon approved">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Tổng đánh giá</h3>
+                            <p th:text="${#numbers.formatDecimal(totalItems, 0, 'COMMA', 0, 'POINT')}">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Hôm nay</h3>
+                            <p th:text="${#numbers.formatDecimal(totalItems, 0, 'COMMA', 0, 'POINT')}">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon rejected">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Đã xóa</h3>
+                            <p th:text="${#numbers.formatDecimal(totalItems, 0, 'COMMA', 0, 'POINT')}">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Table -->
+                <div class="table-container">
+                    <table class="reviews-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên người đánh giá</th>
+                                <th>Tên tour</th>
+                                <th>Đánh giá</th>
+                                <th>Nội dung</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="review, iter : ${reviews.content}">
+                                <!-- STT -->
+                                <td th:text="${reviews.number * reviews.size + iter.index + 1}">1</td>
+
+                                <!-- Tên người đánh giá -->
+                                <td>
+                                    <div class="reviewer-info">
+                                        <div class="reviewer-name" th:text="${review.displayName}">Tên người dùng</div>
+                                        <div class="reviewer-email" th:text="${review.user.email}">email@example.com</div>
+                                    </div>
+                                </td>
+
+                                <!-- Tên tour -->
+                                <td>
+                                    <a class="tour-title" th:href="@{/page/tours/{id}(id=${review.tour.id})}"
+                                       th:text="${review.tour.title}" target="_blank">Tên tour</a>
+                                </td>
+
+                                <!-- Đánh giá -->
+                                <td>
+                                    <div class="rating-display">
+                                        <div class="stars">
+                                            <i th:each="i : ${#numbers.sequence(1, 5)}" 
+                                               th:class="${'fas fa-star' + (i <= review.rating ? ' active' : '')}"></i>
+                                        </div>
+                                        <span class="rating-number" th:text="${review.rating}">5</span>
+                                    </div>
+                                </td>
+
+                                <!-- Nội dung -->
+                                <td>
+                                    <div class="comment-content" th:text="${#strings.abbreviate(review.comment, 100)}">Nội dung đánh giá...</div>
+                                </td>
+
+                                <!-- Trạng thái -->
+                                <td>
+                                    <span class="status-badge" th:class="${'status-' + #strings.toLowerCase(review.status.name())}" 
+                                          th:text="${review.status}">APPROVED</span>
+                                </td>
+
+                                <!-- Hành động -->
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/admin/reviews/{id}(id=${review.id})}" 
+                                           class="btn btn-sm btn-info" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <!-- Xóa -->
+                                        <button class="btn btn-sm btn-danger"
+                                                th:onclick="'deleteReview(' + ${review.id} + ')'"
+                                                title="Xóa đánh giá">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" th:if="${reviews.totalPages > 1}">
+                    <nav class="pagination">
+                        <ul class="pagination-list">
+                            <!-- Previous page -->
+                            <li th:if="${reviews.hasPrevious()}">
+                                <a th:href="@{/admin/reviews(page=${reviews.number - 1}, size=${reviews.size}, status=${selectedStatus != null ? selectedStatus : ''}, search=${searchTerm != null ? searchTerm : ''})}" 
+                                   class="pagination-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            <!-- Page numbers -->
+                            <li th:each="pageNum : ${#numbers.sequence(0, reviews.totalPages - 1)}" 
+                                th:class="${pageNum == reviews.number ? 'active' : ''}">
+                                <a th:href="@{/admin/reviews(page=${pageNum}, size=${reviews.size}, status=${selectedStatus != null ? selectedStatus : ''}, search=${searchTerm != null ? searchTerm : ''})}" 
+                                   class="pagination-link" th:text="${pageNum + 1}">1</a>
+                            </li>
+                            
+                            <!-- Next page -->
+                            <li th:if="${reviews.hasNext()}">
+                                <a th:href="@{/admin/reviews(page=${reviews.number + 1}, size=${reviews.size}, status=${selectedStatus != null ? selectedStatus : ''}, search=${searchTerm != null ? searchTerm : ''})}" 
+                                   class="pagination-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận xóa -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Xác nhận xóa đánh giá</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa đánh giá này?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Lưu ý:</strong> Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-danger" onclick="proceedDelete()">Xóa</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script th:src="@{/admin/js/review-script.js}"></script>
+</body>
+</html>

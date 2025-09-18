@@ -7,14 +7,16 @@ import fsa.training.travelee.dto.TourItineraryDto;
 import fsa.training.travelee.dto.TourScheduleDto;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class TourMapper {
 
-    public Tour toEntity(TourCreateRequest request, Category category) {
+    public Tour toEntity(TourCreateRequest request, Set<Category> categories) {
         return Tour.builder()
                 .title(request.getTitle())
-                .category(category)
+                .categories(categories)
                 .departure(request.getDeparture())
                 .description(request.getDescription())
                 .destination(request.getDestination())
@@ -96,7 +98,9 @@ public class TourMapper {
     public TourCreateRequest toDto(Tour tour) {
         TourCreateRequest dto = new TourCreateRequest();
         dto.setTitle(tour.getTitle());
-        dto.setCategoryId(tour.getCategory().getId());
+        dto.setCategoryIds(tour.getCategories().stream()
+                .map(Category::getId)
+                .collect(Collectors.toList()));
         dto.setDeparture(tour.getDeparture());
         dto.setDescription(tour.getDescription());
         dto.setDestination(tour.getDestination());

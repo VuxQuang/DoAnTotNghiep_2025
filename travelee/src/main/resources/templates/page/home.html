@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="gemini-api-key" th:content="${@environment.getProperty('google.gemini.api-key')}">
     <title>TravelGo - Đặt Tour Du Lịch Trực Tuyến</title>
     <link rel="stylesheet" th:href="@{/page/css/homepage.css}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +17,6 @@
 <!-- Sidebar -->
 <div th:replace="~{/page/fragments/navbar :: navbar}"></div>
 
-<div th:replace="~{fragments/home-search-bar :: home-search-bar}"></div>
 
 <!-- Main Content -->
 <main class="main">
@@ -33,7 +33,7 @@
                         <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" alt="Tour 1">
                         <div class="tour-price">2.500.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Đà Nẵng - Hội An 3N2Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Đà Nẵng, Hội An</p>
                         <div class="tour-details">
@@ -49,7 +49,7 @@
                         <img src="https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400" alt="Tour 2">
                         <div class="tour-price">3.200.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Sapa - Fansipan 2N1Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Sapa, Lào Cai</p>
                         <div class="tour-details">
@@ -65,7 +65,7 @@
                         <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400" alt="Tour 3">
                         <div class="tour-price">1.800.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Phú Quốc 2N1Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Phú Quốc, Kiên Giang</p>
                         <div class="tour-details">
@@ -81,7 +81,7 @@
                         <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400" alt="Tour 4">
                         <div class="tour-price">4.500.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Nha Trang - Đà Lạt 4N3Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Nha Trang, Đà Lạt</p>
                         <div class="tour-details">
@@ -97,7 +97,7 @@
                         <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400" alt="Tour 5">
                         <div class="tour-price">2.800.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Huế - Đà Nẵng 3N2Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Huế, Đà Nẵng</p>
                         <div class="tour-details">
@@ -113,7 +113,7 @@
                         <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" alt="Tour 6">
                         <div class="tour-price">3.500.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Hạ Long - Cát Bà 2N1Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Hạ Long, Cát Bà</p>
                         <div class="tour-details">
@@ -129,7 +129,7 @@
                         <img src="https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400" alt="Tour 7">
                         <div class="tour-price">2.200.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Mũi Né - Phan Thiết 2N1Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Mũi Né, Phan Thiết</p>
                         <div class="tour-details">
@@ -145,7 +145,7 @@
                         <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400" alt="Tour 8">
                         <div class="tour-price">4.800.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Côn Đảo 3N2Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Côn Đảo, Bà Rịa - Vũng Tàu</p>
                         <div class="tour-details">
@@ -161,7 +161,7 @@
                         <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400" alt="Tour 9">
                         <div class="tour-price">3.800.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Đồng Tháp - An Giang 2N1Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Đồng Tháp, An Giang</p>
                         <div class="tour-details">
@@ -177,7 +177,7 @@
                         <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400" alt="Tour 10">
                         <div class="tour-price">2.900.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Bình Thuận - Ninh Thuận 2N1Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Bình Thuận, Ninh Thuận</p>
                         <div class="tour-details">
@@ -193,7 +193,7 @@
                         <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" alt="Tour 11">
                         <div class="tour-price">5.200.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Tây Nguyên 4N3Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Buôn Ma Thuột, Đà Lạt</p>
                         <div class="tour-details">
@@ -209,7 +209,7 @@
                         <img src="https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400" alt="Tour 12">
                         <div class="tour-price">3.600.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Miền Tây 3N2Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Cần Thơ, Sóc Trăng</p>
                         <div class="tour-details">
@@ -224,7 +224,7 @@
                         <img src="https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400" alt="Tour 12">
                         <div class="tour-price">3.600.000đ</div>
                     </div>
-                    <div class="tour-content">
+                    <div class="tour-card-content">
                         <h3>Tour Miền Tây 3N2Đ</h3>
                         <p class="tour-location"><i class="fas fa-map-marker-alt"></i> Cần Thơ, Sóc Trăng</p>
                         <div class="tour-details">
@@ -425,9 +425,11 @@
 <!-- Footer -->
 <div th:replace="~{/page/fragments/footer :: footer}"></div>
 
-<!-- Chat Widget -->
-<div th:replace="~{/page/fragments/chatbot :: chatbot}"></div>
+<!-- Scripts -->
 <script th:src="@{/page/js/home-search-bar.js}"></script>
-<script th:src="@{/page/js/homepage-script.js}"></script>
+<!-- <script th:src="@{/page/js/homepage-script.js}"></script> -->
+
+<!-- Chatbot Widget - Tự động tạo HTML và xử lý logic -->
+<script th:src="@{/page/js/chatbot-widget.js}"></script>
 </body>
 </html>

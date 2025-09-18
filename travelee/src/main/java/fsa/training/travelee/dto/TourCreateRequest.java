@@ -9,7 +9,7 @@ import java.util.List;
 public class TourCreateRequest {
 
     private String title;
-    private Long categoryId;
+    private List<Long> categoryIds;
     private String departure;
     private String destination;
     private Integer duration;

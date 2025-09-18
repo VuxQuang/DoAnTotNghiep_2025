@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/admin/css/**", "/admin/js/**", "/admin/imgs/**",
-                                "/page/css/**", "/page/js/**", "/page/imgs/**","/uploads/**","/ckeditor/**"
+                                "/page/css/**", "/page/js/**", "/page/imgs/**","/uploads/**","/ckeditor/**","/api/chatbot/**"	
                         ).permitAll()
                         .requestMatchers("/webhooks/**", "/webhook/**").permitAll()
                         .requestMatchers( "/","page/home","/home","/page/contact/**", "/page/about","/login","/forgot-password","/register","/reset-password","/page/**","/page/tours/**").permitAll()

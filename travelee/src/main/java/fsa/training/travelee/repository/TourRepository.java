@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TourRepository extends JpaRepository<Tour, Long>, JpaSpecificationExecutor<Tour> {
@@ -22,8 +23,9 @@ public interface TourRepository extends JpaRepository<Tour, Long>, JpaSpecificat
            "LEFT JOIN FETCH t.images " +
            "LEFT JOIN FETCH t.itineraries " +
            "LEFT JOIN FETCH t.schedules " +
-           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.categories " +
            "WHERE t.id = :id")
     Optional<Tour> findByIdWithDetails(@Param("id") Long id);
-
+    @Query(value = "SELECT TOP 3 * FROM tours ORDER BY NEWID()", nativeQuery = true)
+    List<Tour> findRandom3Tours();
 }

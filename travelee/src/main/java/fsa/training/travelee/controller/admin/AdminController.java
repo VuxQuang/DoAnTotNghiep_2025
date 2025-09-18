@@ -4,8 +4,7 @@ import fsa.training.travelee.dto.RegisterUserAdminDto;
 import fsa.training.travelee.entity.User;
 import fsa.training.travelee.entity.Role;
 import fsa.training.travelee.repository.UserRepository;
-import fsa.training.travelee.service.UserService;
-import fsa.training.travelee.service.UserServiceImpl;
+import fsa.training.travelee.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,14 +22,86 @@ import java.util.List;
 public class AdminController {
 
     private final UserRepository userRepository;
-
     private final UserService userService;
+    private final TourService tourService;
+    private final BookingService bookingService;
+    private final ActivityService activityService;
 
     @GetMapping("/admin/dashboard")
     public String showAdminDashboard(Model model) {
         long totalUsers = userRepository.count();
+        long totalTours = tourService.countTours();
+        long todayBookings = bookingService.countTodayBookings();
+        
+        // Lấy thống kê tháng hiện tại
+        java.time.LocalDate now = java.time.LocalDate.now();
+        int currentYear = now.getYear();
+        int currentMonth = now.getMonthValue();
+        
+        long monthlyBookings = bookingService.countBookingsByMonth(currentYear, currentMonth);
+        java.math.BigDecimal monthlyRevenue = bookingService.getRevenueByMonth(currentYear, currentMonth);
+        java.util.List<fsa.training.travelee.dto.MonthlyBookingStatsDto> monthlyStats = bookingService.getMonthlyBookingStats(currentYear, currentMonth);
+        
+        System.out.println("=== DASHBOARD DEBUG ===");
+        System.out.println("Current Year: " + currentYear + ", Current Month: " + currentMonth);
+        System.out.println("Monthly Bookings: " + monthlyBookings);
+        System.out.println("Monthly Revenue: " + monthlyRevenue);
+        System.out.println("Monthly Stats Count: " + monthlyStats.size());
+        
+        // Debug: Kiểm tra tất cả booking trong tháng 8 (bất kể status)
+        long allBookingsInAugust = bookingService.countBookingsByMonth(2025, 8);
+        System.out.println("All bookings in August 2025: " + allBookingsInAugust);
+        
+        // Debug: Kiểm tra booking theo status
+        long completedBookings = bookingService.getTotalBookingsByStatus(fsa.training.travelee.entity.booking.BookingStatus.COMPLETED);
+        long pendingBookings = bookingService.getTotalBookingsByStatus(fsa.training.travelee.entity.booking.BookingStatus.PENDING);
+        long cancelledBookings = bookingService.getTotalBookingsByStatus(fsa.training.travelee.entity.booking.BookingStatus.CANCELLED);
+        
+        System.out.println("Completed bookings: " + completedBookings);
+        System.out.println("Pending bookings: " + pendingBookings);
+        System.out.println("Cancelled bookings: " + cancelledBookings);
+        
+        // Debug: Kiểm tra booking ngày 16/9/2025
+        long bookingsOn16Sep = bookingService.countBookingsByDate(2025, 9, 16);
+        System.out.println("Bookings on 16/9/2025: " + bookingsOn16Sep);
+        
+        // Debug: Kiểm tra tất cả booking trong tháng 9/2025
+        long allBookingsInSeptember = bookingService.countBookingsByMonth(2025, 9);
+        System.out.println("All bookings in September 2025: " + allBookingsInSeptember);
+        
+        System.out.println("======================");
+        
+        // Lấy hoạt động gần đây
+        var recentActivities = activityService.getRecentActivities(5);
+        
         model.addAttribute("totalUsers", totalUsers);
+        model.addAttribute("totalTours", totalTours);
+        model.addAttribute("todayBookings", todayBookings);
+        model.addAttribute("monthlyBookings", monthlyBookings);
+        model.addAttribute("monthlyRevenue", monthlyRevenue);
+        model.addAttribute("monthlyStats", monthlyStats);
+        model.addAttribute("currentYear", currentYear);
+        model.addAttribute("currentMonth", currentMonth);
+        model.addAttribute("recentActivities", recentActivities);
+        
         return "admin/dashboard";
+    }
+
+    @GetMapping("/admin/dashboard/monthly-stats")
+    @ResponseBody
+    public java.util.Map<String, Object> getMonthlyStats(@RequestParam int year, @RequestParam int month) {
+        long monthlyBookings = bookingService.countBookingsByMonth(year, month);
+        java.math.BigDecimal monthlyRevenue = bookingService.getRevenueByMonth(year, month);
+        java.util.List<fsa.training.travelee.dto.MonthlyBookingStatsDto> monthlyStats = bookingService.getMonthlyBookingStats(year, month);
+        
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("monthlyBookings", monthlyBookings);
+        response.put("monthlyRevenue", monthlyRevenue);
+        response.put("monthlyStats", monthlyStats);
+        response.put("year", year);
+        response.put("month", month);
+        
+        return response;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

@@ -41,6 +41,145 @@
     accent-color: #667eea;
 }
 
+/* Hashtag Category Selection */
+.hashtag-container {
+    position: relative;
+    margin-top: 8px;
+}
+
+.hashtag-input-wrapper {
+    position: relative;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.hashtag-input-wrapper:focus-within {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.hashtag-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+}
+
+.hashtag-input::placeholder {
+    color: #6c757d;
+}
+
+.hashtag-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    margin-top: 4px;
+}
+
+.hashtag-dropdown.show {
+    display: block;
+}
+
+.hashtag-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.hashtag-option:last-child {
+    border-bottom: none;
+}
+
+.hashtag-option:hover {
+    background: #f8f9fa;
+    color: #007bff;
+}
+
+.hashtag-option.selected {
+    background: #e3f2fd;
+    color: #007bff;
+    font-weight: 500;
+}
+
+.hashtag-option i {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.hashtag-option:hover i,
+.hashtag-option.selected i {
+    opacity: 1;
+}
+
+/* Selected Tags Display */
+.hashtag-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    min-height: 20px;
+}
+
+.hashtag-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #007bff;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+}
+
+.hashtag-tag .remove-tag {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.hashtag-tag .remove-tag:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hidden inputs */
+.hidden-inputs {
+    display: none;
+}
+
 /* Image upload area */
 .image-upload-area {
     margin-top: 1rem;

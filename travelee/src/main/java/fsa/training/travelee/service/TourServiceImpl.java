@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,10 +30,15 @@ public class TourServiceImpl implements TourService {
 
     @Override
     public void createTour(TourCreateRequest request) {
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục"));
+        Set<Category> categories = new HashSet<>();
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            categories = request.getCategoryIds().stream()
+                    .map(categoryId -> categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId)))
+                    .collect(Collectors.toSet());
+        }
 
-        Tour tour = tourMapper.toEntity(request, category);
+        Tour tour = tourMapper.toEntity(request, categories);
         tourMapper.mapImages(request.getImageUrls(), tour);
         tourMapper.mapItineraries(request.getItineraries(), tour);
         tourMapper.mapSchedules(request.getSchedules(), tour);
@@ -47,8 +54,10 @@ public class TourServiceImpl implements TourService {
             dto.setTitle(tour.getTitle());
             dto.setStatus(tour.getStatus());
 
-            if (tour.getCategory() != null) {
-                dto.setCategoryName(tour.getCategory().getName());
+            if (tour.getCategories() != null && !tour.getCategories().isEmpty()) {
+                dto.setCategoryName(tour.getCategories().stream()
+                        .map(Category::getName)
+                        .collect(Collectors.joining(", ")));
             }
 
             dto.setImageUrls(tour.getImages() != null
@@ -60,7 +69,7 @@ public class TourServiceImpl implements TourService {
             );
 
             return dto;
-        }).toList();
+        }).toList();    
     }
 
     @Override
@@ -119,12 +128,17 @@ public class TourServiceImpl implements TourService {
         Tour tour = tourRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tour"));
         
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục"));
+        Set<Category> categories = new HashSet<>();
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            categories = request.getCategoryIds().stream()
+                    .map(categoryId -> categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId)))
+                    .collect(Collectors.toSet());
+        }
 
         // Cập nhật thông tin cơ bản
         tour.setTitle(request.getTitle());
-        tour.setCategory(category);
+        tour.setCategories(categories);
         tour.setDeparture(request.getDeparture());
         tour.setDescription(request.getDescription());
         tour.setDestination(request.getDestination());
@@ -141,13 +155,15 @@ public class TourServiceImpl implements TourService {
         tour.setExcludes(convertListToString(request.getExcludes()));
         tour.setTerms(request.getTerms());
 
-        // Xóa các dữ liệu cũ và thêm mới
-        tour.getImages().clear();
+        // Chỉ cập nhật hình ảnh nếu có hình ảnh mới
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            tour.getImages().clear();
+            tourMapper.mapImages(request.getImageUrls(), tour);
+        }
+        
+        // Xóa và thêm lại lịch trình và lịch khởi hành
         tour.getItineraries().clear();
         tour.getSchedules().clear();
-
-        // Map lại các dữ liệu liên quan
-        tourMapper.mapImages(request.getImageUrls(), tour);
         tourMapper.mapItineraries(request.getItineraries(), tour);
         tourMapper.mapSchedules(request.getSchedules(), tour);
 
@@ -167,7 +183,8 @@ public class TourServiceImpl implements TourService {
         System.out.println("Images: " + (tour.getImages() != null ? tour.getImages().size() : "null"));
         System.out.println("Itineraries: " + (tour.getItineraries() != null ? tour.getItineraries().size() : "null"));
         System.out.println("Schedules: " + (tour.getSchedules() != null ? tour.getSchedules().size() : "null"));
-        System.out.println("Category: " + (tour.getCategory() != null ? tour.getCategory().getName() : "null"));
+        System.out.println("Categories: " + (tour.getCategories() != null ? 
+                tour.getCategories().stream().map(Category::getName).collect(Collectors.joining(", ")) : "null"));
         
         if (tour.getItineraries() != null && !tour.getItineraries().isEmpty()) {
             tour.getItineraries().forEach(it -> 
@@ -183,6 +200,11 @@ public class TourServiceImpl implements TourService {
         System.out.println("======================");
         
         return tour;
+    }
+
+    @Override
+    public long countTours() {
+        return tourRepository.count();
     }
 
     private String convertListToString(List<String> list) {

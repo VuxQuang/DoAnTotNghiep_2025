@@ -2,7 +2,11 @@ package fsa.training.travelee.controller.page;
 
 import fsa.training.travelee.dto.TourListClientDto;
 import fsa.training.travelee.entity.Tour;
+import fsa.training.travelee.entity.User;
+import fsa.training.travelee.entity.review.Review;
+import fsa.training.travelee.service.ReviewService;
 import fsa.training.travelee.service.TourClientService;
+import fsa.training.travelee.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -19,6 +23,8 @@ import java.util.List;
 public class TourPageController {
 
     private final TourClientService tourClientService;
+    private final ReviewService reviewService;
+    private final UserService userService;
 
     @GetMapping({"/page/tours/newest", "/client/tours/newest"})
     public String getNewestTours(
@@ -54,7 +60,33 @@ public class TourPageController {
                 return "redirect:/page/tours/newest";
             }
             
+            // Load reviews cho tour
+            List<Review> reviews = reviewService.getReviewsByTour(id);
+            Double averageRating = reviewService.getAverageRating(id);
+            long reviewCount = reviewService.getReviewCount(id);
+            
+            // Kiểm tra user hiện tại có thể đánh giá tour này không
+            boolean canReview = false;
+            List<Review> userReviews = new ArrayList<>();
+            try {
+                User currentUser = userService.getCurrentUser();
+                if (currentUser != null) {
+                    canReview = reviewService.canUserReviewTour(currentUser.getId(), id);
+                    // Lấy tất cả reviews của user hiện tại cho tour này
+                    userReviews = reviewService.getUserReviewsForTour(currentUser.getId(), id);
+                }
+            } catch (Exception e) {
+                // User chưa đăng nhập hoặc không thể đánh giá
+                canReview = false;
+            }
+            
             model.addAttribute("tour", tour);
+            model.addAttribute("reviews", reviews);
+            model.addAttribute("averageRating", averageRating);
+            model.addAttribute("reviewCount", reviewCount);
+            model.addAttribute("canReview", canReview);
+            model.addAttribute("userReviews", userReviews);
+            
             return "page/tour/tour-detail";
         } catch (Exception e) {
             return "redirect:/page/tours/newest";

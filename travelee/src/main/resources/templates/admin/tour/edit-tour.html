@@ -36,15 +36,38 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="category">Danh mục <span class="required">*</span></label>
-                                <div class="input-icon">
-                                    <i class="fas fa-tags"></i>
-                                    <select id="category" name="categoryId" required th:field="*{categoryId}">
-                                        <option value="">Chọn danh mục</option>
+                                <label>Danh mục <span class="required">*</span></label>
+                                <div class="hashtag-container">
+                                    <div class="hashtag-input-wrapper">
+                                        <input type="text" 
+                                               class="hashtag-input" 
+                                               placeholder="Chọn danh mục..."
+                                               readonly>
+                                        <div class="hashtag-dropdown">
+                                            <th:block th:each="category : ${categories}">
+                                                <div class="hashtag-option" 
+                                                     th:data-category-id="${category.id}"
+                                                     th:data-category-name="${category.name}">
+                                                    <span th:text="${category.name}"></span>
+                                                    <i class="fas fa-plus"></i>
+                                                </div>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                    <div class="hashtag-tags" id="selectedTags">
+                                        <!-- Selected tags will be displayed here -->
+                                    </div>
+                                    <!-- Hidden inputs for form submission -->
+                                    <div class="hidden-inputs">
                                         <th:block th:each="category : ${categories}">
-                                            <option th:value="${category.id}" th:text="${category.name}"></option>
+                                            <input type="checkbox" 
+                                                   th:id="'category_' + ${category.id}"
+                                                   th:name="categoryIds" 
+                                                   th:value="${category.id}"
+                                                   th:field="*{categoryIds}"
+                                                   style="display: none;">
                                         </th:block>
-                                    </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -105,10 +128,21 @@
                             <div class="includes-section">
                                 <h4><i class="fas fa-check-circle"></i> Bao gồm</h4>
                                 <div class="dynamic-inputs" id="includesContainer">
+                                    <!-- Input mới để thêm -->
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-plus"></i>
+                                            <input type="text" th:name="'includes[' + ${tourCreateRequest != null and tourCreateRequest.includes != null ? tourCreateRequest.includes.size() : 0} + ']'" placeholder="Nhập dịch vụ bao gồm" class="dynamic-input">
+                                        </div>
+                                        <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Các input hiện có -->
                                     <div class="input-group" th:each="include, iterStat : ${tourCreateRequest.includes}" th:if="${include != null and include != ''}">
                                         <div class="input-icon">
                                             <i class="fas fa-plus"></i>
-                                            <input type="text" name="includes" th:value="${include}" class="dynamic-input">
+                                            <input type="text" th:name="'includes[' + ${iterStat.index} + ']'" th:value="${include}" class="dynamic-input">
                                         </div>
                                         <button type="button" class="btn-remove" onclick="removeInput(this)">
                                             <i class="fas fa-trash"></i>
@@ -123,10 +157,21 @@
                             <div class="excludes-section">
                                 <h4><i class="fas fa-times-circle"></i> Không bao gồm</h4>
                                 <div class="dynamic-inputs" id="excludesContainer">
+                                    <!-- Input mới để thêm -->
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-minus"></i>
+                                            <input type="text" th:name="'excludes[' + ${tourCreateRequest != null and tourCreateRequest.excludes != null ? tourCreateRequest.excludes.size() : 0} + ']'" placeholder="Nhập dịch vụ không bao gồm" class="dynamic-input">
+                                        </div>
+                                        <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Các input hiện có -->
                                     <div class="input-group" th:each="exclude, iterStat : ${tourCreateRequest.excludes}" th:if="${exclude != null and exclude != ''}">
                                         <div class="input-icon">
                                             <i class="fas fa-minus"></i>
-                                            <input type="text" name="excludes" th:value="${exclude}" class="dynamic-input">
+                                            <input type="text" th:name="'excludes[' + ${iterStat.index} + ']'" th:value="${exclude}" class="dynamic-input">
                                         </div>
                                         <button type="button" class="btn-remove" onclick="removeInput(this)">
                                             <i class="fas fa-trash"></i>
@@ -211,17 +256,19 @@
                                 <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
                             </div>
                             <div class="image-preview" id="imagePreview">
-                                <!-- Hiển thị hình ảnh hiện tại -->
-                                <div class="current-images" th:if="${not #lists.isEmpty(tourCreateRequest.imageUrls)}">
-                                    <h4>Hình ảnh hiện tại:</h4>
-                                    <div class="image-grid">
-                                        <div class="image-item" th:each="imageUrl : ${tourCreateRequest.imageUrls}">
-                                            <img th:src="${imageUrl}" alt="Tour image" class="preview-image">
-                                            <button type="button" class="remove-image" onclick="removeImage(this)">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
+                                <!-- Hiển thị ảnh cũ từ tour -->
+                                <th:block th:if="${tourCreateRequest != null and tourCreateRequest.imageUrls != null}">
+                                    <div class="image-preview-item" th:each="img : ${tourCreateRequest.imageUrls}">
+                                        <img th:src="${img}" alt="Ảnh tour">
+                                        <input type="hidden" name="imageUrls" th:value="${img}">
+                                        <button type="button" class="remove-image" onclick="removeExistingImage(this)" title="Xóa ảnh cũ">×</button>
+                                        <div class="image-label">Ảnh cũ</div>
                                     </div>
+                                </th:block>
+                                
+                                <!-- Thông báo khi không có ảnh -->
+                                <div class="no-images-message" th:if="${(tourCreateRequest == null or tourCreateRequest.imageUrls == null or #lists.isEmpty(tourCreateRequest.imageUrls))}">
+                                    <p style="color: #ff6b6b; text-align: center; padding: 20px;">⚠️ Tour này chưa có hình ảnh.</p>
                                 </div>
                             </div>
                         </div>
@@ -233,33 +280,53 @@
                         <div id="itineraryContainer">
                             <!-- Lịch trình sẽ được thêm động -->
                             <div class="itinerary-item" th:each="itinerary, iterStat : ${tourCreateRequest.itineraries}" th:if="${itinerary != null}">
-                                <h4>Ngày <span th:text="${itinerary.dayNumber}"></span></h4>
+                                <h4>
+                                    <span th:text="${'Ngày ' + itinerary.dayNumber}"></span>
+                                </h4>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label>Tiêu đề</label>
-                                        <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].title'" th:value="${itinerary.title}" required>
+                                        <label>Tiêu đề ngày</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-heading"></i>
+                                            <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].title'" th:value="${itinerary.title}" required>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label>Ngày</label>
-                                        <input type="number" th:name="'itineraries[' + ${iterStat.index} + '].dayNumber'" th:value="${itinerary.dayNumber}" required min="1">
+                                        <label>Số ngày</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-calendar-day"></i>
+                                            <input type="number" th:name="'itineraries[' + ${iterStat.index} + '].dayNumber'" th:value="${itinerary.dayNumber}" required min="1">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label>Mô tả</label>
-                                    <textarea th:name="'itineraries[' + ${iterStat.index} + '].description'" rows="3" th:value="${itinerary.description}"></textarea>
+                                <div class="form-group full-width">
+                                    <label>Mô tả hoạt động</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-align-left"></i>
+                                        <textarea th:name="'itineraries[' + ${iterStat.index} + '].description'" rows="3" th:text="${itinerary.description}"></textarea>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label>Hoạt động</label>
-                                    <textarea th:name="'itineraries[' + ${iterStat.index} + '].activities'" rows="2" th:value="${itinerary.activities}"></textarea>
+                                <div class="form-group full-width">
+                                    <label>Hoạt động cụ thể</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-list"></i>
+                                        <textarea th:name="'itineraries[' + ${iterStat.index} + '].activities'" rows="2" th:text="${itinerary.activities}"></textarea>
+                                    </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Bữa ăn</label>
-                                        <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].meals'" th:value="${itinerary.meals}">
+                                        <div class="input-icon">
+                                            <i class="fas fa-utensils"></i>
+                                            <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].meals'" th:value="${itinerary.meals}">
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label>Nơi ở</label>
-                                        <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].accommodation'" th:value="${itinerary.accommodation}">
+                                        <label>Nơi lưu trú</label>
+                                        <div class="input-icon">
+                                            <i class="fas fa-bed"></i>
+                                            <input type="text" th:name="'itineraries[' + ${iterStat.index} + '].accommodation'" th:value="${itinerary.accommodation}">
+                                        </div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn-remove-itinerary" onclick="removeItinerary(this)">
@@ -278,34 +345,49 @@
                         <div id="scheduleContainer">
                             <!-- Lịch khởi hành sẽ được thêm động -->
                             <div class="schedule-item" th:each="schedule, iterStat : ${tourCreateRequest.schedules}" th:if="${schedule != null}">
-                                <h4>Lịch khởi hành <span th:text="${iterStat.count}"></span></h4>
+                                <h4>Lịch khởi hành</h4>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Ngày khởi hành</label>
-                                        <input type="date" th:name="'schedules[' + ${iterStat.index} + '].departureDate'" th:value="${schedule.departureDate}" required>
+                                        <div class="input-icon">
+                                            <i class="fas fa-calendar"></i>
+                                            <input type="date" th:name="'schedules[' + ${iterStat.index} + '].departureDate'" th:value="${schedule.departureDate}" required>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Ngày về</label>
-                                        <input type="date" th:name="'schedules[' + ${iterStat.index} + '].returnDate'" th:value="${schedule.returnDate}" required>
+                                        <div class="input-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <input type="date" th:name="'schedules[' + ${iterStat.index} + '].returnDate'" th:value="${schedule.returnDate}" required>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Giá đặc biệt</label>
-                                        <input type="number" th:name="'schedules[' + ${iterStat.index} + '].specialPrice'" th:value="${schedule.specialPrice}" min="0">
+                                        <div class="input-icon">
+                                            <i class="fas fa-dollar-sign"></i>
+                                            <input type="number" th:name="'schedules[' + ${iterStat.index} + '].specialPrice'" th:value="${schedule.specialPrice}" min="0" step="0.01">
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Số chỗ còn trống</label>
-                                        <input type="number" th:name="'schedules[' + ${iterStat.index} + '].availableSlots'" th:value="${schedule.availableSlots}" min="0" required>
+                                        <div class="input-icon">
+                                            <i class="fas fa-users"></i>
+                                            <input type="number" th:name="'schedules[' + ${iterStat.index} + '].availableSlots'" th:value="${schedule.availableSlots}" min="0" required>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label>Trạng thái</label>
-                                    <select th:name="'schedules[' + ${iterStat.index} + '].status'" th:value="${schedule.status}">
-                                        <option value="available">Còn chỗ</option>
-                                        <option value="full">Đã đầy</option>
-                                        <option value="closed">Đã đóng</option>
-                                    </select>
+                                    <div class="input-icon">
+                                        <i class="fas fa-toggle-on"></i>
+                                        <select th:name="'schedules[' + ${iterStat.index} + '].status'" th:value="${schedule.status}">
+                                            <option value="available">Còn chỗ</option>
+                                            <option value="full">Đã đầy</option>
+                                            <option value="closed">Đã đóng</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <button type="button" class="btn-remove-schedule" onclick="removeSchedule(this)">
                                     <i class="fas fa-trash"></i> Xóa lịch

@@ -83,7 +83,7 @@
                         </div>
                         <div class="stat-info">
                             <h3>Chờ xác nhận</h3>
-                            <p th:text="${#numbers.formatDecimal(bookings.totalElements, 0, 'COMMA', 0, 'POINT')}">0</p>
+                            <p th:text="${pendingBookings != null ? #numbers.formatDecimal(pendingBookings, 0, 'COMMA', 0, 'POINT') : '0'}">0</p>
                         </div>
                     </div>
                     
@@ -93,7 +93,7 @@
                         </div>
                         <div class="stat-info">
                             <h3>Đã xác nhận</h3>
-                            <p th:text="${#numbers.formatDecimal(bookings.totalElements, 0, 'COMMA', 0, 'POINT')}">0</p>
+                            <p th:text="${confirmedBookings != null ? #numbers.formatDecimal(confirmedBookings, 0, 'COMMA', 0, 'POINT') : '0'}">0</p>
                         </div>
                     </div>
                     
@@ -103,7 +103,7 @@
                         </div>
                         <div class="stat-info">
                             <h3>Hoàn thành</h3>
-                            <p th:text="${#numbers.formatDecimal(bookings.totalElements, 0, 'COMMA', 0, 'POINT')}">0</p>
+                            <p th:text="${completedBookings != null ? #numbers.formatDecimal(completedBookings, 0, 'COMMA', 0, 'POINT') : '0'}">0</p>
                         </div>
                     </div>
                     
@@ -113,7 +113,7 @@
                         </div>
                         <div class="stat-info">
                             <h3>Đã hủy</h3>
-                            <p th:text="${#numbers.formatDecimal(bookings.totalElements, 0, 'COMMA', 0, 'POINT')}">0</p>
+                            <p th:text="${cancelledBookings != null ? #numbers.formatDecimal(cancelledBookings, 0, 'COMMA', 0, 'POINT') : '0'}">0</p>
                         </div>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                                     <div class="tour-meta">
                                         <div>
                                             <strong>Loại tour:</strong>
-                                            <span th:text="${booking.tour.category.name}">Gia Đình</span>
+                                            <span th:text="${booking.tour.categories != null and !booking.tour.categories.isEmpty() ? #strings.listJoin(booking.tour.categories.![name], ', ') : 'Chưa phân loại'}">Gia Đình</span>
                                         </div>
                                         <div>
                                             <strong>Điểm xuất phát:</strong>
@@ -176,12 +176,12 @@
                                     </div>
                                     <div><strong>Tổng tiền:</strong> <span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')}">0</span> vnd</div>
                                     <div th:if="${booking.specialRequests}"><strong>Ghi chú:</strong> <span th:text="${booking.specialRequests}">-</span></div>
-                                    <div><strong>Ngày đặt:</strong> <span th:text="${#temporals.format(booking.createdAt, 'yyyy-MM-dd''T''HH:mm:ss')}"></span></div>
+                                    <div><strong>Ngày đặt:</strong> <span th:text="${#temporals.format(booking.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></span></div>
                                 </td>
 
                                 <!-- Trạng thái -->
                                 <td>
-                                    <span class="status-badge" th:class="${'status-' + #strings.toLowerCase(booking.status)}" 
+                                    <span class="status-badge" th:class="${'status-' + #strings.toLowerCase(booking.status.name())}" 
                                           th:text="${booking.status}">PENDING</span>
                                 </td>
 
@@ -193,32 +193,39 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
 
+                                        <!-- Đánh dấu PAID -->
                                         <button class="btn btn-primary"
-                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).CONFIRMED}"
+                                                th:if="${booking.status.name() == 'CONFIRMED'}"
                                                 th:onclick="'markAsPaid(' + ${booking.id} + ')'">
                                             <i class="fas fa-credit-card"></i> Đánh dấu PAID
                                         </button>
 
                                         <!-- Xác nhận -->
                                         <button class="btn btn-success"
-                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PENDING}"
+                                                th:if="${booking.status.name() == 'PENDING'}"
                                                 th:onclick="'confirmBooking(' + ${booking.id} + ')'">
                                             <i class="fas fa-check"></i> Xác nhận
                                         </button>
 
                                         <!-- Hoàn thành -->
                                         <button class="btn btn-info"
-                                                th:if="${booking.status == T(fsa.training.travelee.entity.booking.BookingStatus).PAID}"
+                                                th:if="${booking.status.name() == 'PAID'}"
                                                 th:onclick="'completeBooking(' + ${booking.id} + ')'">
                                             <i class="fas fa-flag-checkered"></i> Hoàn thành
                                         </button>
 
                                         <!-- Hủy -->
                                         <button class="btn btn-danger"
-                                                th:if="${booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).CANCELLED
-                                                and booking.status != T(fsa.training.travelee.entity.booking.BookingStatus).COMPLETED}"
+                                                th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'COMPLETED'}"
                                                 th:onclick="'cancelBooking(' + ${booking.id} + ')'">
                                             <i class="fas fa-times"></i> Hủy
+                                        </button>
+
+                                        <!-- Hoàn tiền -->
+                                        <button class="btn btn-warning"
+                                                th:if="${booking.status.name() == 'CANCELLED' or booking.status.name() == 'PAID'}"
+                                                th:onclick="'showRefundModal(' + ${booking.id} + ')'">
+                                            <i class="fas fa-undo"></i> Hoàn tiền
                                         </button>
                                     </div>
                                 </td>
@@ -233,7 +240,7 @@
                         <ul class="pagination-list">
                             <!-- Previous page -->
                             <li th:if="${bookings.hasPrevious()}">
-                                <a th:href="@{/admin/bookings(page=${bookings.number - 1}, size=${bookings.size}, status=${selectedStatus}, search=${searchTerm}, startDate=${startDate}, endDate=${endDate})}" 
+                                <a th:href="@{/admin/bookings(page=${bookings.number - 1}, size=${bookings.size}, status=${selectedStatus != null ? selectedStatus : ''}, search=${searchTerm != null ? searchTerm : ''}, startDate=${startDate != null ? startDate : ''}, endDate=${endDate != null ? endDate : ''})}" 
                                    class="pagination-link">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
@@ -242,13 +249,13 @@
                             <!-- Page numbers -->
                             <li th:each="pageNum : ${#numbers.sequence(0, bookings.totalPages - 1)}" 
                                 th:class="${pageNum == bookings.number ? 'active' : ''}">
-                                <a th:href="@{/admin/bookings(page=${pageNum}, size=${bookings.size}, status=${selectedStatus}, search=${searchTerm}, startDate=${startDate}, endDate=${endDate})}" 
+                                <a th:href="@{/admin/bookings(page=${pageNum}, size=${bookings.size}, status=${selectedStatus != null ? selectedStatus : ''}, search=${searchTerm != null ? searchTerm : ''}, startDate=${startDate != null ? startDate : ''}, endDate=${endDate != null ? endDate : ''})}" 
                                    class="pagination-link" th:text="${pageNum + 1}">1</a>
                             </li>
                             
                             <!-- Next page -->
                             <li th:if="${bookings.hasNext()}">
-                                <a th:href="@{/admin/bookings(page=${bookings.number + 1}, size=${bookings.size}, status=${selectedStatus}, search=${searchTerm}, startDate=${startDate}, endDate=${endDate})}" 
+                                <a th:href="@{/admin/bookings(page=${bookings.number + 1}, size=${bookings.size}, status=${selectedStatus != null ? selectedStatus : ''}, search=${searchTerm != null ? searchTerm : ''}, startDate=${startDate != null ? startDate : ''}, endDate=${endDate != null ? endDate : ''})}" 
                                    class="pagination-link">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>

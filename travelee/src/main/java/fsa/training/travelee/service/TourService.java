@@ -17,4 +17,5 @@ public interface TourService {
     void deleteTourById(Long id);
     void updateTour(Long id, TourCreateRequest request);
     Tour getById(Long id);
+    long countTours();
 }

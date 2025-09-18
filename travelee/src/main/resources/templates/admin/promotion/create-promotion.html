@@ -467,26 +467,52 @@
         
         // Set minimum dates for date inputs
         const now = new Date();
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0); // Set to start of today
         
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         
-        startDateInput.min = tomorrow.toISOString().slice(0, 16);
+        // Allow start date to be today or later
+        startDateInput.min = today.toISOString().slice(0, 16);
+        
+        // End date must be in the future (tomorrow or later)
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
         endDateInput.min = tomorrow.toISOString().slice(0, 16);
+        
+        // No automatic date setting - user will input manually
         
         // Update end date minimum when start date changes
         startDateInput.addEventListener('change', function() {
             if (this.value) {
                 const startDate = new Date(this.value);
-                const minEndDate = new Date(startDate);
-                minEndDate.setDate(minEndDate.getDate() + 1);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // Calculate minimum end date
+                let minEndDate;
+                if (startDate <= today) {
+                    // If start date is today or in the past, end date must be tomorrow
+                    minEndDate = new Date(today);
+                    minEndDate.setDate(minEndDate.getDate() + 1);
+                } else {
+                    // If start date is in the future, end date must be after start date
+                    minEndDate = new Date(startDate);
+                    minEndDate.setDate(minEndDate.getDate() + 1);
+                }
+                
                 endDateInput.min = minEndDate.toISOString().slice(0, 16);
                 
-                // Clear end date if it's before start date
-                if (endDateInput.value && new Date(endDateInput.value) <= startDate) {
-                    endDateInput.value = '';
+                // Clear end date if it's invalid
+                if (endDateInput.value) {
+                    const endDate = new Date(endDateInput.value);
+                    const endDateOnly = new Date(endDate);
+                    endDateOnly.setHours(0, 0, 0, 0);
+                    
+                    if (endDateOnly <= today || endDate <= startDate) {
+                        endDateInput.value = '';
+                    }
                 }
             }
         });
@@ -502,9 +528,25 @@
                 return false;
             }
             
-            if (new Date() >= startDate) {
+            // Allow start date to be today or in the future
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            const startDateOnly = new Date(startDate);
+            startDateOnly.setHours(0, 0, 0, 0);
+            
+            if (startDateOnly < today) {
                 e.preventDefault();
-                alert('Ngày bắt đầu phải trong tương lai!');
+                alert('Ngày bắt đầu không được trong quá khứ!');
+                return false;
+            }
+            
+            // End date must be in the future (not today)
+            const endDateOnly = new Date(endDate);
+            endDateOnly.setHours(0, 0, 0, 0);
+            
+            if (endDateOnly <= today) {
+                e.preventDefault();
+                alert('Ngày kết thúc phải trong tương lai (không được là ngày hôm nay)!');
                 return false;
             }
         });
